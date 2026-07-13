@@ -2,105 +2,82 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Transactions — AI Toolcor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
+<title>Transactions — Crust & Chilly</title>
 
-<!-- ============ SEO ============ -->
-<meta name="description" content="AI Toolcor Business Dashboard — Smart finance tracker for income, expenses & profits. 100% private, works offline."/>
-<meta name="keywords" content="business dashboard, finance tracker, income expense tracker, business analytics, AI Toolcor"/>
-<meta name="author" content="AI Toolcor"/>
-<meta name="robots" content="index, follow"/>
-<meta name="language" content="English"/>
-<meta name="revisit-after" content="7 days"/>
-<link rel="canonical" href="https://business.aitoolcor.com/"/>
-
-<!-- ============ OPEN GRAPH ============ -->
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://business.aitoolcor.com/"/>
-<meta property="og:title" content="AI Toolcor Business Dashboard"/>
-<meta property="og:description" content="Smart business finance tracker. Track income, expenses & profits in one dashboard."/>
-<meta property="og:image" content="https://business.aitoolcor.com/assets/icons/og-image.png"/>
-<meta property="og:site_name" content="AI Toolcor Business"/>
-<meta property="og:locale" content="en_IN"/>
-
-<!-- ============ TWITTER ============ -->
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:url" content="https://business.aitoolcor.com/"/>
-<meta name="twitter:title" content="AI Toolcor Business Dashboard"/>
-<meta name="twitter:description" content="Smart business finance tracker."/>
-<meta name="twitter:image" content="https://business.aitoolcor.com/assets/icons/og-image.png"/>
-
-<!-- ============ PWA ============ -->
-<link rel="manifest" href="/manifest.json"/>
+<meta name="description" content="Manage all your business transactions"/>
+<meta name="robots" content="noindex, nofollow"/>
 <meta name="theme-color" content="#06b6d4"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="msapplication-TileColor" content="#06b6d4"/>
-<meta name="msapplication-config" content="/browserconfig.xml"/>
 
-<!-- ============ ICONS ============ -->
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/icon-32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/icon-16.png"/>
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/icon-192.png"/>
-<link rel="shortcut icon" href="/favicon.ico"/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="shortcut icon" href="favicon.ico"/>
 
-<!-- ============ STRUCTURED DATA ============ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "AI Toolcor Business Dashboard",
-  "url": "https://business.aitoolcor.com",
-  "applicationCategory": "BusinessApplication",
-  "operatingSystem": "Any",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "INR"
-  },
-  "author": {
-    "@type": "Organization",
-    "name": "AI Toolcor"
-  }
-}
-</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 
 <link rel="stylesheet" href="assets/css/style.css"/>
 <link rel="stylesheet" href="assets/css/transaction.css"/>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
 </head>
 <body>
 
 <div class="app">
 
+  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sb-logo">
-      <div class="sb-logo-icon">💎</div>
-      <div>
-        <div class="sb-logo-text">AI Toolcor</div>
+      <div class="sb-logo-icon-wrap">
+        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
+      </div>
+      <div class="sb-logo-info">
+        <div class="sb-logo-text">Crust & Chilly</div>
         <div class="sb-logo-sub">BUSINESS SUITE</div>
       </div>
     </div>
+
     <nav class="sb-nav">
       <div class="sb-section">Overview</div>
-      <a href="index.html" class="sb-link"><span class="sb-icon">📊</span> Dashboard</a>
-      <a href="transaction.html" class="sb-link active"><span class="sb-icon">💳</span> Transactions</a>
+      <a href="index.html" class="sb-link">
+        <span class="sb-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="transaction.html" class="sb-link active">
+        <span class="sb-icon">💳</span>
+        <span>Transactions</span>
+      </a>
+
       <div class="sb-section">Quick Add</div>
-      <div class="sb-link" onclick="openModal('incomeModal')"><span class="sb-icon">💰</span> New Income</div>
-      <div class="sb-link" onclick="openModal('expenseModal')"><span class="sb-icon">💸</span> New Expense</div>
+      <div class="sb-link" onclick="openIncomeModal()">
+        <span class="sb-icon">💰</span>
+        <span>New Income</span>
+      </div>
+      <div class="sb-link" onclick="openExpenseModal()">
+        <span class="sb-icon">💸</span>
+        <span>New Expense</span>
+      </div>
+
       <div class="sb-section">Reports</div>
-      <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span> Excel Report</div>
-      <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span> PDF Report</div>
-      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span> Backup Data</div>
+      <div class="sb-link" onclick="exportExcel()">
+        <span class="sb-icon">📊</span>
+        <span>Excel Report</span>
+      </div>
+      <div class="sb-link" onclick="exportPDF()">
+        <span class="sb-icon">📄</span>
+        <span>PDF Report</span>
+      </div>
+      <div class="sb-link" onclick="downloadBackup()">
+        <span class="sb-icon">💾</span>
+        <span>Backup Data</span>
+      </div>
     </nav>
+
     <div class="sb-footer">
       <div class="sb-user">
         <div class="sb-avatar">S</div>
-        <div>
+        <div class="sb-user-info">
           <div class="sb-user-name">Sanket Barot</div>
           <div class="sb-user-email">sanketbarot3901@gmail.com</div>
         </div>
@@ -111,10 +88,12 @@
 
   <div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
 
+  <!-- MAIN -->
   <main class="main">
+
     <header class="header">
       <div class="hd-left">
-        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
         <div class="hd-title">
           <h4>Transactions</h4>
           <p id="headerDate">Loading...</p>
@@ -122,7 +101,7 @@
       </div>
       <div class="hd-search">
         <span>🔍</span>
-        <input type="text" id="mainSearch" placeholder="Search everything..." oninput="applyFilters()"/>
+        <input type="text" id="mainSearch" placeholder="Quick search..." oninput="applyFilters()" autocomplete="off"/>
       </div>
       <div class="hd-right">
         <div class="hd-live" id="liveTime">--:--</div>
@@ -131,22 +110,22 @@
 
     <div class="content">
 
-      <!-- Command Bar -->
-      <div class="cmd-bar fade-up">
+      <!-- COMMAND BAR -->
+      <section class="cmd-bar fade-up">
         <div class="cmd-inner">
           <div class="cmd-title">
             <h2>💳 Manage Transactions</h2>
             <p>View, filter, edit and manage all your records</p>
           </div>
           <div class="cmd-actions">
-            <button class="btn btn-income btn-lg" onclick="openModal('incomeModal')">💰 Add Income</button>
-            <button class="btn btn-expense btn-lg" onclick="openModal('expenseModal')">💸 Add Expense</button>
+            <button class="btn btn-income" onclick="openIncomeModal()">💰 Add Income</button>
+            <button class="btn btn-expense" onclick="openExpenseModal()">💸 Add Expense</button>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Analytics -->
-      <div class="tx-analytics fade-up delay-1">
+      <!-- ANALYTICS -->
+      <section class="tx-analytics fade-up">
         <div class="tx-stat in">
           <div class="tx-stat-ic" style="background:var(--income-soft);">💰</div>
           <div class="tx-stat-info">
@@ -179,83 +158,92 @@
             <div class="tx-stat-sub">In current view</div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Filter Panel -->
-      <div class="filter-panel fade-up delay-2">
+      <!-- FILTER PANEL -->
+      <section class="filter-panel fade-up">
         <div class="filter-tabs">
-          <button class="ft active" data-f="all" onclick="setFilter('all',this)">📅 All Time</button>
+          <button class="ft active" data-f="all" onclick="setFilter('all',this)">📅 All</button>
           <button class="ft" data-f="today" onclick="setFilter('today',this)">Today</button>
           <button class="ft" data-f="yesterday" onclick="setFilter('yesterday',this)">Yesterday</button>
-          <button class="ft" data-f="week" onclick="setFilter('week',this)">This Week</button>
+          <button class="ft" data-f="week" onclick="setFilter('week',this)">Week</button>
           <button class="ft" data-f="lastweek" onclick="setFilter('lastweek',this)">Last Week</button>
-          <button class="ft" data-f="month" onclick="setFilter('month',this)">This Month</button>
+          <button class="ft" data-f="month" onclick="setFilter('month',this)">Month</button>
           <button class="ft" data-f="lastmonth" onclick="setFilter('lastmonth',this)">Last Month</button>
-          <button class="ft" data-f="year" onclick="setFilter('year',this)">This Year</button>
-          <button class="ft" data-f="custom" onclick="setFilter('custom',this)">📆 Custom Range</button>
+          <button class="ft" data-f="year" onclick="setFilter('year',this)">Year</button>
+          <button class="ft" data-f="custom" onclick="setFilter('custom',this)">📆 Custom</button>
         </div>
 
         <div id="customRange" class="cr">
-          <span class="cr-label">Date Range:</span>
-          <input type="date" class="fc" id="fStart" style="width:160px;"/>
+          <span class="cr-label">Range:</span>
+          <input type="date" class="fc" id="fStart"/>
           <span style="color:var(--brand-dark);font-weight:700;">→</span>
-          <input type="date" class="fc" id="fEnd" style="width:160px;"/>
+          <input type="date" class="fc" id="fEnd"/>
           <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply</button>
         </div>
 
         <div class="filter-body">
           <div class="filter-search">
             <span class="filter-search-ic">🔍</span>
-            <input type="text" id="txnSearch" placeholder="Search by category, amount, notes, customer..." oninput="applyFilters()"/>
+            <input type="text" id="txnSearch" placeholder="Search category, amount, notes..." oninput="applyFilters()" autocomplete="off"/>
           </div>
+
           <select class="fc fsel" id="typeFilter" onchange="applyFilters()">
             <option value="all">🎯 All Types</option>
-            <option value="income">💰 Income Only</option>
-            <option value="expense">💸 Expense Only</option>
+            <option value="income">💰 Income</option>
+            <option value="expense">💸 Expense</option>
           </select>
+
           <select class="fc fsel" id="catFilter" onchange="applyFilters()">
             <option value="">📂 All Categories</option>
           </select>
+
           <select class="fc fsel" id="modeFilter" onchange="applyFilters()">
             <option value="">💳 All Modes</option>
-            <option>Cash</option><option>Online</option><option>UPI</option>
-            <option>Bank Transfer</option><option>Card</option><option>Cheque</option>
+            <option>Cash</option>
+            <option>Online</option>
+            <option>UPI</option>
+            <option>Bank Transfer</option>
+            <option>Card</option>
+            <option>Cheque</option>
           </select>
+
           <select class="fc fsel" id="sortFilter" onchange="applyFilters()">
             <option value="date-desc">🕐 Latest First</option>
             <option value="date-asc">📅 Oldest First</option>
             <option value="amount-desc">💰 High to Low</option>
             <option value="amount-asc">💰 Low to High</option>
           </select>
+
           <div class="view-toggle">
             <button class="vt-btn active" id="vtTable" onclick="setView('table')">📋 Table</button>
             <button class="vt-btn" id="vtCard" onclick="setView('card')">🎴 Cards</button>
           </div>
+
           <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Reset</button>
           <button class="btn btn-primary btn-sm" onclick="exportExcel()">📊 Export</button>
         </div>
-      </div>
+      </section>
 
-      <!-- Table Card -->
-      <div class="card t-card fade-up delay-3">
+      <!-- TABLE CARD -->
+      <section class="card t-card fade-up">
         <div class="card-hd">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <h4>📋 Transaction Records</h4>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h4>📋 Records</h4>
             <span class="rec-tag" id="recTag">0 records</span>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <div class="bulk-bar" id="bulkBar">
               <span class="bulk-txt" id="bulkTxt">0 selected</span>
-              <button class="btn btn-expense btn-sm" onclick="bulkDelete()">🗑️ Delete Selected</button>
+              <button class="btn btn-expense btn-sm" onclick="bulkDelete()">🗑️ Delete</button>
             </div>
-            <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;cursor:pointer;color:var(--text-body);">
-              <input type="checkbox" id="selAll" onchange="toggleSelectAll()" style="accent-color:var(--brand);"/>
-              Select All
+            <label class="sel-all-lbl">
+              <input type="checkbox" id="selAll" onchange="toggleSelectAll()"/>
+              <span>Select All</span>
             </label>
           </div>
         </div>
 
-        <!-- Table View -->
         <div id="tableView">
           <div class="table-wrap">
             <table class="dtable">
@@ -273,20 +261,27 @@
                 </tr>
               </thead>
               <tbody id="txnBody">
-                <tr><td colspan="9"><div class="empty"><div class="empty-icon">💳</div><h4>No transactions found</h4><p>Add your first income or expense to get started</p></div></td></tr>
+                <tr>
+                  <td colspan="9">
+                    <div class="empty">
+                      <div class="empty-icon">💳</div>
+                      <h4>No transactions yet</h4>
+                      <p>Add your first income or expense</p>
+                    </div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Card View -->
         <div id="cardView" class="card-view" style="display:none;"></div>
 
         <div class="t-foot">
           <div class="t-foot-info" id="tableInfo">0 records</div>
           <div class="pag" id="pagination"></div>
         </div>
-      </div>
+      </section>
 
     </div>
   </main>
@@ -296,30 +291,69 @@
 <div class="modal-bg" id="incomeModal">
   <div class="modal">
     <div class="modal-hd" style="background:var(--income-soft);">
-      <h3>💰 Add Income</h3>
+      <h3 id="incomeTitle">💰 Add Income</h3>
       <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
     </div>
     <div class="modal-bd">
       <div class="form-row">
-        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="iDate"/></div>
-        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat"><option value="">Select</option><option>💰 Cash Income</option><option>📱 Online Payment</option><option>🛒 Sales</option><option>🔧 Service</option><option>💻 Freelance</option><option>🏠 Rental</option><option>💼 Commission</option><option>↩️ Refund Received</option><option>📈 Investment Return</option><option>🎁 Gift / Bonus</option><option>📦 Other Income</option></select></div>
+        <div class="fg">
+          <label class="fl">DATE <span class="req">*</span></label>
+          <input type="date" class="fc" id="iDate"/>
+        </div>
+        <div class="fg">
+          <label class="fl">CATEGORY <span class="req">*</span></label>
+          <select class="fc" id="iCat">
+            <option value="">Select</option>
+            <option>💰 Cash Income</option>
+            <option>📱 Online Payment</option>
+            <option>🛒 Sales</option>
+            <option>🔧 Service</option>
+            <option>💻 Freelance</option>
+            <option>🏠 Rental</option>
+            <option>💼 Commission</option>
+            <option>↩️ Refund Received</option>
+            <option>📈 Investment Return</option>
+            <option>🎁 Gift / Bonus</option>
+            <option>📦 Other Income</option>
+          </select>
+        </div>
       </div>
       <div class="form-row">
-        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--income);">₹</span>
-            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:28px;" oninput="previewAmt('income')"/>
+        <div class="fg">
+          <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
+          <div class="amt-wrap">
+            <span class="amt-sym" style="color:var(--income);">₹</span>
+            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" oninput="previewAmt('income')"/>
           </div>
         </div>
-        <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
+        <div class="fg">
+          <label class="fl">MODE</label>
+          <select class="fc" id="iMode">
+            <option value="Cash">💵 Cash</option>
+            <option value="Online">📱 Online</option>
+            <option value="UPI">📲 UPI</option>
+            <option value="Bank Transfer">🏦 Bank Transfer</option>
+            <option value="Card">💳 Card</option>
+            <option value="Cheque">📄 Cheque</option>
+          </select>
+        </div>
       </div>
-      <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom" placeholder="Optional"/></div>
-      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea></div>
-      <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong id="iPreviewVal">₹ 0.00</strong></div>
+      <div class="fg">
+        <label class="fl">CUSTOMER / FROM</label>
+        <input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="fl">NOTES</label>
+        <textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea>
+      </div>
+      <div id="iPreview" class="preview preview-in" style="display:none;">
+        <span>Income Amount</span>
+        <strong id="iPreviewVal">₹ 0.00</strong>
+      </div>
     </div>
     <div class="modal-ft">
       <button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
-      <button class="btn btn-income" onclick="saveTxn('income')">💰 Save Income</button>
+      <button class="btn btn-income" onclick="saveTxn('income')">💰 Save</button>
     </div>
     <input type="hidden" id="iEditId"/>
   </div>
@@ -329,30 +363,79 @@
 <div class="modal-bg" id="expenseModal">
   <div class="modal">
     <div class="modal-hd" style="background:var(--expense-soft);">
-      <h3>💸 Add Expense</h3>
+      <h3 id="expenseTitle">💸 Add Expense</h3>
       <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
     </div>
     <div class="modal-bd">
       <div class="form-row">
-        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="eDate"/></div>
-        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat"><option value="">Select</option><option>🧾 Electricity Bill</option><option>💧 Water Bill</option><option>📡 Internet Bill</option><option>📱 Mobile Bill</option><option>🏠 Rent</option><option>🛒 Grocery</option><option>🥦 Vegetables</option><option>🍞 Bread / Bakery</option><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>⛽ Fuel</option><option>👥 Salary</option><option>💊 Medical</option><option>📚 Education</option><option>🔨 Maintenance</option><option>📢 Marketing</option><option>📦 Supplies</option><option>🛡️ Insurance</option><option>📋 Tax</option><option>↩️ Refund Given</option><option>💸 Other Expense</option></select></div>
+        <div class="fg">
+          <label class="fl">DATE <span class="req">*</span></label>
+          <input type="date" class="fc" id="eDate"/>
+        </div>
+        <div class="fg">
+          <label class="fl">CATEGORY <span class="req">*</span></label>
+          <select class="fc" id="eCat">
+            <option value="">Select</option>
+            <option>🧾 Electricity Bill</option>
+            <option>💧 Water Bill</option>
+            <option>📡 Internet Bill</option>
+            <option>📱 Mobile Bill</option>
+            <option>🏠 Rent</option>
+            <option>🛒 Grocery</option>
+            <option>🥦 Vegetables</option>
+            <option>🍞 Bread / Bakery</option>
+            <option>🍔 Food & Dining</option>
+            <option>🚗 Transport</option>
+            <option>⛽ Fuel</option>
+            <option>👥 Salary</option>
+            <option>💊 Medical</option>
+            <option>📚 Education</option>
+            <option>🔨 Maintenance</option>
+            <option>📢 Marketing</option>
+            <option>📦 Supplies</option>
+            <option>🛡️ Insurance</option>
+            <option>📋 Tax</option>
+            <option>↩️ Refund Given</option>
+            <option>💸 Other Expense</option>
+          </select>
+        </div>
       </div>
       <div class="form-row">
-        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--expense);">₹</span>
-            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:28px;" oninput="previewAmt('expense')"/>
+        <div class="fg">
+          <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
+          <div class="amt-wrap">
+            <span class="amt-sym" style="color:var(--expense);">₹</span>
+            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" oninput="previewAmt('expense')"/>
           </div>
         </div>
-        <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
+        <div class="fg">
+          <label class="fl">MODE</label>
+          <select class="fc" id="eMode">
+            <option value="Cash">💵 Cash</option>
+            <option value="Online">📱 Online</option>
+            <option value="UPI">📲 UPI</option>
+            <option value="Bank Transfer">🏦 Bank Transfer</option>
+            <option value="Card">💳 Card</option>
+            <option value="Cheque">📄 Cheque</option>
+          </select>
+        </div>
       </div>
-      <div class="fg"><label class="fl">VENDOR / PAID TO</label><input type="text" class="fc" id="eVendor" placeholder="Optional"/></div>
-      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea></div>
-      <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong id="ePreviewVal">₹ 0.00</strong></div>
+      <div class="fg">
+        <label class="fl">VENDOR</label>
+        <input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="fl">NOTES</label>
+        <textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea>
+      </div>
+      <div id="ePreview" class="preview preview-out" style="display:none;">
+        <span>Expense Amount</span>
+        <strong id="ePreviewVal">₹ 0.00</strong>
+      </div>
     </div>
     <div class="modal-ft">
       <button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
-      <button class="btn btn-expense" onclick="saveTxn('expense')">💸 Save Expense</button>
+      <button class="btn btn-expense" onclick="saveTxn('expense')">💸 Save</button>
     </div>
     <input type="hidden" id="eEditId"/>
   </div>
@@ -360,7 +443,7 @@
 
 <!-- DETAIL MODAL -->
 <div class="modal-bg" id="detailModal">
-  <div class="modal" style="max-width:500px;">
+  <div class="modal" style="max-width:520px;">
     <div class="modal-hd" id="detailHd">
       <h3>📋 Transaction Details</h3>
       <button class="modal-x" onclick="closeModal('detailModal')">✕</button>
