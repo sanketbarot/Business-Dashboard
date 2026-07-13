@@ -774,7 +774,7 @@ body::after {
         <label class="fl">EMAIL ADDRESS</label>
         <div class="iw">
           <span class="iw-ic">📧</span>
-          <input type="email" class="fi" id="em" value="sanketbarot3901@gmail.com" required autocomplete="email"/>
+          <input type="email" class="fi" id="em" required autocomplete="email" placeholder="you@example.com"/>
         </div>
       </div>
 
@@ -796,15 +796,25 @@ body::after {
 </div>
 
 <script>
+// Credentials are checked via SHA-256 hash instead of plaintext.
+// NOTE: This is a client-side-only app (no server), so this gate mainly
+// prevents casual/shoulder-surfing access on a shared device — it can't
+// stop someone determined who reads the JS. Don't store anything here
+// you wouldn't want exposed if the device itself is compromised.
 const AE = 'sanketbarot3901@gmail.com';
-const AP = 'Admin@123';
+const AP_HASH = 'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7'; // sha256("Admin@123")
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // Redirect if already logged in
 if (localStorage.getItem('bd_auth') === 'true') {
   window.location.href = 'index.html';
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   const em = document.getElementById('em').value.trim();
   const pw = document.getElementById('pw').value;
@@ -815,17 +825,26 @@ function handleLogin(e) {
   btn.textContent = 'Signing in...';
   btn.disabled = true;
 
-  setTimeout(() => {
-    if (em === AE && pw === AP) {
-      localStorage.setItem('bd_auth', 'true');
-      localStorage.setItem('bd_user', em);
-      window.location.href = 'index.html';
-    } else {
-      err.style.display = 'block';
-      btn.textContent = 'Sign in →';
-      btn.disabled = false;
-    }
-  }, 500);
+  try {
+    const pwHash = await sha256(pw);
+    const ok = em.toLowerCase() === AE.toLowerCase() && pwHash === AP_HASH;
+
+    setTimeout(() => {
+      if (ok) {
+        localStorage.setItem('bd_auth', 'true');
+        localStorage.setItem('bd_user', em);
+        window.location.href = 'index.html';
+      } else {
+        err.style.display = 'block';
+        btn.textContent = 'Sign in →';
+        btn.disabled = false;
+      }
+    }, 400);
+  } catch (err2) {
+    console.error('Login error:', err2);
+    btn.textContent = 'Sign in →';
+    btn.disabled = false;
+  }
 }
 
 function togP() {
