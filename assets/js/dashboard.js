@@ -1,1090 +1,904 @@
 /* ============================================
-   TRANSACTION PAGE JS — WORKING VERSION
+   CRUST & CHILLY — DASHBOARD.JS
+   Dashboard analytics & charts
    ============================================ */
 
 'use strict';
 
-const TxnPage = {
+const Dash = {
 
-  state: {
-    data: [],
-    filtered: [],
-    page: 1,
-    perPage: 12,
-    filter: 'all',
-    selected: new Set(),
-    view: 'table',
-    sortBy: 'date-desc',
-    lastQuery: ''
+  charts: {
+    bar: null,
+    donut: null,
+    line: null
   },
 
-  icons: {
-    payment: {
+  period: 'month',
+
+  init: function() {
+    console.log('Dashboard initializing...');
+
+    try {
+      this.setupWelcome();
+      this.setupYearSelector();
+      this.loadAll();
+      this.setupSearch();
+
+      console.log('Dashboard ready');
+    } catch (err) {
+      console.error('Dashboard init error:', err);
+    }
+  },
+
+  loadAll: function() {
+    const all = getTxns();
+    this.loadSummary(all);
+    this.loadAnalytics(all);
+    this.loadInsights(all);
+    this.loadComparison(all);
+    this.loadTopCategories(all);
+    this.loadPaymentModes(all);
+    this.loadRecent(all);
+
+    // Charts need Chart.js loaded
+    if (typeof Chart !== 'undefined') {
+      this.buildBarChart(all);
+      this.buildDonutChart(all);
+      this.buildLineChart(all);
+    } else {
+      // Wait for Chart.js to load
+      setTimeout(function() {
+        if (typeof Chart !== 'undefined') {
+          Dash.buildBarChart(getTxns());
+          Dash.buildDonutChart(getTxns());
+          Dash.buildLineChart(getTxns());
+        }
+      }, 500);
+    }
+  },
+
+  setupWelcome: function() {
+    const h = new Date().getHours();
+    let msg = '🌙 Good Night';
+    if (h >= 5 && h < 12) msg = '🌅 Good Morning';
+    else if (h >= 12 && h < 17) msg = '☀️ Good Afternoon';
+    else if (h >= 17 && h < 21) msg = '🌇 Good Evening';
+
+    this.setText('welcomeMsg', msg + '!');
+    this.setText('heroSubtext', fmtDateFull(today()));
+  },
+
+  loadSummary: function(all) {
+    const txns = filterByPeriod(all, this.period);
+    const t = calcTotals(txns);
+    const allT = calcTotals(all);
+
+    this.setText('pIncome', inr(t.income));
+    this.setText('pExpense', inr(t.expense));
+    this.setText('pProfit', inr(t.profit));
+    this.setText('totalBal', inr(allT.profit));
+    this.setText('totalCount', all.length + ' records');
+
+    let iC = 0, eC = 0;
+    for (let i = 0; i < txns.length; i++) {
+      if (txns[i].type === 'income') iC++;
+      else if (txns[i].type === 'expense') eC++;
+    }
+
+    this.setText('pIncomeCount', iC + ' income');
+    this.setText('pExpenseCount', eC + ' expense');
+
+    const margin = t.income > 0 ? Math.round((t.profit / t.income) * 100) : 0;
+    this.setText('pMargin', margin + '% profit margin');
+
+    this.updateTrends(all, this.period);
+
+    // Profit color
+    const pEl = document.getElementById('pProfit');
+    if (pEl) {
+      pEl.className = 'sc-value ' + (t.profit >= 0 ? 'text-profit' : 'text-expense');
+    }
+  },
+
+  updateTrends: function(all, period) {
+    let prevPeriod = null;
+    if (period === 'today') prevPeriod = 'yesterday';
+    else if (period === 'week') prevPeriod = 'lastweek';
+    else if (period === 'month') prevPeriod = 'lastmonth';
+
+    const cur = calcTotals(filterByPeriod(all, period));
+    let iTrend = 0, eTrend = 0, pTrend = 0;
+
+    if (prevPeriod) {
+      const prev = calcTotals(filterByPeriod(all, prevPeriod));
+      iTrend = this.calcTrend(cur.income, prev.income);
+      eTrend = this.calcTrend(cur.expense, prev.expense);
+      pTrend = this.calcTrend(cur.profit, prev.profit);
+    }
+
+    this.setTrend('incomeTrend', iTrend, true);
+    this.setTrend('expenseTrend', eTrend, false);
+    this.setTrend('profitTrend', pTrend, true);
+  },
+
+  calcTrend: function(cur, prev) {
+    if (prev > 0) return Math.round(((cur - prev) / prev) * 100);
+    if (cur > 0) return 100;
+    return 0;
+  },
+
+  setTrend: function(id, val, higherIsBetter) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    let arrow, cls;
+    if (val === 0) {
+      arrow = '→'; cls = 'neutral';
+    } else if (val > 0) {
+      arrow = '↑'; cls = higherIsBetter ? 'up' : 'down';
+    } else {
+      arrow = '↓'; cls = higherIsBetter ? 'down' : 'up';
+    }
+
+    const display = Math.abs(val) > 999 ? '999+' : Math.abs(val);
+    el.className = 'sc-trend ' + cls;
+    el.textContent = arrow + ' ' + display + '%';
+  },
+
+  loadAnalytics: function(all) {
+    if (!all.length) {
+      this.setText('msAvgIncome', '₹ 0');
+      this.setText('msAvgExpense', '₹ 0');
+      this.setText('msSavings', '0%');
+      this.setText('msIncomeDays', 'No data yet');
+      this.setText('msExpenseDays', 'No data yet');
+      this.setText('msSavingsSub', 'Start adding data');
+      return;
+    }
+
+    const daySet = new Set();
+    for (let i = 0; i < all.length; i++) {
+      daySet.add(all[i].date);
+    }
+    const numDays = Math.max(daySet.size, 1);
+
+    const tot = calcTotals(all);
+    const avgIncome = tot.income / numDays;
+    const avgExpense = tot.expense / numDays;
+    const savingsRate = tot.income > 0 ? Math.round((tot.profit / tot.income) * 100) : 0;
+
+    this.setText('msAvgIncome', inr(avgIncome));
+    this.setText('msAvgExpense', inr(avgExpense));
+    this.setText('msSavings', savingsRate + '%');
+
+    const dayLabel = numDays === 1 ? 'day' : 'days';
+    this.setText('msIncomeDays', 'Across ' + numDays + ' active ' + dayLabel);
+    this.setText('msExpenseDays', 'Across ' + numDays + ' active ' + dayLabel);
+
+    let sub = '❌ Loss';
+    if (savingsRate >= 30) sub = '🎉 Excellent!';
+    else if (savingsRate >= 20) sub = '💪 Great!';
+    else if (savingsRate >= 10) sub = '👍 Good';
+    else if (savingsRate > 0) sub = '⚠️ Improve';
+    this.setText('msSavingsSub', sub);
+
+    const maxAvg = Math.max(avgIncome, avgExpense, 1);
+    this.setBarWidth('msIncomeBar', (avgIncome / maxAvg) * 100);
+    this.setBarWidth('msExpenseBar', (avgExpense / maxAvg) * 100);
+    this.setBarWidth('msSavingsBar', Math.max(0, savingsRate));
+  },
+
+  setBarWidth: function(id, percent) {
+    const bar = document.getElementById(id);
+    if (bar) {
+      bar.style.width = Math.min(Math.max(percent, 0), 100) + '%';
+    }
+  },
+
+  loadInsights: function(all) {
+    const box = document.getElementById('insightsBox');
+    if (!box) return;
+
+    const insights = [];
+
+    if (!all.length) {
+      insights.push({
+        type: 'info',
+        icon: '💡',
+        text: 'Add your first transaction to get personalized insights!'
+      });
+    } else {
+      const tot = calcTotals(all);
+      const monthT = calcTotals(filterByPeriod(all, 'month'));
+      const lastMonthT = calcTotals(filterByPeriod(all, 'lastmonth'));
+
+      if (tot.profit > 0) {
+        insights.push({
+          type: 'success',
+          icon: '💰',
+          text: "You're in <strong>profit</strong> of " + inr(tot.profit)
+        });
+      } else if (tot.profit < 0) {
+        insights.push({
+          type: 'danger',
+          icon: '⚠️',
+          text: "You're in <strong>loss</strong> by " + inr(Math.abs(tot.profit))
+        });
+      }
+
+      if (lastMonthT.expense > 0) {
+        const diff = monthT.expense - lastMonthT.expense;
+        const pct = Math.abs(Math.round((diff / lastMonthT.expense) * 100));
+        if (diff > 0 && pct >= 10) {
+          insights.push({
+            type: 'warn',
+            icon: '📈',
+            text: 'Expenses are <strong>' + pct + '% higher</strong> than last month'
+          });
+        } else if (diff < 0 && pct >= 10) {
+          insights.push({
+            type: 'success',
+            icon: '📉',
+            text: 'Expenses are <strong>' + pct + '% lower</strong> than last month'
+          });
+        }
+      }
+
+      const expenses = all.filter(function(t) { return t.type === 'expense'; });
+      if (expenses.length) {
+        const grouped = {};
+        for (let i = 0; i < expenses.length; i++) {
+          const t = expenses[i];
+          grouped[t.category] = (grouped[t.category] || 0) + parseFloat(t.amount || 0);
+        }
+        const sorted = Object.entries(grouped).sort(function(a, b) { return b[1] - a[1]; });
+        if (sorted.length) {
+          insights.push({
+            type: 'info',
+            icon: '🎯',
+            text: 'Biggest expense: <strong>' + escapeHtml(sorted[0][0]) + '</strong> (' + inr(sorted[0][1]) + ')'
+          });
+        }
+      }
+
+      if (tot.income > 0) {
+        const rate = Math.round((tot.profit / tot.income) * 100);
+        if (rate >= 30) {
+          insights.push({
+            type: 'success',
+            icon: '🏆',
+            text: 'Excellent savings rate of <strong>' + rate + '%</strong>!'
+          });
+        }
+      }
+    }
+
+    box.innerHTML = insights.slice(0, 4).map(function(i) {
+      return '<div class="insight-item ' + i.type + '">' +
+        '<span class="insight-icon">' + i.icon + '</span>' +
+        '<div class="insight-text">' + i.text + '</div>' +
+        '</div>';
+    }).join('');
+  },
+
+  loadComparison: function(all) {
+    const thisM = calcTotals(filterByPeriod(all, 'month'));
+    const lastM = calcTotals(filterByPeriod(all, 'lastmonth'));
+
+    this.setText('cmpLast', inr(lastM.profit));
+    this.setText('cmpThis', inr(thisM.profit));
+
+    const arrow = document.getElementById('cmpArrow');
+    if (!arrow) return;
+
+    if (lastM.profit === 0 && thisM.profit === 0) {
+      arrow.className = 'compare-arrow neutral';
+      arrow.textContent = '→ No data';
+    } else if (lastM.profit === 0) {
+      arrow.className = 'compare-arrow up';
+      arrow.textContent = '↑ New this month';
+    } else {
+      const diff = thisM.profit - lastM.profit;
+      const pct = Math.round((diff / Math.abs(lastM.profit)) * 100);
+      const isUp = diff >= 0;
+      arrow.className = 'compare-arrow ' + (isUp ? 'up' : 'down');
+      arrow.textContent = (isUp ? '↑' : '↓') + ' ' + Math.abs(pct) + '% vs last month';
+    }
+  },
+
+  loadTopCategories: function(all) {
+    const box = document.getElementById('topCatBox');
+    if (!box) return;
+
+    const expenses = all.filter(function(t) { return t.type === 'expense'; });
+    if (!expenses.length) {
+      box.innerHTML = '<div class="empty"><p>No expense data yet</p></div>';
+      return;
+    }
+
+    const grouped = {};
+    for (let i = 0; i < expenses.length; i++) {
+      const t = expenses[i];
+      grouped[t.category] = (grouped[t.category] || 0) + parseFloat(t.amount || 0);
+    }
+
+    const sorted = Object.entries(grouped)
+      .sort(function(a, b) { return b[1] - a[1]; })
+      .slice(0, 5);
+
+    const max = sorted[0][1];
+
+    box.innerHTML = sorted.map(function(item, i) {
+      const cat = item[0];
+      const amt = item[1];
+      const width = (amt / max) * 100;
+      const rankClass = i < 3 ? 'r' + (i + 1) : '';
+      return '<div class="tc-item">' +
+        '<div class="tc-rank ' + rankClass + '">' + (i + 1) + '</div>' +
+        '<div class="tc-info">' +
+        '<div class="tc-name">' + escapeHtml(cat) + '</div>' +
+        '<div class="tc-bar"><div class="tc-fill" style="width:' + width + '%"></div></div>' +
+        '</div>' +
+        '<div class="tc-amt">' + inrShort(amt) + '</div>' +
+        '</div>';
+    }).join('');
+  },
+
+  loadPaymentModes: function(all) {
+    const box = document.getElementById('payModeBox');
+    if (!box) return;
+
+    if (!all.length) {
+      box.innerHTML = '<div class="empty"><p>No data yet</p></div>';
+      return;
+    }
+
+    const grouped = {};
+    for (let i = 0; i < all.length; i++) {
+      const t = all[i];
+      const mode = t.mode || 'Cash';
+      if (!grouped[mode]) grouped[mode] = { total: 0, count: 0 };
+      grouped[mode].total += parseFloat(t.amount || 0);
+      grouped[mode].count++;
+    }
+
+    const total = Object.values(grouped).reduce(function(s, x) { return s + x.total; }, 0);
+    const sorted = Object.entries(grouped).sort(function(a, b) { return b[1].total - a[1].total; });
+
+    const icons = {
       'Cash': '💵',
       'Online': '📱',
       'UPI': '📲',
       'Bank Transfer': '🏦',
       'Card': '💳',
       'Cheque': '📄'
-    }
-  },
-
-  // ============ INIT ============
-  init() {
-    console.log('TxnPage init started');
-
-    try {
-      // Set default dates
-      const iDate = document.getElementById('iDate');
-      const eDate = document.getElementById('eDate');
-      if (iDate) iDate.value = this.today();
-      if (eDate) eDate.value = this.today();
-
-      this.buildCategoryFilter();
-      this.apply();
-      this.setupResizeHandler();
-      this.setupKeyboard();
-
-      console.log('TxnPage ready');
-    } catch (err) {
-      console.error('Init error:', err);
-    }
-  },
-
-  // ============ HELPERS ============
-  today() {
-    return new Date().toISOString().split('T')[0];
-  },
-
-  fmtDate(d) {
-    if (!d) return '-';
-    try {
-      return new Date(d).toLocaleDateString('en-IN', {
-        day: '2-digit', month: 'short', year: 'numeric'
-      });
-    } catch {
-      return d;
-    }
-  },
-
-  inr(amount) {
-    const n = parseFloat(amount) || 0;
-    return '₹ ' + n.toLocaleString('en-IN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  },
-
-  inrShort(amount) {
-    const n = parseFloat(amount) || 0;
-    const abs = Math.abs(n);
-    const sign = n < 0 ? '-' : '';
-    if (abs >= 10000000) return sign + '₹' + (abs / 10000000).toFixed(1) + 'Cr';
-    if (abs >= 100000) return sign + '₹' + (abs / 100000).toFixed(1) + 'L';
-    if (abs >= 1000) return sign + '₹' + (abs / 1000).toFixed(1) + 'K';
-    return sign + '₹' + abs.toFixed(0);
-  },
-
-  escapeHtml(str) {
-    if (str == null) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  },
-
-  uid() {
-    return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
-  },
-
-  debounce(fn, wait) {
-    let timer;
-    return function(...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), wait);
     };
+
+    box.innerHTML = sorted.map(function(item) {
+      const mode = item[0];
+      const data = item[1];
+      const pct = total > 0 ? Math.round((data.total / total) * 100) : 0;
+      const icon = icons[mode] || '💰';
+      return '<div class="pm-item">' +
+        '<div class="pm-ic">' + icon + '</div>' +
+        '<div class="pm-info">' +
+        '<div class="pm-name">' + escapeHtml(mode) + '</div>' +
+        '<div class="pm-sub">' + data.count + ' transactions</div>' +
+        '</div>' +
+        '<div>' +
+        '<div class="pm-amt">' + inrShort(data.total) + '</div>' +
+        '<div class="pm-pct">' + pct + '%</div>' +
+        '</div>' +
+        '</div>';
+    }).join('');
   },
 
-  // ============ DATE CHECKS ============
-  isToday(d) {
-    return d === this.today();
+  loadRecent: function(all) {
+    const tbody = document.getElementById('recentBody');
+    if (!tbody) return;
+
+    if (!all.length) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><h4>No transactions yet</h4></div></td></tr>';
+      return;
+    }
+
+    const sorted = all.slice().sort(function(a, b) {
+      return new Date(b.date) - new Date(a.date);
+    }).slice(0, 8);
+
+    tbody.innerHTML = sorted.map(function(t) {
+      const isI = t.type === 'income';
+      return '<tr>' +
+        '<td style="font-size:0.8rem;">' + fmtDate(t.date) + '</td>' +
+        '<td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' +
+        (isI ? '💰 In' : '💸 Out') + '</span></td>' +
+        '<td style="font-size:0.8rem;">' + escapeHtml(t.category || '-') + '</td>' +
+        '<td class="' + (isI ? 'amt-in' : 'amt-out') + '">' +
+        (isI ? '+' : '-') + inrShort(t.amount) + '</td>' +
+        '<td style="font-size:0.75rem;color:var(--text-muted);">' + escapeHtml(t.mode || 'Cash') + '</td>' +
+        '</tr>';
+    }).join('');
   },
 
-  isYesterday(d) {
-    const y = new Date();
-    y.setDate(y.getDate() - 1);
-    return d === y.toISOString().split('T')[0];
+  setupYearSelector: function() {
+    const sel = document.getElementById('chartYear');
+    if (!sel || sel.options.length > 0) return;
+
+    const cur = new Date().getFullYear();
+    for (let y = cur; y >= cur - 4; y--) {
+      const o = document.createElement('option');
+      o.value = y;
+      o.textContent = y;
+      if (y === cur) o.selected = true;
+      sel.appendChild(o);
+    }
   },
 
-  isThisWeek(d) {
-    if (!d) return false;
-    const date = new Date(d);
+  buildBarChart: function(all) {
+    const canvas = document.getElementById('barChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const year = parseInt(document.getElementById('chartYear') ? document.getElementById('chartYear').value : new Date().getFullYear());
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const income = new Array(12).fill(0);
+    const expense = new Array(12).fill(0);
+
+    for (let i = 0; i < all.length; i++) {
+      const t = all[i];
+      const d = new Date(t.date);
+      if (d.getFullYear() !== year) continue;
+      const m = d.getMonth();
+      const a = parseFloat(t.amount) || 0;
+      if (t.type === 'income') income[m] += a;
+      else if (t.type === 'expense') expense[m] += a;
+    }
+
+    if (this.charts.bar) this.charts.bar.destroy();
+
+    this.charts.bar = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: 'Income',
+            data: income,
+            backgroundColor: 'rgba(16,185,129,0.85)',
+            borderRadius: 6
+          },
+          {
+            label: 'Expense',
+            data: expense,
+            backgroundColor: 'rgba(244,63,94,0.85)',
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'circle',
+              font: { size: 12, weight: '600' },
+              padding: 16
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#fff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: function(ctx) {
+                return ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 11 } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            border: { display: false },
+            ticks: {
+              color: '#94a3b8',
+              font: { size: 11 },
+              callback: function(v) { return inrShort(v); }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  buildDonutChart: function(all) {
+    const canvas = document.getElementById('donutChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const period = document.getElementById('donutPeriod') ? document.getElementById('donutPeriod').value : 'month';
+    const txns = filterByPeriod(all, period).filter(function(t) { return t.type === 'expense'; });
+
+    const grouped = {};
+    for (let i = 0; i < txns.length; i++) {
+      const t = txns[i];
+      grouped[t.category] = (grouped[t.category] || 0) + parseFloat(t.amount || 0);
+    }
+
+    const labels = Object.keys(grouped);
+    const values = Object.values(grouped);
+    const colors = ['#06b6d4', '#f43f5e', '#fbbf24', '#10b981', '#8b5cf6', '#3b82f6', '#ec4899', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#fb923c'];
+
+    if (this.charts.donut) this.charts.donut.destroy();
+
+    if (!labels.length) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const legend = document.getElementById('donutLegend');
+      if (legend) {
+        legend.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:0.82rem;padding:20px;">No expense data</p>';
+      }
+      return;
+    }
+
+    this.charts.donut = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors.slice(0, labels.length),
+          borderWidth: 3,
+          borderColor: '#fff',
+          hoverBorderWidth: 4,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#fff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: function(ctx) {
+                const total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                const pct = Math.round((ctx.parsed / total) * 100);
+                return ' ' + inr(ctx.parsed) + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const total = values.reduce(function(a, b) { return a + b; }, 0);
+    const legend = document.getElementById('donutLegend');
+    if (legend) {
+      legend.innerHTML = labels.map(function(l, i) {
+        return '<div class="leg-row">' +
+          '<div class="leg-dot" style="background:' + colors[i] + '"></div>' +
+          '<span class="leg-name">' + escapeHtml(l) + '</span>' +
+          '<span class="leg-val">' + inrShort(values[i]) + '</span>' +
+          '<span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span>' +
+          '</div>';
+      }).join('');
+    }
+  },
+
+  buildLineChart: function(all) {
+    const canvas = document.getElementById('lineChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const days = 30;
+    const labels = [];
+    const income = [];
+    const expense = [];
     const now = new Date();
-    const day = now.getDay() || 7;
-    const start = new Date(now);
-    start.setDate(now.getDate() - day + 1);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
-    return date >= start && date <= end;
-  },
 
-  isLastWeek(d) {
-    if (!d) return false;
-    const date = new Date(d);
-    const now = new Date();
-    const day = now.getDay() || 7;
-    const start = new Date(now);
-    start.setDate(now.getDate() - day - 6);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
-    return date >= start && date <= end;
-  },
-
-  isThisMonth(d) {
-    if (!d) return false;
-    const date = new Date(d);
-    const now = new Date();
-    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-  },
-
-  isLastMonth(d) {
-    if (!d) return false;
-    const date = new Date(d);
-    const now = new Date();
-    const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    return date.getMonth() === lm.getMonth() && date.getFullYear() === lm.getFullYear();
-  },
-
-  isThisYear(d) {
-    if (!d) return false;
-    return new Date(d).getFullYear() === new Date().getFullYear();
-  },
-
-  inRange(d, start, end) {
-    if (!d || !start || !end) return false;
-    const date = new Date(d);
-    const s = new Date(start);
-    const e = new Date(end);
-    e.setHours(23, 59, 59, 999);
-    return date >= s && date <= e;
-  },
-
-  // ============ STORAGE ============
-  getTxns() {
-    if (typeof getTxns === 'function') return getTxns();
-    try {
-      return JSON.parse(localStorage.getItem('bd_transactions') || '[]');
-    } catch {
-      return [];
-    }
-  },
-
-  saveTxns(data) {
-    if (typeof saveTxns === 'function') return saveTxns(data);
-    try {
-      localStorage.setItem('bd_transactions', JSON.stringify(data));
-      return true;
-    } catch {
-      return false;
-    }
-  },
-
-  // ============ CATEGORY FILTER ============
-  buildCategoryFilter() {
-    const sel = document.getElementById('catFilter');
-    if (!sel) return;
-
-    const current = sel.value;
-    sel.innerHTML = '<option value="">📂 All Categories</option>';
-
-    const all = this.getTxns();
-    const cats = [...new Set(all.map(t => t.category).filter(Boolean))].sort();
-
-    cats.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
-      opt.textContent = c;
-      sel.appendChild(opt);
-    });
-
-    if (current && cats.includes(current)) {
-      sel.value = current;
-    }
-  },
-
-  // ============ FILTERS ============
-  setFilter(f, btn) {
-    this.state.filter = f;
-
-    document.querySelectorAll('.ft').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-
-    const cr = document.getElementById('customRange');
-    if (cr) {
-      if (f === 'custom') cr.classList.add('show');
-      else cr.classList.remove('show');
+    // Build date map for O(1) lookup
+    const dateMap = {};
+    for (let i = 0; i < all.length; i++) {
+      const t = all[i];
+      if (!dateMap[t.date]) dateMap[t.date] = { income: 0, expense: 0 };
+      const amt = parseFloat(t.amount || 0);
+      if (t.type === 'income') dateMap[t.date].income += amt;
+      else if (t.type === 'expense') dateMap[t.date].expense += amt;
     }
 
-    this.apply();
-  },
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      labels.push(d.getDate() + '/' + (d.getMonth() + 1));
+      const dayData = dateMap[ds] || { income: 0, expense: 0 };
+      income.push(dayData.income);
+      expense.push(dayData.expense);
+    }
 
-  clear() {
-    this.state.filter = 'all';
-    this.state.page = 1;
-    this.state.selected.clear();
+    if (this.charts.line) this.charts.line.destroy();
 
-    document.querySelectorAll('.ft').forEach(b => b.classList.remove('active'));
-    const allTab = document.querySelector('.ft[data-f="all"]');
-    if (allTab) allTab.classList.add('active');
+    const ctx = canvas.getContext('2d');
+    const g1 = ctx.createLinearGradient(0, 0, 0, 220);
+    g1.addColorStop(0, 'rgba(16,185,129,0.25)');
+    g1.addColorStop(1, 'rgba(16,185,129,0)');
+    const g2 = ctx.createLinearGradient(0, 0, 0, 220);
+    g2.addColorStop(0, 'rgba(244,63,94,0.25)');
+    g2.addColorStop(1, 'rgba(244,63,94,0)');
 
-    const ids = ['typeFilter', 'catFilter', 'modeFilter', 'sortFilter', 'txnSearch', 'mainSearch', 'fStart', 'fEnd'];
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        if (id === 'typeFilter') el.value = 'all';
-        else if (id === 'sortFilter') el.value = 'date-desc';
-        else el.value = '';
-      }
-    });
-
-    const cr = document.getElementById('customRange');
-    if (cr) cr.classList.remove('show');
-
-    this.apply();
-
-    if (typeof toast === 'function') toast('Filters cleared', 'info');
-  },
-
-  filterByPeriod(data, period, start, end) {
-    if (period === 'all' || !period) return data;
-
-    return data.filter(t => {
-      if (!t.date) return false;
-      switch (period) {
-        case 'today': return this.isToday(t.date);
-        case 'yesterday': return this.isYesterday(t.date);
-        case 'week': return this.isThisWeek(t.date);
-        case 'lastweek': return this.isLastWeek(t.date);
-        case 'month': return this.isThisMonth(t.date);
-        case 'lastmonth': return this.isLastMonth(t.date);
-        case 'year': return this.isThisYear(t.date);
-        case 'custom': return start && end ? this.inRange(t.date, start, end) : true;
-        default: return true;
+    this.charts.line = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Income',
+            data: income,
+            borderColor: '#10b981',
+            backgroundColor: g1,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Expense',
+            data: expense,
+            borderColor: '#f43f5e',
+            backgroundColor: g2,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'circle',
+              font: { size: 12, weight: '600' },
+              padding: 16
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#fff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: function(ctx) {
+                return ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 0 }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            border: { display: false },
+            ticks: {
+              color: '#94a3b8',
+              font: { size: 11 },
+              callback: function(v) { return inrShort(v); }
+            }
+          }
+        }
       }
     });
   },
 
-  apply() {
-    try {
-      let data = this.getTxns();
+  setupSearch: function() {
+    const input = document.getElementById('headerSearch');
+    if (!input) return;
 
-      // Period filter
-      const fStart = document.getElementById('fStart')?.value;
-      const fEnd = document.getElementById('fEnd')?.value;
-      data = this.filterByPeriod(data, this.state.filter, fStart, fEnd);
+    const self = this;
+    const handler = debounce(function(e) {
+      const q = e.target.value.trim().toLowerCase();
+      const all = getTxns();
 
-      // Type filter
-      const type = document.getElementById('typeFilter')?.value || 'all';
-      if (type !== 'all') {
-        data = data.filter(t => t.type === type);
+      if (!q) {
+        self.loadRecent(all);
+        return;
       }
 
-      // Category filter
-      const cat = document.getElementById('catFilter')?.value || '';
-      if (cat) {
-        data = data.filter(t => t.category === cat);
+      const results = all.filter(function(t) {
+        return (t.category || '').toLowerCase().indexOf(q) > -1 ||
+               (t.notes || '').toLowerCase().indexOf(q) > -1 ||
+               (t.from || '').toLowerCase().indexOf(q) > -1 ||
+               (t.vendor || '').toLowerCase().indexOf(q) > -1 ||
+               String(t.amount).indexOf(q) > -1;
+      }).slice(0, 8);
+
+      const tbody = document.getElementById('recentBody');
+      if (!tbody) return;
+
+      if (!results.length) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">🔍</div><h4>No results</h4></div></td></tr>';
+        return;
       }
 
-      // Mode filter
-      const mode = document.getElementById('modeFilter')?.value || '';
-      if (mode) {
-        data = data.filter(t => (t.mode || 'Cash') === mode);
-      }
+      tbody.innerHTML = results.map(function(t) {
+        const isI = t.type === 'income';
+        return '<tr>' +
+          '<td style="font-size:0.8rem;">' + fmtDate(t.date) + '</td>' +
+          '<td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' +
+          (isI ? '💰 In' : '💸 Out') + '</span></td>' +
+          '<td style="font-size:0.8rem;">' + escapeHtml(t.category || '-') + '</td>' +
+          '<td class="' + (isI ? 'amt-in' : 'amt-out') + '">' +
+          (isI ? '+' : '-') + inrShort(t.amount) + '</td>' +
+          '<td style="font-size:0.75rem;color:var(--text-muted);">' + escapeHtml(t.mode || 'Cash') + '</td>' +
+          '</tr>';
+      }).join('');
+    }, 300);
 
-      // Search
-      const q1 = (document.getElementById('txnSearch')?.value || '').trim().toLowerCase();
-      const q2 = (document.getElementById('mainSearch')?.value || '').trim().toLowerCase();
-      const query = q1 || q2;
-
-      if (query) {
-        this.state.lastQuery = query;
-        data = data.filter(t => {
-          return (
-            (t.category || '').toLowerCase().includes(query) ||
-            String(t.amount || '').includes(query) ||
-            (t.notes || '').toLowerCase().includes(query) ||
-            (t.from || '').toLowerCase().includes(query) ||
-            (t.vendor || '').toLowerCase().includes(query) ||
-            (t.mode || '').toLowerCase().includes(query) ||
-            this.fmtDate(t.date).toLowerCase().includes(query)
-          );
-        });
-      } else {
-        this.state.lastQuery = '';
-      }
-
-      // Sort
-      const sort = document.getElementById('sortFilter')?.value || 'date-desc';
-      this.state.sortBy = sort;
-      data = this.sortData(data, sort);
-
-      this.state.data = data;
-      this.state.filtered = data;
-      this.state.page = 1;
-      this.state.selected.clear();
-
-      this.updateStats(data);
-      this.render();
-    } catch (err) {
-      console.error('Apply error:', err);
-    }
+    input.addEventListener('input', handler);
   },
 
-  sortData(data, sort) {
-    const [key, order] = sort.split('-');
-    const dir = order === 'desc' ? -1 : 1;
-
-    return [...data].sort((a, b) => {
-      let va, vb;
-      if (key === 'date') {
-        va = new Date(a.date).getTime() || 0;
-        vb = new Date(b.date).getTime() || 0;
-      } else if (key === 'amount') {
-        va = parseFloat(a.amount) || 0;
-        vb = parseFloat(b.amount) || 0;
-      } else {
-        va = String(a[key] || '').toLowerCase();
-        vb = String(b[key] || '').toLowerCase();
-      }
-      if (va < vb) return -1 * dir;
-      if (va > vb) return 1 * dir;
-      return 0;
-    });
-  },
-
-  // ============ STATS ============
-  updateStats(data) {
-    let income = 0, expense = 0, iC = 0, eC = 0;
-
-    data.forEach(t => {
-      const amt = parseFloat(t.amount) || 0;
-      if (t.type === 'income') {
-        income += amt;
-        iC++;
-      } else if (t.type === 'expense') {
-        expense += amt;
-        eC++;
-      }
-    });
-
-    const profit = income - expense;
-    const margin = income > 0 ? Math.round((profit / income) * 100) : 0;
-
-    this.setText('tsIncome', this.inr(income));
-    this.setText('tsExpense', this.inr(expense));
-    this.setText('tsProfit', this.inr(profit));
-    this.setText('tsCount', data.length);
-    this.setText('tsIncomeCount', iC + ' records');
-    this.setText('tsExpenseCount', eC + ' records');
-    this.setText('tsMargin', margin + '% margin');
-    this.setText('recTag', data.length + ' records');
-
-    const pEl = document.getElementById('tsProfit');
-    if (pEl) {
-      pEl.className = 'tx-stat-val ' + (profit >= 0 ? 'text-profit' : 'text-expense');
-    }
-
-    const start = (this.state.page - 1) * this.state.perPage + 1;
-    const end = Math.min(start + this.state.perPage - 1, data.length);
-
-    if (data.length === 0) {
-      this.setText('tableInfo', 'No records to show');
-    } else {
-      this.setText('tableInfo', `Showing ${start}–${end} of ${data.length} records`);
-    }
-  },
-
-  setText(id, val) {
+  setText: function(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
-  },
-
-  // ============ RENDER ============
-  render() {
-    const isMobile = window.innerWidth <= 599;
-    const isCard = this.state.view === 'card';
-
-    if (isCard && !isMobile) {
-      this.renderCards();
-    } else if (isMobile) {
-      this.renderMobileRows();
-    } else {
-      this.renderTable();
-    }
-
-    this.renderPagination();
-    this.updateBulk();
-  },
-
-  renderTable() {
-    const tableView = document.getElementById('tableView');
-    const cardView = document.getElementById('cardView');
-    if (tableView) tableView.style.display = '';
-    if (cardView) cardView.style.display = 'none';
-
-    const tbody = document.getElementById('txnBody');
-    if (!tbody) return;
-
-    const start = (this.state.page - 1) * this.state.perPage;
-    const pageData = this.state.filtered.slice(start, start + this.state.perPage);
-
-    if (!pageData.length) {
-      tbody.innerHTML = this.getEmptyRow(9);
-      return;
-    }
-
-    const q = this.state.lastQuery;
-
-    tbody.innerHTML = pageData.map(t => {
-      const isI = t.type === 'income';
-      const sel = this.state.selected.has(t.id);
-      const bg = sel ? 'background:var(--brand-soft);' : '';
-      const notes = t.notes || '';
-      const truncNote = notes.length > 20 ? notes.slice(0, 20) + '...' : (notes || '-');
-      const customer = t.from || t.vendor || '-';
-
-      return `<tr style="${bg}">
-        <td>
-          <input type="checkbox" ${sel ? 'checked' : ''}
-            style="accent-color:var(--brand);cursor:pointer;width:16px;height:16px;"
-            onchange="TxnPage.select('${t.id}', this)"/>
-        </td>
-        <td style="font-size:0.8rem;white-space:nowrap;">
-          ${this.highlight(this.fmtDate(t.date), q)}
-        </td>
-        <td>
-          <span class="badge ${isI ? 'badge-in' : 'badge-out'}">
-            ${isI ? '💰' : '💸'} ${isI ? 'Income' : 'Expense'}
-          </span>
-        </td>
-        <td style="font-size:0.82rem;font-weight:500;">
-          ${this.highlight(this.escapeHtml(t.category || '-'), q)}
-        </td>
-        <td class="${isI ? 'amt-in' : 'amt-out'}" style="font-family:'Space Grotesk',sans-serif;">
-          ${isI ? '+' : '-'} ${this.inr(t.amount)}
-        </td>
-        <td style="font-size:0.78rem;color:var(--text-muted);">
-          ${this.icons.payment[t.mode] || '💰'} ${this.escapeHtml(t.mode || 'Cash')}
-        </td>
-        <td style="font-size:0.78rem;color:var(--text-muted);">
-          ${this.highlight(this.escapeHtml(customer), q)}
-        </td>
-        <td style="font-size:0.78rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.escapeHtml(notes)}">
-          ${this.escapeHtml(truncNote)}
-        </td>
-        <td>
-          <div style="display:flex;gap:4px;">
-            <button class="act act-v" onclick="TxnPage.view('${t.id}')" title="View">👁️</button>
-            <button class="act act-e" onclick="TxnPage.edit('${t.id}')" title="Edit">✏️</button>
-            <button class="act act-d" onclick="TxnPage.del('${t.id}')" title="Delete">🗑️</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
-  },
-
-  renderMobileRows() {
-    const tableView = document.getElementById('tableView');
-    const cardView = document.getElementById('cardView');
-    if (tableView) tableView.style.display = '';
-    if (cardView) cardView.style.display = 'none';
-
-    const tbody = document.getElementById('txnBody');
-    if (!tbody) return;
-
-    const start = (this.state.page - 1) * this.state.perPage;
-    const pageData = this.state.filtered.slice(start, start + this.state.perPage);
-
-    if (!pageData.length) {
-      tbody.innerHTML = this.getEmptyRow(9);
-      return;
-    }
-
-    tbody.innerHTML = pageData.map(t => {
-      const isI = t.type === 'income';
-      const sel = this.state.selected.has(t.id);
-      const bg = sel ? 'background:var(--brand-soft);' : '';
-
-      return `<tr><td colspan="9" style="padding:0;">
-        <div class="mobile-txn-row" style="${bg}">
-          <div class="mobile-txn-check">
-            <input type="checkbox" ${sel ? 'checked' : ''}
-              onchange="TxnPage.select('${t.id}', this)"/>
-          </div>
-          <div class="mobile-txn-body" onclick="TxnPage.view('${t.id}')">
-            <div class="mobile-txn-line1">
-              <div class="mobile-txn-cat">${this.escapeHtml(t.category || '-')}</div>
-              <div class="mobile-txn-amt ${isI ? 'amt-in' : 'amt-out'}">
-                ${isI ? '+' : '-'} ${this.inrShort(t.amount)}
-              </div>
-            </div>
-            <div class="mobile-txn-line2">
-              <div class="mobile-txn-meta">
-                <span>${this.fmtDate(t.date)}</span>
-                <span class="mobile-txn-badge ${isI ? 'badge-in' : 'badge-out'}">
-                  ${isI ? '💰' : '💸'}
-                </span>
-                <span>${this.icons.payment[t.mode] || '💰'} ${this.escapeHtml(t.mode || 'Cash')}</span>
-              </div>
-            </div>
-          </div>
-          <div class="mobile-txn-actions">
-            <button class="act act-e" onclick="TxnPage.edit('${t.id}')" title="Edit">✏️</button>
-            <button class="act act-d" onclick="TxnPage.del('${t.id}')" title="Delete">🗑️</button>
-          </div>
-        </div>
-      </td></tr>`;
-    }).join('');
-  },
-
-  renderCards() {
-    const tableView = document.getElementById('tableView');
-    const cardView = document.getElementById('cardView');
-    if (tableView) tableView.style.display = 'none';
-    if (!cardView) return;
-    cardView.style.display = 'grid';
-
-    const start = (this.state.page - 1) * this.state.perPage;
-    const pageData = this.state.filtered.slice(start, start + this.state.perPage);
-
-    if (!pageData.length) {
-      cardView.innerHTML = `<div style="grid-column:1/-1;">${this.getEmptyContent()}</div>`;
-      return;
-    }
-
-    cardView.innerHTML = pageData.map(t => {
-      const isI = t.type === 'income';
-      const sel = this.state.selected.has(t.id);
-      const style = sel ? 'background:var(--brand-soft);border-color:var(--brand);' : '';
-
-      return `<div class="tx-card" style="${style}">
-        <div class="tx-card-top">
-          <div style="flex:1;min-width:0;cursor:pointer;" onclick="TxnPage.view('${t.id}')">
-            <div class="tx-card-cat">${this.escapeHtml(t.category || '-')}</div>
-            <div class="tx-card-date">${this.fmtDate(t.date)}</div>
-          </div>
-          <span class="badge ${isI ? 'badge-in' : 'badge-out'}">
-            ${isI ? '💰' : '💸'}
-          </span>
-        </div>
-        <div class="tx-card-amt ${isI ? 'amt-in' : 'amt-out'}" onclick="TxnPage.view('${t.id}')" style="cursor:pointer;">
-          ${isI ? '+' : '-'} ${this.inr(t.amount)}
-        </div>
-        <div class="tx-card-foot">
-          <span class="tx-card-mode">
-            ${this.icons.payment[t.mode] || '💰'} ${this.escapeHtml(t.mode || 'Cash')}
-          </span>
-          <span style="display:flex;gap:4px;align-items:center;">
-            <button class="act act-e" onclick="event.stopPropagation();TxnPage.edit('${t.id}')">✏️</button>
-            <button class="act act-d" onclick="event.stopPropagation();TxnPage.del('${t.id}')">🗑️</button>
-          </span>
-        </div>
-      </div>`;
-    }).join('');
-  },
-
-  getEmptyRow(colspan) {
-    return `<tr><td colspan="${colspan}">${this.getEmptyContent()}</td></tr>`;
-  },
-
-  getEmptyContent() {
-    const hasFilters = this.hasFilters();
-    return `<div class="empty">
-      <div class="empty-icon">${hasFilters ? '🔍' : '💳'}</div>
-      <h4>${hasFilters ? 'No results found' : 'No transactions yet'}</h4>
-      <p>${hasFilters ? 'Try changing filters' : 'Add your first income or expense'}</p>
-      ${hasFilters ? '<button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="TxnPage.clear()">✕ Clear Filters</button>' : ''}
-    </div>`;
-  },
-
-  hasFilters() {
-    return (
-      this.state.filter !== 'all' ||
-      (document.getElementById('typeFilter')?.value || 'all') !== 'all' ||
-      document.getElementById('catFilter')?.value ||
-      document.getElementById('modeFilter')?.value ||
-      (document.getElementById('txnSearch')?.value || '').trim() ||
-      (document.getElementById('mainSearch')?.value || '').trim()
-    );
-  },
-
-  highlight(text, query) {
-    if (!query || !text) return text;
-    const str = String(text);
-    const idx = str.toLowerCase().indexOf(query.toLowerCase());
-    if (idx === -1) return str;
-    const before = this.escapeHtml(str.slice(0, idx));
-    const match = this.escapeHtml(str.slice(idx, idx + query.length));
-    const after = this.escapeHtml(str.slice(idx + query.length));
-    return `${before}<mark>${match}</mark>${after}`;
-  },
-
-  // ============ PAGINATION ============
-  renderPagination() {
-    const container = document.getElementById('pagination');
-    if (!container) return;
-
-    const total = Math.ceil(this.state.filtered.length / this.state.perPage);
-    if (total <= 1) {
-      container.innerHTML = '';
-      return;
-    }
-
-    const current = this.state.page;
-    let html = '';
-
-    html += `<button class="pg" ${current === 1 ? 'disabled' : ''} onclick="TxnPage.goPage(${current - 1})">← Prev</button>`;
-
-    for (let i = 1; i <= total; i++) {
-      if (i === 1 || i === total || (i >= current - 1 && i <= current + 1)) {
-        html += `<button class="pg ${i === current ? 'active' : ''}" onclick="TxnPage.goPage(${i})">${i}</button>`;
-      } else if (i === current - 2 || i === current + 2) {
-        html += `<span style="padding:0 4px;color:var(--text-muted);">...</span>`;
-      }
-    }
-
-    html += `<button class="pg" ${current === total ? 'disabled' : ''} onclick="TxnPage.goPage(${current + 1})">Next →</button>`;
-
-    container.innerHTML = html;
-  },
-
-  goPage(p) {
-    const total = Math.ceil(this.state.filtered.length / this.state.perPage);
-    if (p < 1 || p > total) return;
-    this.state.page = p;
-    this.render();
-    this.updateStats(this.state.filtered);
-    window.scrollTo({ top: 300, behavior: 'smooth' });
-  },
-
-  // ============ SELECTION ============
-  select(id, cb) {
-    if (cb.checked) {
-      this.state.selected.add(id);
-    } else {
-      this.state.selected.delete(id);
-    }
-    this.updateBulk();
-
-    const selAll = document.getElementById('selAll');
-    if (selAll) {
-      selAll.checked = this.state.selected.size === this.state.filtered.length && this.state.filtered.length > 0;
-    }
-  },
-
-  selectAll() {
-    const cb = document.getElementById('selAll');
-    if (!cb) return;
-
-    if (cb.checked) {
-      this.state.filtered.forEach(t => this.state.selected.add(t.id));
-    } else {
-      this.state.selected.clear();
-    }
-    this.render();
-  },
-
-  updateBulk() {
-    const bar = document.getElementById('bulkBar');
-    const txt = document.getElementById('bulkTxt');
-    const count = this.state.selected.size;
-
-    if (bar) {
-      if (count > 0) bar.classList.add('show');
-      else bar.classList.remove('show');
-    }
-
-    if (txt) txt.textContent = count + ' selected';
-  },
-
-  // ============ BULK DELETE ============
-  async bulkDel() {
-    if (!this.state.selected.size) return;
-
-    const num = this.state.selected.size;
-    const confirmed = confirm(`Delete ${num} selected transaction(s)? This cannot be undone.`);
-
-    if (!confirmed) return;
-
-    let data = this.getTxns();
-    data = data.filter(t => !this.state.selected.has(t.id));
-    this.saveTxns(data);
-
-    this.state.selected.clear();
-    this.buildCategoryFilter();
-    this.apply();
-
-    if (typeof toast === 'function') {
-      toast(`Deleted ${num} transaction(s)`, 'success');
-    }
-  },
-
-  // ============ VIEW ============
-  view(id) {
-    const t = this.getTxns().find(x => x.id === id);
-    if (!t) return;
-
-    const isI = t.type === 'income';
-    const hd = document.getElementById('detailHd');
-    const grid = document.getElementById('detailGrid');
-    const editBtn = document.getElementById('detailEditBtn');
-
-    if (!grid) return;
-
-    if (hd) {
-      hd.style.background = isI ? 'var(--income-soft)' : 'var(--expense-soft)';
-      const h3 = hd.querySelector('h3');
-      if (h3) h3.textContent = isI ? '💰 Income Details' : '💸 Expense Details';
-    }
-
-    const customer = t.from || t.vendor;
-    const customerLbl = isI ? 'Customer' : 'Vendor';
-    const dayName = new Date(t.date).toLocaleDateString('en-IN', { weekday: 'long' });
-
-    grid.innerHTML = `
-      <div class="detail-item">
-        <div class="detail-lbl">Date</div>
-        <div class="detail-val">${this.fmtDate(t.date)}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-lbl">Day</div>
-        <div class="detail-val" style="font-family:'Inter',sans-serif;">${dayName}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-lbl">Type</div>
-        <div class="detail-val ${isI ? 'text-income' : 'text-expense'}">${isI ? '💰 Income' : '💸 Expense'}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-lbl">Category</div>
-        <div class="detail-val">${this.escapeHtml(t.category || '-')}</div>
-      </div>
-      <div class="detail-item full">
-        <div class="detail-lbl">Amount</div>
-        <div class="detail-val ${isI ? 'text-income' : 'text-expense'}" style="font-size:1.5rem;">
-          ${this.inr(t.amount)}
-        </div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-lbl">Payment Mode</div>
-        <div class="detail-val">${this.icons.payment[t.mode] || '💰'} ${this.escapeHtml(t.mode || 'Cash')}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-lbl">${customerLbl}</div>
-        <div class="detail-val">${this.escapeHtml(customer || '—')}</div>
-      </div>
-      ${t.notes ? `
-        <div class="detail-item full">
-          <div class="detail-lbl">Notes</div>
-          <div class="detail-val" style="font-family:'Inter',sans-serif;font-weight:500;">${this.escapeHtml(t.notes)}</div>
-        </div>
-      ` : ''}
-      ${t.savedAt ? `
-        <div class="detail-item full">
-          <div class="detail-lbl">Created</div>
-          <div class="detail-val" style="font-family:'Inter',sans-serif;font-weight:500;font-size:0.8rem;">
-            ${new Date(t.savedAt).toLocaleString('en-IN')}
-          </div>
-        </div>
-      ` : ''}
-    `;
-
-    if (editBtn) {
-      editBtn.onclick = () => {
-        this.closeModal('detailModal');
-        setTimeout(() => this.edit(id), 200);
-      };
-    }
-
-    this.openModal('detailModal');
-  },
-
-  // ============ EDIT ============
-  edit(id) {
-    const t = this.getTxns().find(x => x.id === id);
-    if (!t) return;
-
-    const isI = t.type === 'income';
-
-    const setVal = (elId, val) => {
-      const el = document.getElementById(elId);
-      if (el) el.value = val || '';
-    };
-
-    setVal(isI ? 'iDate' : 'eDate', t.date);
-    setVal(isI ? 'iCat' : 'eCat', t.category);
-    setVal(isI ? 'iAmt' : 'eAmt', t.amount);
-    setVal(isI ? 'iMode' : 'eMode', t.mode || 'Cash');
-    setVal(isI ? 'iNote' : 'eNote', t.notes);
-    setVal(isI ? 'iEditId' : 'eEditId', t.id);
-
-    if (isI) {
-      setVal('iFrom', t.from);
-    } else {
-      setVal('eVendor', t.vendor);
-    }
-
-    // Update title
-    const titleId = isI ? 'incomeTitle' : 'expenseTitle';
-    const title = document.getElementById(titleId);
-    if (title) title.textContent = isI ? '✏️ Edit Income' : '✏️ Edit Expense';
-
-    // Show preview
-    if (typeof previewAmt === 'function') {
-      previewAmt(t.type);
-    }
-
-    this.openModal(isI ? 'incomeModal' : 'expenseModal');
-  },
-
-  // ============ DELETE ============
-  del(id) {
-    const t = this.getTxns().find(x => x.id === id);
-    if (!t) return;
-
-    const isI = t.type === 'income';
-    const label = isI ? 'income' : 'expense';
-
-    const confirmed = confirm(`Delete this ${label} of ${this.inr(t.amount)}?\nCategory: ${t.category}\nDate: ${this.fmtDate(t.date)}\n\nThis cannot be undone.`);
-
-    if (!confirmed) return;
-
-    let data = this.getTxns();
-    data = data.filter(x => x.id !== id);
-    this.saveTxns(data);
-
-    this.state.selected.delete(id);
-    this.buildCategoryFilter();
-    this.apply();
-
-    if (typeof toast === 'function') {
-      toast(`Deleted ${label} of ${this.inr(t.amount)}`, 'success');
-    }
-  },
-
-  // ============ SAVE ============
-  save(type) {
-    const isI = type === 'income';
-
-    const date = document.getElementById(isI ? 'iDate' : 'eDate')?.value?.trim();
-    const cat = document.getElementById(isI ? 'iCat' : 'eCat')?.value?.trim();
-    const amt = document.getElementById(isI ? 'iAmt' : 'eAmt')?.value?.trim();
-    const mode = document.getElementById(isI ? 'iMode' : 'eMode')?.value || 'Cash';
-    const notes = (document.getElementById(isI ? 'iNote' : 'eNote')?.value?.trim() || '');
-    const editId = document.getElementById(isI ? 'iEditId' : 'eEditId')?.value?.trim();
-    const from = isI ? (document.getElementById('iFrom')?.value?.trim() || '') : '';
-    const vendor = !isI ? (document.getElementById('eVendor')?.value?.trim() || '') : '';
-
-    if (!date) {
-      alert('Please select a date');
-      return;
-    }
-
-    if (!cat) {
-      alert('Please select a category');
-      return;
-    }
-
-    const amount = parseFloat(amt);
-    if (!amount || amount <= 0 || isNaN(amount)) {
-      alert('Please enter a valid amount');
-      return;
-    }
-
-    const entry = {
-      id: editId || this.uid(),
-      type,
-      date,
-      category: cat,
-      amount,
-      mode,
-      from,
-      vendor,
-      notes,
-      updatedAt: new Date().toISOString()
-    };
-
-    let data = this.getTxns();
-
-    if (editId) {
-      const idx = data.findIndex(t => t.id === editId);
-      if (idx !== -1) {
-        entry.savedAt = data[idx].savedAt || new Date().toISOString();
-        data[idx] = entry;
-      }
-    } else {
-      entry.savedAt = new Date().toISOString();
-      data.push(entry);
-    }
-
-    this.saveTxns(data);
-    this.closeModal(isI ? 'incomeModal' : 'expenseModal');
-    this.resetForm(type);
-    this.buildCategoryFilter();
-    this.apply();
-
-    if (typeof toast === 'function') {
-      const action = editId ? 'Updated' : 'Added';
-      toast(`${action} ${type} of ${this.inr(amount)}`, 'success');
-    }
-  },
-
-  resetForm(type) {
-    const isI = type === 'income';
-
-    const setVal = (elId, val) => {
-      const el = document.getElementById(elId);
-      if (el) el.value = val;
-    };
-
-    setVal(isI ? 'iDate' : 'eDate', this.today());
-    setVal(isI ? 'iCat' : 'eCat', '');
-    setVal(isI ? 'iAmt' : 'eAmt', '');
-    setVal(isI ? 'iMode' : 'eMode', 'Cash');
-    setVal(isI ? 'iNote' : 'eNote', '');
-    setVal(isI ? 'iEditId' : 'eEditId', '');
-
-    if (isI) {
-      setVal('iFrom', '');
-      const p = document.getElementById('iPreview');
-      if (p) p.style.display = 'none';
-    } else {
-      setVal('eVendor', '');
-      const p = document.getElementById('ePreview');
-      if (p) p.style.display = 'none';
-    }
-
-    // Reset title
-    const titleId = isI ? 'incomeTitle' : 'expenseTitle';
-    const title = document.getElementById(titleId);
-    if (title) title.textContent = isI ? '💰 Add Income' : '💸 Add Expense';
-  },
-
-  // ============ MODAL ============
-  openModal(id) {
-    const m = document.getElementById(id);
-    if (m) {
-      m.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-  },
-
-  closeModal(id) {
-    const m = document.getElementById(id);
-    if (m) {
-      m.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-  },
-
-  // ============ HANDLERS ============
-  setupResizeHandler() {
-    let timer;
-    window.addEventListener('resize', () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => this.render(), 200);
-    });
-  },
-
-  setupKeyboard() {
-    document.addEventListener('keydown', (e) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-
-      if (e.key === 'Delete' && this.state.selected.size > 0) {
-        e.preventDefault();
-        this.bulkDel();
-      }
-    });
   }
 };
 
-// ============ GLOBAL FUNCTIONS ============
-function applyFilters() { TxnPage.apply(); }
-function setFilter(f, btn) { TxnPage.setFilter(f, btn); }
-function clearFilters() { TxnPage.clear(); }
-function toggleSelectAll() { TxnPage.selectAll(); }
-function bulkDelete() { TxnPage.bulkDel(); }
-function saveTxn(type) { TxnPage.save(type); }
+// ===== GLOBAL FUNCTIONS =====
+function switchPeriod(p, btn) {
+  Dash.period = p;
+  const tabs = document.querySelectorAll('.pb-tab');
+  for (let i = 0; i < tabs.length; i++) {
+    tabs[i].classList.remove('active');
+  }
+  if (btn) btn.classList.add('active');
+  Dash.loadSummary(getTxns());
+}
 
-function setView(v) {
-  TxnPage.state.view = v;
-  const tb = document.getElementById('vtTable');
-  const cb = document.getElementById('vtCard');
-  if (tb) tb.classList.toggle('active', v === 'table');
-  if (cb) cb.classList.toggle('active', v === 'card');
-  TxnPage.render();
+function buildBarChart() {
+  Dash.buildBarChart(getTxns());
+}
+
+function buildDonutChart() {
+  Dash.buildDonutChart(getTxns());
+}
+
+function saveTransaction(type) {
+  const isI = type === 'income';
+
+  const date = document.getElementById(isI ? 'iDate' : 'eDate').value.trim();
+  const cat = document.getElementById(isI ? 'iCat' : 'eCat').value.trim();
+  const amt = document.getElementById(isI ? 'iAmt' : 'eAmt').value.trim();
+  const mode = document.getElementById(isI ? 'iMode' : 'eMode').value || 'Cash';
+  const from = isI ? document.getElementById('iFrom').value.trim() : '';
+  const vendor = !isI ? document.getElementById('eVendor').value.trim() : '';
+  const notes = document.getElementById(isI ? 'iNote' : 'eNote').value.trim();
+  const editId = document.getElementById(isI ? 'iEditId' : 'eEditId').value.trim();
+
+  if (!date) {
+    toast('Please select a date', 'error');
+    return;
+  }
+
+  if (!cat) {
+    toast('Please select a category', 'error');
+    return;
+  }
+
+  const amount = parseFloat(amt);
+  if (!amount || amount <= 0 || isNaN(amount)) {
+    toast('Please enter a valid amount', 'error');
+    return;
+  }
+
+  const txns = getTxns();
+  const entry = {
+    id: editId || uid(),
+    type: type,
+    date: date,
+    category: cat,
+    amount: amount,
+    mode: mode,
+    from: from,
+    vendor: vendor,
+    notes: notes,
+    savedAt: new Date().toISOString()
+  };
+
+  if (editId) {
+    const idx = txns.findIndex(function(t) { return t.id === editId; });
+    if (idx !== -1) {
+      entry.savedAt = txns[idx].savedAt || new Date().toISOString();
+      txns[idx] = entry;
+    }
+  } else {
+    txns.push(entry);
+  }
+
+  saveTxns(txns);
+  closeModal(isI ? 'incomeModal' : 'expenseModal');
+  resetForm(type);
+  Dash.loadAll();
+
+  const action = editId ? 'Updated' : 'Added';
+  toast(action + ' ' + type + ' of ' + inr(amount), 'success');
+}
+
+function resetForm(type) {
+  const isI = type === 'income';
+
+  const setVal = function(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+
+  setVal(isI ? 'iDate' : 'eDate', today());
+  setVal(isI ? 'iCat' : 'eCat', '');
+  setVal(isI ? 'iAmt' : 'eAmt', '');
+  setVal(isI ? 'iMode' : 'eMode', 'Cash');
+  setVal(isI ? 'iNote' : 'eNote', '');
+  setVal(isI ? 'iEditId' : 'eEditId', '');
+
+  if (isI) {
+    setVal('iFrom', '');
+    const p = document.getElementById('iPreview');
+    if (p) p.style.display = 'none';
+  } else {
+    setVal('eVendor', '');
+    const p = document.getElementById('ePreview');
+    if (p) p.style.display = 'none';
+  }
 }
 
 function openIncomeModal() {
-  TxnPage.resetForm('income');
+  resetForm('income');
   const d = document.getElementById('iDate');
-  if (d) d.value = TxnPage.today();
-  TxnPage.openModal('incomeModal');
+  if (d) d.value = today();
+  openModal('incomeModal');
 }
 
 function openExpenseModal() {
-  TxnPage.resetForm('expense');
+  resetForm('expense');
   const d = document.getElementById('eDate');
-  if (d) d.value = TxnPage.today();
-  TxnPage.openModal('expenseModal');
+  if (d) d.value = today();
+  openModal('expenseModal');
 }
 
-function previewAmt(type) {
-  const isI = type === 'income';
-  const amtEl = document.getElementById(isI ? 'iAmt' : 'eAmt');
-  const previewEl = document.getElementById(isI ? 'iPreview' : 'ePreview');
-  const valEl = document.getElementById(isI ? 'iPreviewVal' : 'ePreviewVal');
-
-  if (!amtEl || !previewEl || !valEl) return;
-
-  const amt = parseFloat(amtEl.value);
-  if (!isNaN(amt) && amt > 0) {
-    previewEl.style.display = 'flex';
-    valEl.textContent = TxnPage.inr(amt);
-  } else {
-    previewEl.style.display = 'none';
-  }
-}
-
-// Close modal on background click
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal-bg')) {
-    e.target.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-});
-
-// Escape key closes modals
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-bg.open').forEach(m => {
-      m.classList.remove('open');
-    });
-    document.body.style.overflow = '';
-  }
-});
-
-// ============ INIT ============
+// ===== INIT =====
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => TxnPage.init());
+  document.addEventListener('DOMContentLoaded', function() {
+    Dash.init();
+  });
 } else {
-  TxnPage.init();
+  Dash.init();
 }
-
-// Export globally
-window.TxnPage = TxnPage;

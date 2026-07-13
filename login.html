@@ -2,135 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
-<title>Login — AI Toolcor Business</title>
-
-<!-- ============ SEO ============ -->
-<meta name="description" content="AI Toolcor Business Dashboard — Smart finance tracker for income, expenses & profits. 100% private, works offline."/>
-<meta name="keywords" content="business dashboard, finance tracker, income expense tracker, business analytics, AI Toolcor"/>
-<meta name="author" content="AI Toolcor"/>
-<meta name="robots" content="index, follow"/>
-<meta name="language" content="English"/>
-<link rel="canonical" href="https://business.aitoolcor.com/"/>
-
-<!-- ============ OPEN GRAPH ============ -->
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://business.aitoolcor.com/"/>
-<meta property="og:title" content="AI Toolcor Business Dashboard"/>
-<meta property="og:description" content="Smart business finance tracker. Track income, expenses & profits in one dashboard."/>
-<meta property="og:image" content="https://business.aitoolcor.com/assets/icons/og-image.png"/>
-<meta property="og:site_name" content="AI Toolcor Business"/>
-<meta property="og:locale" content="en_IN"/>
-
-<!-- ============ TWITTER ============ -->
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:url" content="https://business.aitoolcor.com/"/>
-<meta name="twitter:title" content="AI Toolcor Business Dashboard"/>
-<meta name="twitter:description" content="Smart business finance tracker."/>
-<meta name="twitter:image" content="https://business.aitoolcor.com/assets/icons/og-image.png"/>
-
-<!-- ============ PWA ============ -->
-<link rel="manifest" href="/manifest.json"/>
-<meta name="theme-color" content="#0a0e27"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="msapplication-TileColor" content="#06b6d4"/>
-<meta name="msapplication-config" content="/browserconfig.xml"/>
-
-<!-- ============ ICONS ============ -->
-<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/icon-32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/icon-16.png"/>
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/icon-192.png"/>
-<link rel="shortcut icon" href="/favicon.ico"/>
-
-<!-- ============ STRUCTURED DATA ============ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "AI Toolcor Business Dashboard",
-  "url": "https://business.aitoolcor.com",
-  "applicationCategory": "BusinessApplication",
-  "operatingSystem": "Any",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "INR"
-  },
-  "author": {
-    "@type": "Organization",
-    "name": "AI Toolcor"
-  }
-}
-</script>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login — Crust & Chilly</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   background: #0a0e27;
   color: #fff;
   overflow-x: hidden;
   position: relative;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Prevent iOS input zoom */
-@media (max-width: 768px) {
-  input[type="email"],
-  input[type="password"],
-  input[type="text"] {
-    font-size: 16px !important;
-  }
-}
-
-/* Background decorations */
 body::before {
-  content: '';
+  content:'';
   position: fixed;
-  width: 600px;
-  height: 600px;
+  width: 600px; height: 600px;
   background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
-  top: -200px;
-  left: -200px;
+  top: -200px; left: -200px;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 0;
 }
 
 body::after {
-  content: '';
+  content:'';
   position: fixed;
-  width: 500px;
-  height: 500px;
+  width: 500px; height: 500px;
   background: radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%);
-  bottom: -150px;
-  right: -150px;
+  bottom: -150px; right: -150px;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 0;
 }
 
-/* ============ LEFT PANEL ============ */
 .left {
   flex: 1;
   display: flex;
@@ -140,16 +48,10 @@ body::after {
   padding: 60px;
   position: relative;
   z-index: 2;
-  overflow-y: auto;
 }
 
-.brand {
-  max-width: 460px;
-  width: 100%;
-  text-align: left;
-}
+.brand { max-width: 460px; width: 100%; }
 
-/* Logo Header */
 .brand-header {
   display: flex;
   align-items: center;
@@ -168,18 +70,13 @@ body::after {
   flex-shrink: 0;
   box-shadow: 0 8px 24px rgba(6,182,212,0.4);
   overflow: hidden;
+  padding: 8px;
 }
 
 .brand-logo img {
-  width: 70%;
-  height: 70%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-}
-
-.brand-logo-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .brand-logo-name {
@@ -187,7 +84,6 @@ body::after {
   font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
-  line-height: 1.1;
 }
 
 .brand-logo-tag {
@@ -197,7 +93,6 @@ body::after {
   letter-spacing: 0.05em;
 }
 
-/* Badge */
 .logo-badge {
   display: inline-flex;
   align-items: center;
@@ -211,10 +106,8 @@ body::after {
   font-size: 0.7rem;
   font-weight: 600;
   color: #06b6d4;
-  letter-spacing: 0.05em;
 }
 
-/* Heading */
 .brand h1 {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 3rem;
@@ -222,7 +115,6 @@ body::after {
   line-height: 1.15;
   margin-bottom: 20px;
   color: #fff;
-  letter-spacing: -0.02em;
 }
 
 .brand h1 .accent {
@@ -237,13 +129,11 @@ body::after {
   color: #94a3b8;
   line-height: 1.7;
   margin-bottom: 36px;
-  max-width: 420px;
 }
 
-/* Stats */
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 
@@ -252,16 +142,7 @@ body::after {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 14px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   text-align: center;
-  transition: all 0.3s;
-}
-
-.stat-box:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(6,182,212,0.3);
-  transform: translateY(-2px);
 }
 
 .stat-box .num {
@@ -270,7 +151,6 @@ body::after {
   font-weight: 700;
   color: #06b6d4;
   margin-bottom: 4px;
-  line-height: 1;
 }
 
 .stat-box .lbl {
@@ -279,7 +159,6 @@ body::after {
   font-weight: 500;
 }
 
-/* ============ RIGHT PANEL ============ */
 .right {
   width: 480px;
   display: flex;
@@ -288,7 +167,6 @@ body::after {
   padding: 40px;
   position: relative;
   z-index: 2;
-  flex-shrink: 0;
 }
 
 .form-card {
@@ -296,14 +174,12 @@ body::after {
   max-width: 380px;
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 24px;
   padding: 40px 32px;
   box-shadow: 0 40px 80px rgba(0,0,0,0.4);
 }
 
-/* Mobile logo (inside form card) */
 .mobile-logo {
   display: none;
   align-items: center;
@@ -323,13 +199,13 @@ body::after {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(6,182,212,0.4);
+  padding: 6px;
   overflow: hidden;
 }
 
 .mobile-logo-icon img {
-  width: 70%;
-  height: 70%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -354,9 +230,7 @@ body::after {
   margin-bottom: 28px;
 }
 
-.fg {
-  margin-bottom: 18px;
-}
+.fg { margin-bottom: 18px; }
 
 .fl {
   display: block;
@@ -367,9 +241,7 @@ body::after {
   letter-spacing: 0.05em;
 }
 
-.iw {
-  position: relative;
-}
+.iw { position: relative; }
 
 .iw-ic {
   position: absolute;
@@ -378,7 +250,6 @@ body::after {
   transform: translateY(-50%);
   font-size: 0.95rem;
   pointer-events: none;
-  z-index: 1;
 }
 
 .fi {
@@ -401,9 +272,7 @@ body::after {
   box-shadow: 0 0 0 4px rgba(6,182,212,0.1);
 }
 
-.fi::placeholder {
-  color: #64748b;
-}
+.fi::placeholder { color: #64748b; }
 
 .pt {
   position: absolute;
@@ -415,14 +284,6 @@ body::after {
   cursor: pointer;
   font-size: 1rem;
   padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
-  color: #94a3b8;
-  z-index: 2;
-}
-
-.pt:hover {
-  background: rgba(255,255,255,0.05);
 }
 
 .err {
@@ -434,7 +295,6 @@ body::after {
   border-radius: 10px;
   font-size: 0.8rem;
   margin-bottom: 16px;
-  font-weight: 500;
 }
 
 .lb {
@@ -450,7 +310,6 @@ body::after {
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 8px;
-  box-shadow: 0 8px 24px rgba(6,182,212,0.3);
   min-height: 50px;
 }
 
@@ -459,14 +318,7 @@ body::after {
   box-shadow: 0 12px 32px rgba(6,182,212,0.4);
 }
 
-.lb:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.lb:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.lb:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .ft {
   text-align: center;
@@ -482,284 +334,58 @@ body::after {
   color: #06b6d4;
   font-weight: 700;
   font-family: 'Space Grotesk', sans-serif;
-  letter-spacing: 0.03em;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-
-/* Tablet Large */
-@media (max-width: 1200px) {
-  .left { padding: 50px 40px; }
-  .brand h1 { font-size: 2.5rem; }
-  .right { width: 440px; padding: 30px; }
-}
-
-/* Tablet */
-@media (max-width: 1023px) {
-  .left { padding: 40px 30px; }
-  .brand h1 { font-size: 2.2rem; }
-  .brand > p { font-size: 0.92rem; margin-bottom: 30px; }
-  .right { width: 420px; padding: 24px; }
-  .form-card { padding: 32px 24px; }
-}
-
-/* Hide left panel on mobile */
 @media (max-width: 900px) {
   .left { display: none; }
-
-  .right {
-    width: 100%;
-    padding: 24px 20px;
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
-
+  .right { width: 100%; padding: 24px 20px; min-height: 100vh; }
   .mobile-logo { display: flex; }
-
-  body::before { width: 400px; height: 400px; }
-  body::after { width: 350px; height: 350px; }
 }
 
-/* Mobile */
 @media (max-width: 600px) {
-  .right {
-    padding: 20px 16px;
-  }
-
-  .form-card {
-    padding: 28px 22px;
-    border-radius: 20px;
-    max-width: 100%;
-  }
-
-  .form-card h2 {
-    font-size: 1.35rem;
-  }
-
-  .form-card > p {
-    font-size: 0.82rem;
-    margin-bottom: 24px;
-  }
-
-  .mobile-logo {
-    margin-bottom: 22px;
-    padding-bottom: 22px;
-  }
-
-  .mobile-logo-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-  }
-
-  .mobile-logo-text {
-    font-size: 1rem;
-  }
-
-  .fg { margin-bottom: 16px; }
-
-  .fl {
-    font-size: 0.68rem;
-    margin-bottom: 7px;
-  }
-
-  .fi {
-    padding: 13px 14px 13px 40px;
-    font-size: 16px;
-    min-height: 48px;
-  }
-
-  .iw-ic {
-    left: 13px;
-    font-size: 0.9rem;
-  }
-
-  .lb {
-    padding: 14px;
-    font-size: 0.9rem;
-    min-height: 50px;
-  }
+  .right { padding: 20px 16px; }
+  .form-card { padding: 28px 22px; }
+  .form-card h2 { font-size: 1.3rem; }
+  .fi { font-size: 16px; }
 }
 
-/* Small Mobile */
 @media (max-width: 400px) {
-  .right {
-    padding: 16px 12px;
-  }
-
-  .form-card {
-    padding: 24px 18px;
-    border-radius: 18px;
-  }
-
-  .form-card h2 {
-    font-size: 1.25rem;
-  }
-
-  .form-card > p {
-    font-size: 0.78rem;
-    margin-bottom: 20px;
-  }
-
-  .mobile-logo {
-    gap: 10px;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-  }
-
-  .mobile-logo-icon {
-    width: 38px;
-    height: 38px;
-  }
-
-  .mobile-logo-text {
-    font-size: 0.95rem;
-  }
-
-  .fi {
-    padding: 12px 12px 12px 38px;
-    min-height: 46px;
-  }
-
-  .iw-ic {
-    left: 12px;
-    font-size: 0.85rem;
-  }
-
-  .lb {
-    padding: 13px;
-    font-size: 0.85rem;
-    min-height: 48px;
-  }
-
-  .err {
-    padding: 9px 12px;
-    font-size: 0.75rem;
-  }
-
-  .ft {
-    font-size: 0.68rem;
-    margin-top: 20px;
-  }
-
-  .dm {
-    font-size: 0.68rem;
-  }
-}
-
-/* Extra Small */
-@media (max-width: 340px) {
-  .right { padding: 12px 10px; }
-
-  .form-card {
-    padding: 20px 16px;
-    border-radius: 16px;
-  }
-
+  .form-card { padding: 24px 18px; }
   .form-card h2 { font-size: 1.15rem; }
-  .form-card > p { font-size: 0.74rem; }
-
-  .mobile-logo-icon { width: 34px; height: 34px; }
-  .mobile-logo-text { font-size: 0.88rem; }
-
-  .fl { font-size: 0.65rem; }
-  .fi { padding: 11px 12px 11px 36px; }
-}
-
-/* Landscape Mobile */
-@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
-  .right {
-    padding: 16px;
-    align-items: flex-start;
-    padding-top: 20px;
-  }
-
-  .mobile-logo {
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-  }
-
-  .form-card {
-    padding: 20px 24px;
-  }
-
-  .form-card h2 {
-    font-size: 1.2rem;
-    margin-bottom: 4px;
-  }
-
-  .form-card > p {
-    font-size: 0.78rem;
-    margin-bottom: 16px;
-  }
-
-  .fg { margin-bottom: 12px; }
-
-  .fi { padding: 10px 14px 10px 40px; min-height: 42px; }
-
-  .lb { padding: 11px; min-height: 44px; }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
 }
 </style>
 </head>
 <body>
 
-<!-- LEFT PANEL -->
 <div class="left">
   <div class="brand">
-
-    <!-- Brand Header with Logo -->
     <div class="brand-header">
       <div class="brand-logo">
-        <img src="assets/icons/logo.png" alt="AI Toolcor Logo" onerror="this.src='favicon.svg'"/>
+        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
       </div>
-      <div class="brand-logo-text">
-        <div class="brand-logo-name">AI Toolcor</div>
+      <div>
+        <div class="brand-logo-name">Crust & Chilly</div>
         <div class="brand-logo-tag">BUSINESS SUITE</div>
       </div>
     </div>
 
     <div class="logo-badge">✨ BUSINESS TRACKER v2.0</div>
-
     <h1>Manage business.<br/><span class="accent">Effortlessly.</span></h1>
-
-    <p>Track income, expenses, profits — all in one beautifully designed dashboard built for modern businesses.</p>
+    <p>Track income, expenses, profits — all in one beautifully designed dashboard.</p>
 
     <div class="stats-row">
-      <div class="stat-box">
-        <div class="num">100%</div>
-        <div class="lbl">Private</div>
-      </div>
-      <div class="stat-box">
-        <div class="num">₹0</div>
-        <div class="lbl">Cost</div>
-      </div>
-      <div class="stat-box">
-        <div class="num">24/7</div>
-        <div class="lbl">Offline</div>
-      </div>
+      <div class="stat-box"><div class="num">100%</div><div class="lbl">Private</div></div>
+      <div class="stat-box"><div class="num">₹0</div><div class="lbl">Cost</div></div>
+      <div class="stat-box"><div class="num">24/7</div><div class="lbl">Offline</div></div>
     </div>
-
   </div>
 </div>
 
-<!-- RIGHT PANEL -->
 <div class="right">
   <div class="form-card">
-
-    <!-- Mobile Logo (only shows on mobile) -->
     <div class="mobile-logo">
       <div class="mobile-logo-icon">
-        <img src="assets/icons/logo.png" alt="AI Toolcor" onerror="this.src='favicon.svg'"/>
+        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
       </div>
       <div class="mobile-logo-text">Crust & Chilly</div>
     </div>
@@ -774,7 +400,7 @@ body::after {
         <label class="fl">EMAIL ADDRESS</label>
         <div class="iw">
           <span class="iw-ic">📧</span>
-          <input type="email" class="fi" id="em" required autocomplete="email" placeholder="you@example.com"/>
+          <input type="email" class="fi" id="em" value="sanketbarot3901@gmail.com" required autocomplete="email"/>
         </div>
       </div>
 
@@ -783,7 +409,7 @@ body::after {
         <div class="iw">
           <span class="iw-ic">🔒</span>
           <input type="password" class="fi" id="pw" required placeholder="••••••••" autocomplete="current-password"/>
-          <button type="button" class="pt" onclick="togP()" aria-label="Toggle password">👁️</button>
+          <button type="button" class="pt" onclick="togP()">👁️</button>
         </div>
       </div>
 
@@ -796,82 +422,44 @@ body::after {
 </div>
 
 <script>
-// Credentials are checked via SHA-256 hash instead of plaintext.
-// NOTE: This is a client-side-only app (no server), so this gate mainly
-// prevents casual/shoulder-surfing access on a shared device — it can't
-// stop someone determined who reads the JS. Don't store anything here
-// you wouldn't want exposed if the device itself is compromised.
 const AE = 'sanketbarot3901@gmail.com';
-const AP_HASH = 'e86f78a8a3caf0b60d8e74e5942aa6d86dc150cd3c03338aef25b7d2d7e3acc7'; // sha256("Admin@123")
+const AP = 'Admin@123';
 
-async function sha256(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// Redirect if already logged in
 if (localStorage.getItem('bd_auth') === 'true') {
   window.location.href = 'index.html';
 }
 
-async function handleLogin(e) {
+function handleLogin(e) {
   e.preventDefault();
   const em = document.getElementById('em').value.trim();
   const pw = document.getElementById('pw').value;
   const btn = document.getElementById('lb');
   const err = document.getElementById('errBox');
-
   err.style.display = 'none';
   btn.textContent = 'Signing in...';
   btn.disabled = true;
-
-  try {
-    const pwHash = await sha256(pw);
-    const ok = em.toLowerCase() === AE.toLowerCase() && pwHash === AP_HASH;
-
-    setTimeout(() => {
-      if (ok) {
-        localStorage.setItem('bd_auth', 'true');
-        localStorage.setItem('bd_user', em);
-        window.location.href = 'index.html';
-      } else {
-        err.style.display = 'block';
-        btn.textContent = 'Sign in →';
-        btn.disabled = false;
-      }
-    }, 400);
-  } catch (err2) {
-    console.error('Login error:', err2);
-    btn.textContent = 'Sign in →';
-    btn.disabled = false;
-  }
+  setTimeout(() => {
+    if (em === AE && pw === AP) {
+      localStorage.setItem('bd_auth', 'true');
+      localStorage.setItem('bd_user', em);
+      window.location.href = 'index.html';
+    } else {
+      err.style.display = 'block';
+      btn.textContent = 'Sign in →';
+      btn.disabled = false;
+    }
+  }, 500);
 }
 
 function togP() {
   const i = document.getElementById('pw');
-  const btn = document.querySelector('.pt');
-  if (i.type === 'password') {
-    i.type = 'text';
-    btn.textContent = '🙈';
-  } else {
-    i.type = 'password';
-    btn.textContent = '👁️';
-  }
+  i.type = i.type === 'password' ? 'text' : 'password';
 }
 
-// Focus email on load
 window.addEventListener('load', () => {
   const pw = document.getElementById('pw');
   if (pw) pw.focus();
 });
-
-// Enter key support
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && document.activeElement.classList.contains('fi')) {
-    document.querySelector('form').requestSubmit();
-  }
-});
 </script>
-
 </body>
 </html>
