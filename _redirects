@@ -1,0 +1,11 @@
+# Force HTTPS
+http://business.aitoolcor.com/*  https://business.aitoolcor.com/:splat  301!
+
+# Force non-www
+https://www.business.aitoolcor.com/*  https://business.aitoolcor.com/:splat  301!
+
+# Root redirect to login
+/  /login.html  200
+
+# SPA fallback
+/*  /index.html  200

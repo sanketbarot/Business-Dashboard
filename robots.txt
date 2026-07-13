@@ -1,0 +1,20 @@
+# ============================================
+# AI Toolcor Business Dashboard
+# business.aitoolcor.com
+# ============================================
+
+User-agent: *
+Allow: /
+Allow: /login.html
+Allow: /index.html
+Allow: /transaction.html
+
+# Block sensitive/private routes
+Disallow: /assets/js/
+Disallow: /*.json$
+
+# Sitemap
+Sitemap: https://business.aitoolcor.com/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

@@ -1,0 +1,34 @@
+# ============================================
+# Security & Performance Headers
+# ============================================
+
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Cache CSS & JS for 1 month
+/assets/css/*
+  Cache-Control: public, max-age=2592000
+
+/assets/js/*
+  Cache-Control: public, max-age=2592000
+
+# Cache images for 1 year
+/assets/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML - no cache
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Manifest
+/manifest.json
+  Cache-Control: public, max-age=604800
+  Content-Type: application/manifest+json

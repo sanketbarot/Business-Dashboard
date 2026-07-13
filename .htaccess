@@ -1,0 +1,112 @@
+# ============================================
+# AI Toolcor Business Dashboard
+# business.aitoolcor.com
+# ============================================
+
+# Force HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Force www removal (use non-www)
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# Default file
+DirectoryIndex login.html index.html
+
+# Custom Error Pages
+ErrorDocument 404 /404.html
+ErrorDocument 403 /403.html
+
+# ============ SECURITY HEADERS ============
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+    # CORS for fonts and assets
+    <FilesMatch "\.(ttf|otf|eot|woff|woff2)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
+
+# ============ CACHING ============
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Images
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+
+    # Fonts
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+
+    # CSS & JS
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+
+    # HTML
+    ExpiresByType text/html "access plus 1 day"
+
+    # Manifest
+    ExpiresByType application/manifest+json "access plus 1 week"
+    ExpiresByType application/x-web-app-manifest+json "access plus 1 week"
+</IfModule>
+
+# ============ COMPRESSION ============
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE font/ttf
+    AddOutputFilterByType DEFLATE font/otf
+    AddOutputFilterByType DEFLATE font/woff
+    AddOutputFilterByType DEFLATE font/woff2
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ============ MIME TYPES ============
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest .json
+    AddType application/javascript .js
+    AddType font/woff2 .woff2
+    AddType image/svg+xml .svg
+</IfModule>
+
+# ============ BLOCK ACCESS ============
+# Block .git folder
+RewriteRule ^\.git - [F,L]
+
+# Block hidden files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Block sensitive files
+<FilesMatch "(README\.md|LICENSE|\.env|\.log|\.sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
