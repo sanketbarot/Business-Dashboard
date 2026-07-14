@@ -164,6 +164,85 @@
         </div>
       </section>
 
+      <!-- ============ CASH VS ONLINE ANALYSIS ============ -->
+      <section class="cash-online-grid fade-up">
+
+        <!-- CASH CARD -->
+        <div class="co-card cash-card">
+          <div class="co-header">
+            <div class="co-icon" style="background:#fef3c7;">💵</div>
+            <div class="co-header-info">
+              <div class="co-title">Cash Balance</div>
+              <div class="co-subtitle">Physical Money</div>
+            </div>
+            <div class="co-badge cash-badge">CASH</div>
+          </div>
+
+          <div class="co-body">
+            <div class="co-row">
+              <div class="co-row-icon in">↓</div>
+              <div class="co-row-info">
+                <div class="co-row-label">Cash Received</div>
+                <div class="co-row-count" id="cashInCount">0 transactions</div>
+              </div>
+              <div class="co-row-amt text-income" id="cashIn">₹ 0</div>
+            </div>
+
+            <div class="co-row">
+              <div class="co-row-icon out">↑</div>
+              <div class="co-row-info">
+                <div class="co-row-label">Cash Spent</div>
+                <div class="co-row-count" id="cashOutCount">0 transactions</div>
+              </div>
+              <div class="co-row-amt text-expense" id="cashOut">₹ 0</div>
+            </div>
+
+            <div class="co-balance">
+              <div class="co-balance-label">💰 Net Cash in Hand</div>
+              <div class="co-balance-amt" id="cashBalance">₹ 0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ONLINE CARD -->
+        <div class="co-card online-card">
+          <div class="co-header">
+            <div class="co-icon" style="background:#ede9fe;">📱</div>
+            <div class="co-header-info">
+              <div class="co-title">Online Balance</div>
+              <div class="co-subtitle">UPI + Bank + Card</div>
+            </div>
+            <div class="co-badge online-badge">ONLINE</div>
+          </div>
+
+          <div class="co-body">
+            <div class="co-row">
+              <div class="co-row-icon in">↓</div>
+              <div class="co-row-info">
+                <div class="co-row-label">Online Received</div>
+                <div class="co-row-count" id="onlineInCount">0 transactions</div>
+              </div>
+              <div class="co-row-amt text-income" id="onlineIn">₹ 0</div>
+            </div>
+
+            <div class="co-row">
+              <div class="co-row-icon out">↑</div>
+              <div class="co-row-info">
+                <div class="co-row-label">Online Spent</div>
+                <div class="co-row-count" id="onlineOutCount">0 transactions</div>
+              </div>
+              <div class="co-row-amt text-expense" id="onlineOut">₹ 0</div>
+            </div>
+
+            <div class="co-balance online-balance">
+              <div class="co-balance-label">📱 Net Online Balance</div>
+              <div class="co-balance-amt" id="onlineBalance">₹ 0</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
       <section class="analytics-grid fade-up">
         <div class="mini-stat">
           <div class="ms-top">

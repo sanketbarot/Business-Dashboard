@@ -33,6 +33,7 @@ const Dash = {
   loadAll: function() {
     const all = getTxns();
     this.loadSummary(all);
+    this.loadCashOnline(all);       // ← Cash vs Online
     this.loadAnalytics(all);
     this.loadInsights(all);
     this.loadComparison(all);
@@ -40,13 +41,11 @@ const Dash = {
     this.loadPaymentModes(all);
     this.loadRecent(all);
 
-    // Charts need Chart.js loaded
     if (typeof Chart !== 'undefined') {
       this.buildBarChart(all);
       this.buildDonutChart(all);
       this.buildLineChart(all);
     } else {
-      // Wait for Chart.js to load
       setTimeout(function() {
         if (typeof Chart !== 'undefined') {
           Dash.buildBarChart(getTxns());
@@ -93,10 +92,74 @@ const Dash = {
 
     this.updateTrends(all, this.period);
 
-    // Profit color
     const pEl = document.getElementById('pProfit');
     if (pEl) {
       pEl.className = 'sc-value ' + (t.profit >= 0 ? 'text-profit' : 'text-expense');
+    }
+  },
+
+  // ============ CASH VS ONLINE ANALYSIS ============
+  loadCashOnline: function(all) {
+    let cashIn = 0, cashInCount = 0;
+    let cashOut = 0, cashOutCount = 0;
+    let onlineIn = 0, onlineInCount = 0;
+    let onlineOut = 0, onlineOutCount = 0;
+
+    const cashModes = ['Cash'];
+    const onlineModes = ['Online', 'UPI', 'Bank Transfer', 'Card', 'Cheque'];
+
+    for (let i = 0; i < all.length; i++) {
+      const t = all[i];
+      const amt = parseFloat(t.amount) || 0;
+      const mode = t.mode || 'Cash';
+
+      if (cashModes.indexOf(mode) > -1) {
+        if (t.type === 'income') {
+          cashIn += amt;
+          cashInCount++;
+        } else if (t.type === 'expense') {
+          cashOut += amt;
+          cashOutCount++;
+        }
+      } else if (onlineModes.indexOf(mode) > -1) {
+        if (t.type === 'income') {
+          onlineIn += amt;
+          onlineInCount++;
+        } else if (t.type === 'expense') {
+          onlineOut += amt;
+          onlineOutCount++;
+        }
+      }
+    }
+
+    const cashBalance = cashIn - cashOut;
+    const onlineBalance = onlineIn - onlineOut;
+
+    // Cash Card
+    this.setText('cashIn', inr(cashIn));
+    this.setText('cashOut', inr(cashOut));
+    this.setText('cashBalance', inr(cashBalance));
+    this.setText('cashInCount', cashInCount + ' transaction' + (cashInCount !== 1 ? 's' : ''));
+    this.setText('cashOutCount', cashOutCount + ' transaction' + (cashOutCount !== 1 ? 's' : ''));
+
+    // Online Card
+    this.setText('onlineIn', inr(onlineIn));
+    this.setText('onlineOut', inr(onlineOut));
+    this.setText('onlineBalance', inr(onlineBalance));
+    this.setText('onlineInCount', onlineInCount + ' transaction' + (onlineInCount !== 1 ? 's' : ''));
+    this.setText('onlineOutCount', onlineOutCount + ' transaction' + (onlineOutCount !== 1 ? 's' : ''));
+
+    // Negative balance colors
+    const cashBalEl = document.getElementById('cashBalance');
+    if (cashBalEl) {
+      if (cashBalance < 0) cashBalEl.classList.add('negative');
+      else cashBalEl.classList.remove('negative');
+    }
+
+    const onlineBalEl = document.getElementById('onlineBalance');
+    if (onlineBalEl) {
+      if (onlineBalance < 0) onlineBalEl.classList.add('negative');
+      else onlineBalEl.classList.remove('negative');
     }
   },
 
@@ -613,7 +676,6 @@ const Dash = {
     const expense = [];
     const now = new Date();
 
-    // Build date map for O(1) lookup
     const dateMap = {};
     for (let i = 0; i < all.length; i++) {
       const t = all[i];

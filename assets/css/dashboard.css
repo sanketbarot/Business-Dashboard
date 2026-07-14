@@ -218,6 +218,202 @@
   border-color: var(--brand-light);
 }
 
+/* ============================================
+   CASH VS ONLINE ANALYSIS
+   ============================================ */
+.cash-online-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.co-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--sh-sm);
+  transition: var(--tr);
+  position: relative;
+}
+
+.co-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sh-md);
+}
+
+.cash-card {
+  border-top: 4px solid #f59e0b;
+}
+
+.online-card {
+  border-top: 4px solid #8b5cf6;
+}
+
+.co-header {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+}
+
+.co-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.co-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.co-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-head);
+  margin-bottom: 2px;
+}
+
+.co-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.co-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+}
+
+.cash-badge {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fcd34d;
+}
+
+.online-badge {
+  background: #ede9fe;
+  color: #7c3aed;
+  border: 1px solid #c4b5fd;
+}
+
+.co-body {
+  padding: 16px 20px 20px;
+}
+
+.co-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.co-row:last-of-type {
+  border-bottom: none;
+  padding-bottom: 16px;
+}
+
+.co-row-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+}
+
+.co-row-icon.in {
+  background: var(--income-soft);
+  color: var(--income);
+}
+
+.co-row-icon.out {
+  background: var(--expense-soft);
+  color: var(--expense);
+}
+
+.co-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.co-row-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-head);
+  margin-bottom: 2px;
+}
+
+.co-row-count {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.co-row-amt {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.co-balance {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: var(--r-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #fcd34d;
+}
+
+.co-balance.online-balance {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  border-color: #c4b5fd;
+}
+
+.co-balance-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-head);
+}
+
+.co-balance-amt {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #d97706;
+  white-space: nowrap;
+}
+
+.online-balance .co-balance-amt {
+  color: #7c3aed;
+}
+
+.co-balance-amt.negative {
+  color: var(--expense) !important;
+}
+
 /* ANALYTICS */
 .analytics-grid {
   display: grid;
@@ -542,6 +738,7 @@
 
 @media (max-width: 1023px) {
   .sum-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cash-online-grid { grid-template-columns: 1fr; gap: 14px; }
   .chart-grid { grid-template-columns: minmax(0, 1fr); }
   .analytics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bottom-grid { grid-template-columns: minmax(0, 1fr); }
@@ -568,6 +765,22 @@
   .sc-value { font-size: 1.15rem; }
   .sc-sub { font-size: 0.68rem; }
 
+  /* Cash Online Mobile */
+  .co-header { padding: 14px 16px; gap: 10px; }
+  .co-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+  .co-title { font-size: 0.88rem; }
+  .co-subtitle { font-size: 0.66rem; }
+  .co-badge { font-size: 0.58rem; padding: 3px 8px; }
+  .co-body { padding: 12px 16px 16px; }
+  .co-row { padding: 10px 0; gap: 10px; }
+  .co-row-icon { width: 28px; height: 28px; font-size: 0.85rem; }
+  .co-row-label { font-size: 0.78rem; }
+  .co-row-count { font-size: 0.65rem; }
+  .co-row-amt { font-size: 0.9rem; }
+  .co-balance { padding: 12px 14px; margin-top: 10px; }
+  .co-balance-label { font-size: 0.72rem; }
+  .co-balance-amt { font-size: 1.1rem; }
+
   .analytics-grid { gap: 12px; grid-template-columns: minmax(0, 1fr); margin-bottom: 16px; }
   .mini-stat { padding: 14px; }
   .ms-value { font-size: 1.15rem; }
@@ -585,6 +798,8 @@
 
   .hero { padding: 16px; }
   .hero-text h2 { font-size: 1.05rem; }
+
+  .co-balance-amt { font-size: 1.05rem; }
 }
 
 @media (max-width: 480px) {
@@ -601,6 +816,16 @@
   .sc-label { font-size: 0.6rem; }
   .sc-value { font-size: 0.9rem; }
   .sc-sub { font-size: 0.62rem; }
+
+  /* Cash Online Small Mobile */
+  .co-header { padding: 12px 14px; }
+  .co-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+  .co-title { font-size: 0.82rem; }
+  .co-badge { font-size: 0.55rem; padding: 3px 7px; }
+  .co-body { padding: 12px 14px 14px; }
+  .co-row-label { font-size: 0.74rem; }
+  .co-row-amt { font-size: 0.85rem; }
+  .co-balance-amt { font-size: 1rem; }
 
   .mini-stat { padding: 12px; }
   .ms-value { font-size: 1rem; }
@@ -620,4 +845,7 @@
   .sum-grid { grid-template-columns: 1fr; }
   .hero { padding: 14px; }
   .hero-text h2 { font-size: 0.92rem; }
+
+  .co-balance { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .co-balance-amt { font-size: 1.2rem; }
 }
