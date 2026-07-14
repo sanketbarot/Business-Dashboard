@@ -1,18 +1,16 @@
 /* ============================================
    CRUST & CHILLY — CORE APP.JS
-   Shared functions for all pages
    ============================================ */
 
 'use strict';
 
-// ===== AUTH CHECK =====
+// AUTH CHECK
 (function() {
   if (!localStorage.getItem('bd_auth')) {
     window.location.href = 'login.html';
   }
 })();
 
-// ===== CONFIG =====
 const APP = {
   storageKey: 'bd_transactions',
   backupKey: 'bd_last_backup',
@@ -20,12 +18,11 @@ const APP = {
   userKey: 'bd_user'
 };
 
-// ===== STORAGE =====
+// STORAGE
 function getTxns() {
   try {
     return JSON.parse(localStorage.getItem(APP.storageKey) || '[]');
   } catch (e) {
-    console.error('Storage error:', e);
     return [];
   }
 }
@@ -35,13 +32,12 @@ function saveTxns(data) {
     localStorage.setItem(APP.storageKey, JSON.stringify(data));
     return true;
   } catch (e) {
-    console.error('Save error:', e);
     alert('Storage full! Please export and clear old data.');
     return false;
   }
 }
 
-// ===== CURRENCY =====
+// CURRENCY
 function inr(amount) {
   const n = parseFloat(amount) || 0;
   return '₹ ' + n.toLocaleString('en-IN', {
@@ -60,7 +56,7 @@ function inrShort(amount) {
   return sign + '₹' + abs.toFixed(0);
 }
 
-// ===== DATE HELPERS =====
+// DATE HELPERS
 function today() {
   return new Date().toISOString().split('T')[0];
 }
@@ -69,32 +65,21 @@ function fmtDate(d) {
   if (!d) return '-';
   try {
     return new Date(d).toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
+      day: '2-digit', month: 'short', year: 'numeric'
     });
-  } catch {
-    return d;
-  }
+  } catch { return d; }
 }
 
 function fmtDateFull(d) {
   if (!d) return '-';
   try {
     return new Date(d).toLocaleDateString('en-IN', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
+      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
     });
-  } catch {
-    return d;
-  }
+  } catch { return d; }
 }
 
-function isToday(d) {
-  return d === today();
-}
+function isToday(d) { return d === today(); }
 
 function isYesterday(d) {
   const y = new Date();
@@ -134,8 +119,7 @@ function isThisMonth(d) {
   if (!d) return false;
   const date = new Date(d);
   const now = new Date();
-  return date.getMonth() === now.getMonth() &&
-         date.getFullYear() === now.getFullYear();
+  return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
 }
 
 function isLastMonth(d) {
@@ -143,8 +127,7 @@ function isLastMonth(d) {
   const date = new Date(d);
   const now = new Date();
   const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  return date.getMonth() === lm.getMonth() &&
-         date.getFullYear() === lm.getFullYear();
+  return date.getMonth() === lm.getMonth() && date.getFullYear() === lm.getFullYear();
 }
 
 function isThisYear(d) {
@@ -161,12 +144,11 @@ function inRange(d, start, end) {
   return date >= s && date <= e;
 }
 
-// ===== CALCULATIONS =====
+// CALCULATIONS
 function calcTotals(txns) {
   if (!Array.isArray(txns) || !txns.length) {
     return { income: 0, expense: 0, profit: 0 };
   }
-
   let income = 0, expense = 0;
   for (let i = 0; i < txns.length; i++) {
     const t = txns[i];
@@ -174,7 +156,6 @@ function calcTotals(txns) {
     if (t.type === 'income') income += amt;
     else if (t.type === 'expense') expense += amt;
   }
-
   return {
     income: Math.round(income * 100) / 100,
     expense: Math.round(expense * 100) / 100,
@@ -185,7 +166,6 @@ function calcTotals(txns) {
 function filterByPeriod(txns, period, start, end) {
   if (!Array.isArray(txns)) return [];
   if (period === 'all' || !period) return txns;
-
   return txns.filter(t => {
     if (!t.date) return false;
     switch (period) {
@@ -202,7 +182,7 @@ function filterByPeriod(txns, period, start, end) {
   });
 }
 
-// ===== HELPERS =====
+// HELPERS
 function uid() {
   return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
 }
@@ -225,7 +205,7 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-// ===== MODAL =====
+// MODAL
 function openModal(id) {
   const m = document.getElementById(id);
   if (m) {
@@ -242,7 +222,6 @@ function closeModal(id) {
   }
 }
 
-// Close modal on background click
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('modal-bg')) {
     e.target.classList.remove('open');
@@ -250,7 +229,6 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// Escape key closes modals
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-bg.open').forEach(m => {
@@ -260,7 +238,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// ===== TOAST =====
+// TOAST
 function toast(msg, type) {
   type = type || 'success';
   const container = document.getElementById('toastBox');
@@ -268,45 +246,27 @@ function toast(msg, type) {
     alert(msg);
     return;
   }
-
-  const icons = {
-    success: '✅',
-    error: '❌',
-    warning: '⚠️',
-    info: 'ℹ️'
-  };
-
-  const colors = {
-    success: '#10b981',
-    error: '#f43f5e',
-    warning: '#f59e0b',
-    info: '#06b6d4'
-  };
-
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const colors = { success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#6366f1' };
   const t = document.createElement('div');
   t.className = 'toast';
   t.style.borderLeftColor = colors[type] || colors.success;
   t.innerHTML = '<span>' + (icons[type] || '✅') + '</span><span>' + escapeHtml(msg) + '</span>';
   container.appendChild(t);
-
   setTimeout(function() {
     t.style.opacity = '0';
     t.style.transform = 'translateX(20px)';
-    setTimeout(function() {
-      if (t.parentNode) t.remove();
-    }, 300);
+    setTimeout(function() { if (t.parentNode) t.remove(); }, 300);
   }, 3000);
 }
 
-// ===== AMOUNT PREVIEW =====
+// AMOUNT PREVIEW
 function previewAmt(type) {
   const isI = type === 'income';
   const amtEl = document.getElementById(isI ? 'iAmt' : 'eAmt');
   const previewEl = document.getElementById(isI ? 'iPreview' : 'ePreview');
   const valEl = document.getElementById(isI ? 'iPreviewVal' : 'ePreviewVal');
-
   if (!amtEl || !previewEl || !valEl) return;
-
   const amt = parseFloat(amtEl.value);
   if (!isNaN(amt) && amt > 0) {
     previewEl.style.display = 'flex';
@@ -316,40 +276,28 @@ function previewAmt(type) {
   }
 }
 
-// ===== HEADER CLOCK =====
+// HEADER CLOCK
 function updateHeaderDateTime() {
   const now = new Date();
-
   const dateStr = now.toLocaleDateString('en-IN', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
   });
-
   const timeStr = now.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
   });
-
   const dateEl = document.getElementById('headerDate');
   if (dateEl) dateEl.textContent = dateStr;
-
   const timeEl = document.getElementById('liveTime');
   if (timeEl) timeEl.textContent = 'LIVE ' + timeStr;
 }
-
 updateHeaderDateTime();
 setInterval(updateHeaderDateTime, 1000);
 
-// ===== SIDEBAR =====
+// SIDEBAR
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
   if (!sidebar) return;
-
   sidebar.classList.toggle('open');
   if (overlay) {
     overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
@@ -363,14 +311,11 @@ function closeSidebar() {
   if (overlay) overlay.style.display = 'none';
 }
 
-// Auto-close sidebar on desktop resize
 window.addEventListener('resize', debounce(function() {
-  if (window.innerWidth > 1023) {
-    closeSidebar();
-  }
+  if (window.innerWidth > 1023) closeSidebar();
 }, 200));
 
-// ===== LOGOUT =====
+// LOGOUT
 function logout() {
   if (confirm('Are you sure you want to sign out?')) {
     localStorage.removeItem(APP.authKey);
@@ -379,19 +324,17 @@ function logout() {
   }
 }
 
-// ===== EXPORT EXCEL =====
+// EXPORT EXCEL
 function exportExcel() {
   const txns = getTxns();
   if (!txns.length) {
     toast('No data to export!', 'warning');
     return;
   }
-
   if (typeof XLSX === 'undefined') {
     toast('Excel library not loaded!', 'error');
     return;
   }
-
   try {
     const rows = txns.map(function(x, i) {
       return {
@@ -405,17 +348,14 @@ function exportExcel() {
         'Notes': x.notes || '-'
       };
     });
-
     const ws = XLSX.utils.json_to_sheet(rows);
     ws['!cols'] = [
       { wch: 5 }, { wch: 14 }, { wch: 10 },
       { wch: 22 }, { wch: 14 }, { wch: 14 },
       { wch: 20 }, { wch: 25 }
     ];
-
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
-
     const fileName = 'Crust-Chilly-' + today() + '.xlsx';
     XLSX.writeFile(wb, fileName);
     toast('Excel exported: ' + fileName, 'success');
@@ -425,26 +365,22 @@ function exportExcel() {
   }
 }
 
-// ===== EXPORT PDF =====
+// EXPORT PDF
 function exportPDF() {
   const txns = getTxns();
   if (!txns.length) {
     toast('No data to export!', 'warning');
     return;
   }
-
   if (typeof window.jspdf === 'undefined') {
     toast('PDF library not loaded!', 'error');
     return;
   }
-
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-
-    // Header
-    doc.setFillColor(6, 182, 212);
+    doc.setFillColor(99, 102, 241);
     doc.rect(0, 0, pageWidth, 30, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
@@ -452,21 +388,17 @@ function exportPDF() {
     doc.setFontSize(10);
     doc.text('Transaction Report', 14, 23);
     doc.text('Generated: ' + new Date().toLocaleString('en-IN'), pageWidth - 14, 23, { align: 'right' });
-
-    // Summary
     const tot = calcTotals(txns);
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(30, 27, 75);
     doc.setFontSize(11);
     doc.text('Summary', 14, 42);
     doc.setFontSize(9);
     doc.setTextColor(16, 185, 129);
     doc.text('Income: ' + inr(tot.income), 14, 50);
-    doc.setTextColor(244, 63, 94);
+    doc.setTextColor(239, 68, 68);
     doc.text('Expense: ' + inr(tot.expense), 75, 50);
     doc.setTextColor(245, 158, 11);
     doc.text('Profit: ' + inr(tot.profit), 140, 50);
-
-    // Table
     doc.autoTable({
       startY: 56,
       head: [['#', 'Date', 'Type', 'Category', 'Amount', 'Mode']],
@@ -481,10 +413,9 @@ function exportPDF() {
         ];
       }),
       styles: { fontSize: 8, cellPadding: 4 },
-      headStyles: { fillColor: [6, 182, 212], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [247, 249, 252] }
+      headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [239, 234, 254] }
     });
-
     const fileName = 'Crust-Chilly-' + today() + '.pdf';
     doc.save(fileName);
     toast('PDF exported: ' + fileName, 'success');
@@ -494,24 +425,22 @@ function exportPDF() {
   }
 }
 
-// ===== BACKUP =====
+// BACKUP
 function downloadBackup() {
   const txns = getTxns();
   if (!txns.length) {
     toast('No data to backup!', 'warning');
     return;
   }
-
   try {
     const data = {
-      version: '2.0',
+      version: '3.0',
       business: 'Crust & Chilly',
       exported: new Date().toISOString(),
       user: localStorage.getItem(APP.userKey) || 'unknown',
       count: txns.length,
       transactions: txns
     };
-
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -520,11 +449,7 @@ function downloadBackup() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-
-    setTimeout(function() {
-      URL.revokeObjectURL(url);
-    }, 100);
-
+    setTimeout(function() { URL.revokeObjectURL(url); }, 100);
     localStorage.setItem(APP.backupKey, today());
     toast('Backup downloaded! (' + txns.length + ' records)', 'success');
   } catch (err) {
@@ -533,6 +458,4 @@ function downloadBackup() {
   }
 }
 
-// ===== INIT =====
-console.log('%cCrust & Chilly Loaded', 'color:#06b6d4;font-weight:bold;');
-console.log('Transactions:', getTxns().length);
+console.log('%cCrust & Chilly Loaded', 'color:#6366f1;font-weight:bold;');

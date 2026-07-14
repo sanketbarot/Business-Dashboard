@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Transactions — Crust & Chilly</title>
 <meta name="robots" content="noindex, nofollow"/>
-<meta name="theme-color" content="#06b6d4"/>
+<meta name="theme-color" content="#6366f1"/>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -94,7 +94,7 @@
 
       <section class="tx-analytics fade-up">
         <div class="tx-stat in">
-          <div class="tx-stat-ic" style="background:var(--income-soft);">💰</div>
+          <div class="tx-stat-ic">💰</div>
           <div class="tx-stat-info">
             <div class="tx-stat-lbl">Total Income</div>
             <div class="tx-stat-val text-income" id="tsIncome">₹ 0</div>
@@ -102,7 +102,7 @@
           </div>
         </div>
         <div class="tx-stat out">
-          <div class="tx-stat-ic" style="background:var(--expense-soft);">💸</div>
+          <div class="tx-stat-ic">💸</div>
           <div class="tx-stat-info">
             <div class="tx-stat-lbl">Total Expense</div>
             <div class="tx-stat-val text-expense" id="tsExpense">₹ 0</div>
@@ -110,7 +110,7 @@
           </div>
         </div>
         <div class="tx-stat prof">
-          <div class="tx-stat-ic" style="background:var(--profit-soft);">📈</div>
+          <div class="tx-stat-ic">📈</div>
           <div class="tx-stat-info">
             <div class="tx-stat-lbl">Net Profit</div>
             <div class="tx-stat-val text-profit" id="tsProfit">₹ 0</div>
@@ -118,7 +118,7 @@
           </div>
         </div>
         <div class="tx-stat count">
-          <div class="tx-stat-ic" style="background:var(--brand-soft);">🔢</div>
+          <div class="tx-stat-ic">🔢</div>
           <div class="tx-stat-info">
             <div class="tx-stat-lbl">Records</div>
             <div class="tx-stat-val text-brand" id="tsCount">0</div>
@@ -143,7 +143,7 @@
         <div id="customRange" class="cr">
           <span class="cr-label">Range:</span>
           <input type="date" class="fc" id="fStart"/>
-          <span style="color:var(--brand-dark);font-weight:700;">→</span>
+          <span style="color:#6366f1;font-weight:700;">→</span>
           <input type="date" class="fc" id="fEnd"/>
           <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply</button>
         </div>
@@ -247,7 +247,7 @@
 <!-- INCOME MODAL -->
 <div class="modal-bg" id="incomeModal">
   <div class="modal">
-    <div class="modal-hd" style="background:var(--income-soft);">
+    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
       <h3 id="incomeTitle">💰 Add Income</h3>
       <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
     </div>
@@ -279,8 +279,8 @@
         <div class="fg">
           <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
           <div style="position:relative;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--income);z-index:1;">₹</span>
-            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:28px;" oninput="previewAmt('income')"/>
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span>
+            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/>
           </div>
         </div>
         <div class="fg">
@@ -319,7 +319,7 @@
 <!-- EXPENSE MODAL -->
 <div class="modal-bg" id="expenseModal">
   <div class="modal">
-    <div class="modal-hd" style="background:var(--expense-soft);">
+    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
       <h3 id="expenseTitle">💸 Add Expense</h3>
       <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
     </div>
@@ -361,8 +361,8 @@
         <div class="fg">
           <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
           <div style="position:relative;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--expense);z-index:1;">₹</span>
-            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:28px;" oninput="previewAmt('expense')"/>
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span>
+            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/>
           </div>
         </div>
         <div class="fg">

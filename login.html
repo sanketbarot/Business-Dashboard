@@ -5,16 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Login — Crust & Chilly</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   min-height: 100vh;
   display: flex;
-  background: #0a0e27;
-  color: #fff;
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 50%, #ede9fe 100%);
+  background-attachment: fixed;
+  color: #1e1b4b;
   overflow-x: hidden;
   position: relative;
 }
@@ -23,7 +24,7 @@ body::before {
   content:'';
   position: fixed;
   width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%);
   top: -200px; left: -200px;
   border-radius: 50%;
   pointer-events: none;
@@ -33,7 +34,7 @@ body::after {
   content:'';
   position: fixed;
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
   bottom: -150px; right: -150px;
   border-radius: 50%;
   pointer-events: none;
@@ -62,13 +63,13 @@ body::after {
 .brand-logo {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(6,182,212,0.4);
+  box-shadow: 0 8px 24px rgba(99,102,241,0.35);
   overflow: hidden;
   padding: 8px;
 }
@@ -80,16 +81,16 @@ body::after {
 }
 
 .brand-logo-name {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e1b4b;
 }
 
 .brand-logo-tag {
   font-size: 0.7rem;
-  color: #06b6d4;
-  font-weight: 600;
+  color: #6366f1;
+  font-weight: 700;
   letter-spacing: 0.05em;
 }
 
@@ -97,28 +98,29 @@ body::after {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 14px;
-  background: rgba(6,182,212,0.1);
-  border: 1px solid rgba(6,182,212,0.3);
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.2);
   border-radius: 100px;
   margin-bottom: 24px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #06b6d4;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.08);
 }
 
 .brand h1 {
-  font-family: 'Space Grotesk', sans-serif;
   font-size: 3rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.15;
   margin-bottom: 20px;
-  color: #fff;
+  color: #1e1b4b;
+  letter-spacing: -0.02em;
 }
 
 .brand h1 .accent {
-  background: linear-gradient(135deg, #06b6d4 0%, #fbbf24 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -126,7 +128,7 @@ body::after {
 
 .brand > p {
   font-size: 1rem;
-  color: #94a3b8;
+  color: #64748b;
   line-height: 1.7;
   margin-bottom: 36px;
 }
@@ -138,25 +140,27 @@ body::after {
 }
 
 .stat-box {
-  padding: 16px 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
+  padding: 18px 16px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99,102,241,0.1);
+  border-radius: 16px;
   text-align: center;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.06);
 }
 
 .stat-box .num {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #06b6d4;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #6366f1;
   margin-bottom: 4px;
 }
 
 .stat-box .lbl {
-  font-size: 0.7rem;
-  color: #94a3b8;
-  font-weight: 500;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
 }
 
 .right {
@@ -171,13 +175,13 @@ body::after {
 
 .form-card {
   width: 100%;
-  max-width: 380px;
-  background: rgba(255,255,255,0.04);
+  max-width: 400px;
+  background: rgba(255,255,255,0.85);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 24px;
-  padding: 40px 32px;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 28px;
+  padding: 44px 36px;
+  box-shadow: 0 24px 60px rgba(99,102,241,0.15);
 }
 
 .mobile-logo {
@@ -185,15 +189,15 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 26px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid rgba(99,102,241,0.1);
 }
 
 .mobile-logo-icon {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -201,32 +205,27 @@ body::after {
   flex-shrink: 0;
   padding: 6px;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
 }
 
-.mobile-logo-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+.mobile-logo-icon img { width: 100%; height: 100%; object-fit: contain; }
 
 .mobile-logo-text {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e1b4b;
 }
 
 .form-card h2 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 800;
   margin-bottom: 6px;
-  color: #fff;
+  color: #1e1b4b;
 }
 
 .form-card > p {
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: 0.88rem;
+  color: #64748b;
   margin-bottom: 28px;
 }
 
@@ -235,48 +234,48 @@ body::after {
 .fl {
   display: block;
   font-size: 0.72rem;
-  font-weight: 600;
-  color: #cbd5e1;
+  font-weight: 700;
+  color: #4f46e5;
   margin-bottom: 8px;
   letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .iw { position: relative; }
 
 .iw-ic {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.95rem;
+  font-size: 1rem;
   pointer-events: none;
 }
 
 .fi {
   width: 100%;
-  padding: 13px 14px 13px 42px;
-  background: rgba(255,255,255,0.05);
-  border: 1.5px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  color: #fff;
+  padding: 14px 16px 14px 46px;
+  background: #fff;
+  border: 1.5px solid rgba(99,102,241,0.15);
+  border-radius: 14px;
+  color: #1e1b4b;
   font-size: 0.9rem;
   font-family: inherit;
   outline: none;
   transition: all 0.2s;
-  min-height: 46px;
+  min-height: 50px;
 }
 
 .fi:focus {
-  border-color: #06b6d4;
-  background: rgba(6,182,212,0.05);
-  box-shadow: 0 0 0 4px rgba(6,182,212,0.1);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
 }
 
-.fi::placeholder { color: #64748b; }
+.fi::placeholder { color: #94a3b8; }
 
 .pt {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -288,52 +287,53 @@ body::after {
 
 .err {
   display: none;
-  background: rgba(239,68,68,0.1);
-  border: 1px solid rgba(239,68,68,0.3);
-  color: #fca5a5;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 0.8rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
   margin-bottom: 16px;
+  font-weight: 500;
 }
 
 .lb {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  padding: 15px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: #fff;
   border: none;
-  border-radius: 12px;
-  font-size: 0.9rem;
+  border-radius: 14px;
+  font-size: 0.95rem;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 8px;
-  min-height: 50px;
+  min-height: 54px;
+  box-shadow: 0 8px 20px rgba(99,102,241,0.35);
 }
 
 .lb:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(6,182,212,0.4);
+  box-shadow: 0 12px 32px rgba(99,102,241,0.45);
 }
 
 .lb:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .ft {
   text-align: center;
-  margin-top: 24px;
-  font-size: 0.72rem;
+  margin-top: 26px;
+  font-size: 0.75rem;
   color: #64748b;
 }
 
 .dm {
-  margin-top: 8px;
+  margin-top: 10px;
   text-align: center;
-  font-size: 0.72rem;
-  color: #06b6d4;
+  font-size: 0.75rem;
+  color: #6366f1;
   font-weight: 700;
-  font-family: 'Space Grotesk', sans-serif;
 }
 
 @media (max-width: 900px) {
@@ -344,14 +344,14 @@ body::after {
 
 @media (max-width: 600px) {
   .right { padding: 20px 16px; }
-  .form-card { padding: 28px 22px; }
-  .form-card h2 { font-size: 1.3rem; }
+  .form-card { padding: 32px 24px; }
+  .form-card h2 { font-size: 1.4rem; }
   .fi { font-size: 16px; }
 }
 
 @media (max-width: 400px) {
-  .form-card { padding: 24px 18px; }
-  .form-card h2 { font-size: 1.15rem; }
+  .form-card { padding: 26px 20px; }
+  .form-card h2 { font-size: 1.2rem; }
 }
 </style>
 </head>
@@ -369,9 +369,9 @@ body::after {
       </div>
     </div>
 
-    <div class="logo-badge">✨ BUSINESS TRACKER v2.0</div>
-    <h1>Manage business.<br/><span class="accent">Effortlessly.</span></h1>
-    <p>Track income, expenses, profits — all in one beautifully designed dashboard.</p>
+    <div class="logo-badge">✨ BUSINESS TRACKER v3.0</div>
+    <h1>Manage business.<br/><span class="accent">Beautifully.</span></h1>
+    <p>Track income, expenses, profits — all in one stunning glassmorphism dashboard.</p>
 
     <div class="stats-row">
       <div class="stat-box"><div class="num">100%</div><div class="lbl">Private</div></div>
@@ -397,7 +397,7 @@ body::after {
 
     <form onsubmit="handleLogin(event)">
       <div class="fg">
-        <label class="fl">EMAIL ADDRESS</label>
+        <label class="fl">Email Address</label>
         <div class="iw">
           <span class="iw-ic">📧</span>
           <input type="email" class="fi" id="em" value="sanketbarot3901@gmail.com" required autocomplete="email"/>
@@ -405,7 +405,7 @@ body::after {
       </div>
 
       <div class="fg">
-        <label class="fl">PASSWORD</label>
+        <label class="fl">Password</label>
         <div class="iw">
           <span class="iw-ic">🔒</span>
           <input type="password" class="fi" id="pw" required placeholder="••••••••" autocomplete="current-password"/>
@@ -455,11 +455,6 @@ function togP() {
   const i = document.getElementById('pw');
   i.type = i.type === 'password' ? 'text' : 'password';
 }
-
-window.addEventListener('load', () => {
-  const pw = document.getElementById('pw');
-  if (pw) pw.focus();
-});
 </script>
 </body>
 </html>

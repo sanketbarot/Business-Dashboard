@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Dashboard — Crust & Chilly</title>
 <meta name="robots" content="noindex, nofollow"/>
-<meta name="theme-color" content="#06b6d4"/>
+<meta name="theme-color" content="#6366f1"/>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -18,12 +18,12 @@
 <style>
 .sb-logo-icon-wrap {
   width: 42px; height: 42px;
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(6,182,212,0.3);
-  overflow: hidden; padding: 4px;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+  overflow: hidden; padding: 6px;
 }
 .sb-logo-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
 .sb-logo-info { min-width: 0; flex: 1; overflow: hidden; }
@@ -94,16 +94,14 @@
     <div class="content">
 
       <section class="hero fade-up">
-        <div class="hero-inner">
-          <div class="hero-text">
-            <h2 id="welcomeMsg">Welcome back 👋</h2>
-            <p id="heroSubtext">Here's your business overview</p>
-          </div>
-          <div class="hero-actions">
-            <button class="btn" onclick="openIncomeModal()">💰 Add Income</button>
-            <button class="btn" onclick="openExpenseModal()">💸 Add Expense</button>
-            <button class="btn" onclick="exportPDF()">📄 Report</button>
-          </div>
+        <div class="hero-text">
+          <h2 id="welcomeMsg">Welcome back 👋</h2>
+          <p id="heroSubtext">Here's your business overview</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="openIncomeModal()">💰 Add Income</button>
+          <button class="btn btn-outline" onclick="openExpenseModal()">💸 Add Expense</button>
+          <button class="btn btn-outline" onclick="exportPDF()">📄 Report</button>
         </div>
       </section>
 
@@ -121,56 +119,59 @@
       <section class="sum-grid fade-up">
         <div class="sum-card">
           <div class="sc-top">
-            <div class="sc-icon" style="background:var(--income-soft);">💰</div>
-            <span class="sc-trend neutral" id="incomeTrend">→ 0%</span>
+            <div class="sc-icon">💰</div>
+            <span class="sc-trend" id="incomeTrend">→ 0%</span>
           </div>
-          <div class="sc-label">Total Income</div>
-          <div class="sc-value text-income" id="pIncome">₹ 0.00</div>
-          <div class="sc-sub" id="pIncomeCount">0 records</div>
-          <div class="sc-line" style="background:linear-gradient(90deg,#10b981,#34d399);"></div>
+          <div>
+            <div class="sc-label">Total Income</div>
+            <div class="sc-value" id="pIncome">₹ 0.00</div>
+            <div class="sc-sub" id="pIncomeCount">0 records</div>
+          </div>
         </div>
 
         <div class="sum-card">
           <div class="sc-top">
-            <div class="sc-icon" style="background:var(--expense-soft);">💸</div>
-            <span class="sc-trend neutral" id="expenseTrend">→ 0%</span>
+            <div class="sc-icon">💸</div>
+            <span class="sc-trend" id="expenseTrend">→ 0%</span>
           </div>
-          <div class="sc-label">Total Expense</div>
-          <div class="sc-value text-expense" id="pExpense">₹ 0.00</div>
-          <div class="sc-sub" id="pExpenseCount">0 records</div>
-          <div class="sc-line" style="background:linear-gradient(90deg,#f43f5e,#fb7185);"></div>
+          <div>
+            <div class="sc-label">Total Expense</div>
+            <div class="sc-value" id="pExpense">₹ 0.00</div>
+            <div class="sc-sub" id="pExpenseCount">0 records</div>
+          </div>
         </div>
 
         <div class="sum-card">
           <div class="sc-top">
-            <div class="sc-icon" style="background:var(--profit-soft);">📈</div>
-            <span class="sc-trend neutral" id="profitTrend">→ 0%</span>
+            <div class="sc-icon">📈</div>
+            <span class="sc-trend" id="profitTrend">→ 0%</span>
           </div>
-          <div class="sc-label">Net Profit</div>
-          <div class="sc-value text-profit" id="pProfit">₹ 0.00</div>
-          <div class="sc-sub" id="pMargin">0% margin</div>
-          <div class="sc-line" style="background:linear-gradient(90deg,#f59e0b,#fcd34d);"></div>
+          <div>
+            <div class="sc-label">Net Profit</div>
+            <div class="sc-value" id="pProfit">₹ 0.00</div>
+            <div class="sc-sub" id="pMargin">0% margin</div>
+          </div>
         </div>
 
         <div class="sum-card balance-glow">
           <div class="sc-top">
-            <div class="sc-icon" style="background:var(--brand-soft);">🏦</div>
-            <span class="badge badge-gold">All Time</span>
+            <div class="sc-icon">🏦</div>
+            <span class="sc-trend">All Time</span>
           </div>
-          <div class="sc-label">Total Balance</div>
-          <div class="sc-value text-brand" id="totalBal">₹ 0.00</div>
-          <div class="sc-sub" id="totalCount">0 records</div>
-          <div class="sc-line" style="background:var(--gradient);"></div>
+          <div>
+            <div class="sc-label">Total Balance</div>
+            <div class="sc-value" id="totalBal">₹ 0.00</div>
+            <div class="sc-sub" id="totalCount">0 records</div>
+          </div>
         </div>
       </section>
 
-      <!-- ============ CASH VS ONLINE ANALYSIS ============ -->
+      <!-- CASH VS ONLINE -->
       <section class="cash-online-grid fade-up">
 
-        <!-- CASH CARD -->
         <div class="co-card cash-card">
           <div class="co-header">
-            <div class="co-icon" style="background:#fef3c7;">💵</div>
+            <div class="co-icon">💵</div>
             <div class="co-header-info">
               <div class="co-title">Cash Balance</div>
               <div class="co-subtitle">Physical Money</div>
@@ -204,10 +205,9 @@
           </div>
         </div>
 
-        <!-- ONLINE CARD -->
         <div class="co-card online-card">
           <div class="co-header">
-            <div class="co-icon" style="background:#ede9fe;">📱</div>
+            <div class="co-icon">📱</div>
             <div class="co-header-info">
               <div class="co-title">Online Balance</div>
               <div class="co-subtitle">UPI + Bank + Card</div>
@@ -246,49 +246,49 @@
       <section class="analytics-grid fade-up">
         <div class="mini-stat">
           <div class="ms-top">
-            <div class="ms-ic" style="background:var(--income-soft);">📊</div>
+            <div class="ms-ic">📊</div>
             <div class="ms-title">Avg Income / Day</div>
           </div>
-          <div class="ms-value text-income" id="msAvgIncome">₹ 0</div>
+          <div class="ms-value" id="msAvgIncome">₹ 0</div>
           <div class="ms-sub" id="msIncomeDays">No data yet</div>
           <div class="ms-progress"><div class="ms-fill f-income" id="msIncomeBar" style="width:0%"></div></div>
         </div>
 
         <div class="mini-stat">
           <div class="ms-top">
-            <div class="ms-ic" style="background:var(--expense-soft);">💳</div>
+            <div class="ms-ic">💳</div>
             <div class="ms-title">Avg Expense / Day</div>
           </div>
-          <div class="ms-value text-expense" id="msAvgExpense">₹ 0</div>
+          <div class="ms-value" id="msAvgExpense">₹ 0</div>
           <div class="ms-sub" id="msExpenseDays">No data yet</div>
           <div class="ms-progress"><div class="ms-fill f-expense" id="msExpenseBar" style="width:0%"></div></div>
         </div>
 
         <div class="mini-stat">
           <div class="ms-top">
-            <div class="ms-ic" style="background:var(--brand-soft);">🎯</div>
+            <div class="ms-ic">🎯</div>
             <div class="ms-title">Savings Rate</div>
           </div>
-          <div class="ms-value text-brand" id="msSavings">0%</div>
+          <div class="ms-value" id="msSavings">0%</div>
           <div class="ms-sub" id="msSavingsSub">Start adding data</div>
           <div class="ms-progress"><div class="ms-fill f-brand" id="msSavingsBar" style="width:0%"></div></div>
         </div>
       </section>
 
       <section class="chart-grid fade-up">
-        <div class="card">
+        <div class="card chart-enhanced">
           <div class="card-hd">
             <h4>📊 Income vs Expense</h4>
             <select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
           </div>
           <div class="card-bd">
-            <div style="position:relative;height:280px;">
+            <div style="position:relative;height:300px;">
               <canvas id="barChart"></canvas>
             </div>
           </div>
         </div>
 
-        <div class="card">
+        <div class="card chart-enhanced">
           <div class="card-hd">
             <h4>🍩 Expense Breakdown</h4>
             <select class="chart-sel" id="donutPeriod" onchange="buildDonutChart()">
@@ -298,7 +298,7 @@
             </select>
           </div>
           <div class="card-bd">
-            <div style="position:relative;height:200px;">
+            <div style="position:relative;height:220px;">
               <canvas id="donutChart"></canvas>
             </div>
             <div id="donutLegend" class="donut-legend"></div>
@@ -306,13 +306,29 @@
         </div>
       </section>
 
-      <section class="card fade-up" style="margin-bottom:20px;">
+      <!-- ENHANCED 30-DAY CASH FLOW -->
+      <section class="card chart-enhanced fade-up" style="margin-bottom:26px;">
         <div class="card-hd">
-          <h4>📈 30-Day Cash Flow</h4>
-          <span style="font-size:0.72rem;color:var(--text-muted);">Last 30 days</span>
+          <h4>📈 30-Day Cash Flow Analysis</h4>
+          <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Last 30 days</span>
         </div>
         <div class="card-bd">
-          <div style="position:relative;height:220px;">
+
+          <div class="chart-info-bar">
+            <div class="chart-info-item">
+              <div class="chart-info-dot" style="background:#10b981;"></div>
+              <span>Income: <strong id="lineIncomeTotal">₹ 0</strong></span>
+            </div>
+            <div class="chart-info-item">
+              <div class="chart-info-dot" style="background:#ef4444;"></div>
+              <span>Expense: <strong id="lineExpenseTotal">₹ 0</strong></span>
+            </div>
+            <div class="chart-info-item" style="margin-left:auto;">
+              <span>Net: <strong id="lineNetTotal" style="color:var(--brand-accent);">₹ 0</strong></span>
+            </div>
+          </div>
+
+          <div style="position:relative;height:280px;">
             <canvas id="lineChart"></canvas>
           </div>
         </div>
@@ -387,7 +403,7 @@
 <!-- INCOME MODAL -->
 <div class="modal-bg" id="incomeModal">
   <div class="modal">
-    <div class="modal-hd" style="background:var(--income-soft);">
+    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
       <h3 id="incomeTitle">💰 Add Income</h3>
       <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
     </div>
@@ -419,8 +435,8 @@
         <div class="fg">
           <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
           <div style="position:relative;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--income);z-index:1;">₹</span>
-            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:28px;" oninput="previewAmt('income')"/>
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span>
+            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/>
           </div>
         </div>
         <div class="fg">
@@ -459,7 +475,7 @@
 <!-- EXPENSE MODAL -->
 <div class="modal-bg" id="expenseModal">
   <div class="modal">
-    <div class="modal-hd" style="background:var(--expense-soft);">
+    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
       <h3 id="expenseTitle">💸 Add Expense</h3>
       <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
     </div>
@@ -501,8 +517,8 @@
         <div class="fg">
           <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
           <div style="position:relative;">
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--expense);z-index:1;">₹</span>
-            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:28px;" oninput="previewAmt('expense')"/>
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span>
+            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/>
           </div>
         </div>
         <div class="fg">

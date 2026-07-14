@@ -30,8 +30,6 @@ const TxnPage = {
   },
 
   init: function() {
-    console.log('TxnPage init');
-
     try {
       const iDate = document.getElementById('iDate');
       const eDate = document.getElementById('eDate');
@@ -79,9 +77,7 @@ const TxnPage = {
     this.state.filter = f;
 
     const tabs = document.querySelectorAll('.ft');
-    for (let i = 0; i < tabs.length; i++) {
-      tabs[i].classList.remove('active');
-    }
+    for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
     if (btn) btn.classList.add('active');
 
     const cr = document.getElementById('customRange');
@@ -99,9 +95,7 @@ const TxnPage = {
     this.state.selected.clear();
 
     const tabs = document.querySelectorAll('.ft');
-    for (let i = 0; i < tabs.length; i++) {
-      tabs[i].classList.remove('active');
-    }
+    for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
     const allTab = document.querySelector('.ft[data-f="all"]');
     if (allTab) allTab.classList.add('active');
 
@@ -301,20 +295,20 @@ const TxnPage = {
 
       return '<tr style="' + bg + '">' +
         '<td><input type="checkbox" ' + (sel ? 'checked' : '') +
-        ' style="accent-color:var(--brand);cursor:pointer;width:16px;height:16px;"' +
+        ' style="accent-color:var(--brand);cursor:pointer;width:18px;height:18px;"' +
         ' onchange="TxnPage.select(\'' + t.id + '\', this)"/></td>' +
-        '<td style="font-size:0.8rem;white-space:nowrap;">' + fmtDate(t.date) + '</td>' +
+        '<td style="font-size:0.82rem;white-space:nowrap;font-weight:500;">' + fmtDate(t.date) + '</td>' +
         '<td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' +
         (isI ? '💰' : '💸') + ' ' + (isI ? 'Income' : 'Expense') + '</span></td>' +
-        '<td style="font-size:0.82rem;font-weight:500;">' + escapeHtml(t.category || '-') + '</td>' +
-        '<td class="' + (isI ? 'amt-in' : 'amt-out') + '" style="font-family:\'Space Grotesk\',sans-serif;">' +
+        '<td style="font-size:0.85rem;font-weight:600;">' + escapeHtml(t.category || '-') + '</td>' +
+        '<td class="' + (isI ? 'amt-in' : 'amt-out') + '" style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:0.95rem;">' +
         (isI ? '+' : '-') + ' ' + inr(t.amount) + '</td>' +
-        '<td style="font-size:0.78rem;color:var(--text-muted);">' +
+        '<td style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">' +
         (self.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</td>' +
-        '<td style="font-size:0.78rem;color:var(--text-muted);">' + escapeHtml(customer) + '</td>' +
+        '<td style="font-size:0.8rem;color:var(--text-muted);">' + escapeHtml(customer) + '</td>' +
         '<td style="font-size:0.78rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(notes) + '">' +
         escapeHtml(truncNote) + '</td>' +
-        '<td><div style="display:flex;gap:4px;">' +
+        '<td><div style="display:flex;gap:5px;">' +
         '<button class="act act-v" onclick="TxnPage.view(\'' + t.id + '\')" title="View">👁️</button>' +
         '<button class="act act-e" onclick="TxnPage.edit(\'' + t.id + '\')" title="Edit">✏️</button>' +
         '<button class="act act-d" onclick="TxnPage.del(\'' + t.id + '\')" title="Delete">🗑️</button>' +
@@ -459,7 +453,7 @@ const TxnPage = {
         html += '<button class="pg ' + (i === current ? 'active' : '') +
           '" onclick="TxnPage.goPage(' + i + ')">' + i + '</button>';
       } else if (i === current - 2 || i === current + 2) {
-        html += '<span style="padding:0 4px;color:var(--text-muted);">...</span>';
+        html += '<span style="padding:0 6px;color:var(--text-muted);font-weight:700;">...</span>';
       }
     }
 
@@ -547,7 +541,7 @@ const TxnPage = {
     if (!grid) return;
 
     if (hd) {
-      hd.style.background = isI ? 'var(--income-soft)' : 'var(--expense-soft)';
+      hd.style.background = isI ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
       const h3 = hd.querySelector('h3');
       if (h3) h3.textContent = isI ? '💰 Income Details' : '💸 Expense Details';
     }
@@ -558,14 +552,14 @@ const TxnPage = {
 
     grid.innerHTML =
       '<div class="detail-item"><div class="detail-lbl">Date</div><div class="detail-val">' + fmtDate(t.date) + '</div></div>' +
-      '<div class="detail-item"><div class="detail-lbl">Day</div><div class="detail-val" style="font-family:\'Inter\',sans-serif;">' + dayName + '</div></div>' +
+      '<div class="detail-item"><div class="detail-lbl">Day</div><div class="detail-val">' + dayName + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">Type</div><div class="detail-val ' + (isI ? 'text-income' : 'text-expense') + '">' + (isI ? '💰 Income' : '💸 Expense') + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">Category</div><div class="detail-val">' + escapeHtml(t.category || '-') + '</div></div>' +
       '<div class="detail-item full"><div class="detail-lbl">Amount</div><div class="detail-val ' + (isI ? 'text-income' : 'text-expense') + '" style="font-size:1.5rem;">' + inr(t.amount) + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">Mode</div><div class="detail-val">' + (this.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">' + customerLbl + '</div><div class="detail-val">' + escapeHtml(customer || '—') + '</div></div>' +
-      (t.notes ? '<div class="detail-item full"><div class="detail-lbl">Notes</div><div class="detail-val" style="font-family:\'Inter\',sans-serif;font-weight:500;">' + escapeHtml(t.notes) + '</div></div>' : '') +
-      (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-family:\'Inter\',sans-serif;font-weight:500;font-size:0.8rem;">' + new Date(t.savedAt).toLocaleString('en-IN') + '</div></div>' : '');
+      (t.notes ? '<div class="detail-item full"><div class="detail-lbl">Notes</div><div class="detail-val" style="font-weight:500;">' + escapeHtml(t.notes) + '</div></div>' : '') +
+      (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-size:0.85rem;">' + new Date(t.savedAt).toLocaleString('en-IN') + '</div></div>' : '');
 
     if (editBtn) {
       const self = this;
