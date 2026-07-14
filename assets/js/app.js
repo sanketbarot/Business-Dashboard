@@ -1,10 +1,10 @@
 /* ============================================
-   CRUST & CHILLY — CORE APP.JS
+   CRUST & CHILLY — APP.JS v4.0
    ============================================ */
 
 'use strict';
 
-// AUTH CHECK
+// AUTH
 (function() {
   if (!localStorage.getItem('bd_auth')) {
     window.location.href = 'login.html';
@@ -22,9 +22,7 @@ const APP = {
 function getTxns() {
   try {
     return JSON.parse(localStorage.getItem(APP.storageKey) || '[]');
-  } catch (e) {
-    return [];
-  }
+  } catch (e) { return []; }
 }
 
 function saveTxns(data) {
@@ -57,9 +55,7 @@ function inrShort(amount) {
 }
 
 // DATE HELPERS
-function today() {
-  return new Date().toISOString().split('T')[0];
-}
+function today() { return new Date().toISOString().split('T')[0]; }
 
 function fmtDate(d) {
   if (!d) return '-';
@@ -205,6 +201,43 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+// ANIMATED COUNTER
+function animateNumber(el, endValue, duration = 1500) {
+  if (!el) return;
+
+  const isRupee = endValue.toString().includes('₹');
+  const isPercent = endValue.toString().includes('%');
+  const numericTarget = parseFloat(endValue.toString().replace(/[₹,\s%]/g, '')) || 0;
+
+  const startTime = performance.now();
+
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 4);
+    const currentValue = numericTarget * eased;
+
+    if (isRupee) {
+      el.textContent = '₹ ' + currentValue.toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    } else if (isPercent) {
+      el.textContent = Math.floor(currentValue) + '%';
+    } else {
+      el.textContent = Math.floor(currentValue).toString();
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      el.textContent = endValue;
+    }
+  }
+
+  requestAnimationFrame(update);
+}
+
 // MODAL
 function openModal(id) {
   const m = document.getElementById(id);
@@ -242,17 +275,17 @@ document.addEventListener('keydown', function(e) {
 function toast(msg, type) {
   type = type || 'success';
   const container = document.getElementById('toastBox');
-  if (!container) {
-    alert(msg);
-    return;
-  }
+  if (!container) { alert(msg); return; }
+
   const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
   const colors = { success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#6366f1' };
+
   const t = document.createElement('div');
   t.className = 'toast';
   t.style.borderLeftColor = colors[type] || colors.success;
   t.innerHTML = '<span>' + (icons[type] || '✅') + '</span><span>' + escapeHtml(msg) + '</span>';
   container.appendChild(t);
+
   setTimeout(function() {
     t.style.opacity = '0';
     t.style.transform = 'translateX(20px)';
@@ -324,17 +357,30 @@ function logout() {
   }
 }
 
+// SMOOTH SCROLL FUNCTIONS
+function smoothScrollTo(targetId) {
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// SCROLL TO TOP
+function scrollToTop() {
+  const content = document.querySelector('.content');
+  if (content) {
+    content.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
 // EXPORT EXCEL
 function exportExcel() {
   const txns = getTxns();
-  if (!txns.length) {
-    toast('No data to export!', 'warning');
-    return;
-  }
-  if (typeof XLSX === 'undefined') {
-    toast('Excel library not loaded!', 'error');
-    return;
-  }
+  if (!txns.length) { toast('No data to export!', 'warning'); return; }
+  if (typeof XLSX === 'undefined') { toast('Excel library not loaded!', 'error'); return; }
+
   try {
     const rows = txns.map(function(x, i) {
       return {
@@ -348,12 +394,14 @@ function exportExcel() {
         'Notes': x.notes || '-'
       };
     });
+
     const ws = XLSX.utils.json_to_sheet(rows);
     ws['!cols'] = [
       { wch: 5 }, { wch: 14 }, { wch: 10 },
       { wch: 22 }, { wch: 14 }, { wch: 14 },
       { wch: 20 }, { wch: 25 }
     ];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
     const fileName = 'Crust-Chilly-' + today() + '.xlsx';
@@ -368,18 +416,14 @@ function exportExcel() {
 // EXPORT PDF
 function exportPDF() {
   const txns = getTxns();
-  if (!txns.length) {
-    toast('No data to export!', 'warning');
-    return;
-  }
-  if (typeof window.jspdf === 'undefined') {
-    toast('PDF library not loaded!', 'error');
-    return;
-  }
+  if (!txns.length) { toast('No data to export!', 'warning'); return; }
+  if (typeof window.jspdf === 'undefined') { toast('PDF library not loaded!', 'error'); return; }
+
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+
     doc.setFillColor(99, 102, 241);
     doc.rect(0, 0, pageWidth, 30, 'F');
     doc.setTextColor(255, 255, 255);
@@ -388,6 +432,7 @@ function exportPDF() {
     doc.setFontSize(10);
     doc.text('Transaction Report', 14, 23);
     doc.text('Generated: ' + new Date().toLocaleString('en-IN'), pageWidth - 14, 23, { align: 'right' });
+
     const tot = calcTotals(txns);
     doc.setTextColor(30, 27, 75);
     doc.setFontSize(11);
@@ -399,6 +444,7 @@ function exportPDF() {
     doc.text('Expense: ' + inr(tot.expense), 75, 50);
     doc.setTextColor(245, 158, 11);
     doc.text('Profit: ' + inr(tot.profit), 140, 50);
+
     doc.autoTable({
       startY: 56,
       head: [['#', 'Date', 'Type', 'Category', 'Amount', 'Mode']],
@@ -416,6 +462,7 @@ function exportPDF() {
       headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [239, 234, 254] }
     });
+
     const fileName = 'Crust-Chilly-' + today() + '.pdf';
     doc.save(fileName);
     toast('PDF exported: ' + fileName, 'success');
@@ -428,13 +475,11 @@ function exportPDF() {
 // BACKUP
 function downloadBackup() {
   const txns = getTxns();
-  if (!txns.length) {
-    toast('No data to backup!', 'warning');
-    return;
-  }
+  if (!txns.length) { toast('No data to backup!', 'warning'); return; }
+
   try {
     const data = {
-      version: '3.0',
+      version: '4.0',
       business: 'Crust & Chilly',
       exported: new Date().toISOString(),
       user: localStorage.getItem(APP.userKey) || 'unknown',
@@ -453,9 +498,8 @@ function downloadBackup() {
     localStorage.setItem(APP.backupKey, today());
     toast('Backup downloaded! (' + txns.length + ' records)', 'success');
   } catch (err) {
-    console.error('Backup error:', err);
     toast('Backup failed!', 'error');
   }
 }
 
-console.log('%cCrust & Chilly Loaded', 'color:#6366f1;font-weight:bold;');
+console.log('%cCrust & Chilly v4.0 Loaded', 'color:#6366f1;font-weight:bold;font-size:14px;');

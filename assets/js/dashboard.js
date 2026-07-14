@@ -1,5 +1,5 @@
 /* ============================================
-   CRUST & CHILLY — DASHBOARD.JS
+   DASHBOARD.JS v4.0 — Smooth Animations
    ============================================ */
 
 'use strict';
@@ -7,6 +7,7 @@
 const Dash = {
   charts: { bar: null, donut: null, line: null },
   period: 'month',
+  isFirstLoad: true,
 
   init: function() {
     try {
@@ -14,6 +15,7 @@ const Dash = {
       this.setupYearSelector();
       this.loadAll();
       this.setupSearch();
+      this.animateNumbers();
     } catch (err) {
       console.error('Dashboard init error:', err);
     }
@@ -34,14 +36,36 @@ const Dash = {
       this.buildDonutChart(all);
       this.buildLineChart(all);
     } else {
-      setTimeout(function() {
+      setTimeout(() => {
         if (typeof Chart !== 'undefined') {
-          Dash.buildBarChart(getTxns());
-          Dash.buildDonutChart(getTxns());
-          Dash.buildLineChart(getTxns());
+          this.buildBarChart(getTxns());
+          this.buildDonutChart(getTxns());
+          this.buildLineChart(getTxns());
         }
       }, 500);
     }
+  },
+
+  // ANIMATE NUMBERS after page load
+  animateNumbers: function() {
+    setTimeout(() => {
+      const numberIds = [
+        'pIncome', 'pExpense', 'pProfit', 'totalBal',
+        'cashIn', 'cashOut', 'cashBalance',
+        'onlineIn', 'onlineOut', 'onlineBalance',
+        'msAvgIncome', 'msAvgExpense', 'msSavings',
+        'cmpLast', 'cmpThis',
+        'lineIncomeTotal', 'lineExpenseTotal', 'lineNetTotal'
+      ];
+
+      numberIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.textContent && el.textContent !== '₹ 0.00' && el.textContent !== '0%') {
+          const val = el.textContent;
+          animateNumber(el, val);
+        }
+      });
+    }, 800);
   },
 
   setupWelcome: function() {
@@ -76,10 +100,8 @@ const Dash = {
   },
 
   loadCashOnline: function(all) {
-    let cashIn = 0, cashInCount = 0;
-    let cashOut = 0, cashOutCount = 0;
-    let onlineIn = 0, onlineInCount = 0;
-    let onlineOut = 0, onlineOutCount = 0;
+    let cashIn = 0, cashInCount = 0, cashOut = 0, cashOutCount = 0;
+    let onlineIn = 0, onlineInCount = 0, onlineOut = 0, onlineOutCount = 0;
     const cashModes = ['Cash'];
     const onlineModes = ['Online', 'UPI', 'Bank Transfer', 'Card', 'Cheque'];
     for (let i = 0; i < all.length; i++) {
@@ -107,15 +129,9 @@ const Dash = {
     this.setText('onlineInCount', onlineInCount + ' transaction' + (onlineInCount !== 1 ? 's' : ''));
     this.setText('onlineOutCount', onlineOutCount + ' transaction' + (onlineOutCount !== 1 ? 's' : ''));
     const cashBalEl = document.getElementById('cashBalance');
-    if (cashBalEl) {
-      if (cashBalance < 0) cashBalEl.classList.add('negative');
-      else cashBalEl.classList.remove('negative');
-    }
+    if (cashBalEl) cashBalEl.classList.toggle('negative', cashBalance < 0);
     const onlineBalEl = document.getElementById('onlineBalance');
-    if (onlineBalEl) {
-      if (onlineBalance < 0) onlineBalEl.classList.add('negative');
-      else onlineBalEl.classList.remove('negative');
-    }
+    if (onlineBalEl) onlineBalEl.classList.toggle('negative', onlineBalance < 0);
   },
 
   updateTrends: function(all, period) {
@@ -187,7 +203,11 @@ const Dash = {
 
   setBarWidth: function(id, percent) {
     const bar = document.getElementById(id);
-    if (bar) bar.style.width = Math.min(Math.max(percent, 0), 100) + '%';
+    if (bar) {
+      setTimeout(() => {
+        bar.style.width = Math.min(Math.max(percent, 0), 100) + '%';
+      }, 300);
+    }
   },
 
   loadInsights: function(all) {
@@ -214,14 +234,14 @@ const Dash = {
           insights.push({ type: 'success', icon: '📉', text: 'Expenses are <strong>' + pct + '% lower</strong> than last month' });
         }
       }
-      const expenses = all.filter(function(t) { return t.type === 'expense'; });
+      const expenses = all.filter(t => t.type === 'expense');
       if (expenses.length) {
         const grouped = {};
         for (let i = 0; i < expenses.length; i++) {
           const t = expenses[i];
           grouped[t.category] = (grouped[t.category] || 0) + parseFloat(t.amount || 0);
         }
-        const sorted = Object.entries(grouped).sort(function(a, b) { return b[1] - a[1]; });
+        const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
         if (sorted.length) {
           insights.push({ type: 'info', icon: '🎯', text: 'Biggest expense: <strong>' + escapeHtml(sorted[0][0]) + '</strong> (' + inr(sorted[0][1]) + ')' });
         }
@@ -233,9 +253,9 @@ const Dash = {
         }
       }
     }
-    box.innerHTML = insights.slice(0, 4).map(function(i) {
-      return '<div class="insight-item ' + i.type + '"><span class="insight-icon">' + i.icon + '</span><div class="insight-text">' + i.text + '</div></div>';
-    }).join('');
+    box.innerHTML = insights.slice(0, 4).map(i =>
+      '<div class="insight-item ' + i.type + '"><span class="insight-icon">' + i.icon + '</span><div class="insight-text">' + i.text + '</div></div>'
+    ).join('');
   },
 
   loadComparison: function(all) {
@@ -263,7 +283,7 @@ const Dash = {
   loadTopCategories: function(all) {
     const box = document.getElementById('topCatBox');
     if (!box) return;
-    const expenses = all.filter(function(t) { return t.type === 'expense'; });
+    const expenses = all.filter(t => t.type === 'expense');
     if (!expenses.length) {
       box.innerHTML = '<div class="empty"><p>No expense data yet</p></div>';
       return;
@@ -273,14 +293,22 @@ const Dash = {
       const t = expenses[i];
       grouped[t.category] = (grouped[t.category] || 0) + parseFloat(t.amount || 0);
     }
-    const sorted = Object.entries(grouped).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+    const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]).slice(0, 5);
     const max = sorted[0][1];
-    box.innerHTML = sorted.map(function(item, i) {
+    box.innerHTML = sorted.map((item, i) => {
       const cat = item[0], amt = item[1];
       const width = (amt / max) * 100;
       const rankClass = i < 3 ? 'r' + (i + 1) : '';
-      return '<div class="tc-item"><div class="tc-rank ' + rankClass + '">' + (i + 1) + '</div><div class="tc-info"><div class="tc-name">' + escapeHtml(cat) + '</div><div class="tc-bar"><div class="tc-fill" style="width:' + width + '%"></div></div></div><div class="tc-amt">' + inrShort(amt) + '</div></div>';
+      return '<div class="tc-item"><div class="tc-rank ' + rankClass + '">' + (i + 1) + '</div><div class="tc-info"><div class="tc-name">' + escapeHtml(cat) + '</div><div class="tc-bar"><div class="tc-fill" style="width:0%"></div></div></div><div class="tc-amt">' + inrShort(amt) + '</div></div>';
     }).join('');
+
+    // Animate progress bars
+    setTimeout(() => {
+      const fills = box.querySelectorAll('.tc-fill');
+      sorted.forEach((item, i) => {
+        if (fills[i]) fills[i].style.width = ((item[1] / max) * 100) + '%';
+      });
+    }, 300);
   },
 
   loadPaymentModes: function(all) {
@@ -298,10 +326,10 @@ const Dash = {
       grouped[mode].total += parseFloat(t.amount || 0);
       grouped[mode].count++;
     }
-    const total = Object.values(grouped).reduce(function(s, x) { return s + x.total; }, 0);
-    const sorted = Object.entries(grouped).sort(function(a, b) { return b[1].total - a[1].total; });
+    const total = Object.values(grouped).reduce((s, x) => s + x.total, 0);
+    const sorted = Object.entries(grouped).sort((a, b) => b[1].total - a[1].total);
     const icons = { 'Cash':'💵', 'Online':'📱', 'UPI':'📲', 'Bank Transfer':'🏦', 'Card':'💳', 'Cheque':'📄' };
-    box.innerHTML = sorted.map(function(item) {
+    box.innerHTML = sorted.map(item => {
       const mode = item[0], data = item[1];
       const pct = total > 0 ? Math.round((data.total / total) * 100) : 0;
       const icon = icons[mode] || '💰';
@@ -316,8 +344,8 @@ const Dash = {
       tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><h4>No transactions yet</h4></div></td></tr>';
       return;
     }
-    const sorted = all.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 8);
-    tbody.innerHTML = sorted.map(function(t) {
+    const sorted = all.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+    tbody.innerHTML = sorted.map(t => {
       const isI = t.type === 'income';
       return '<tr><td style="font-size:0.82rem;">' + fmtDate(t.date) + '</td><td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' + (isI ? '💰 In' : '💸 Out') + '</span></td><td style="font-size:0.82rem;font-weight:600;">' + escapeHtml(t.category || '-') + '</td><td class="' + (isI ? 'amt-in' : 'amt-out') + '">' + (isI ? '+' : '-') + inrShort(t.amount) + '</td><td style="font-size:0.78rem;color:var(--text-muted);">' + escapeHtml(t.mode || 'Cash') + '</td></tr>';
     }).join('');
@@ -364,18 +392,19 @@ const Dash = {
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        animation: { duration: 1500, easing: 'easeOutQuart' },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 12, weight: '600' }, padding: 16, color: '#312e81' } },
           tooltip: {
             backgroundColor: '#1e1b4b', titleColor: '#fff', bodyColor: '#c7d2fe',
             padding: 14, cornerRadius: 12, borderColor: '#6366f1', borderWidth: 1,
-            callbacks: { label: function(ctx) { return ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y); } }
+            callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
           x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' } } },
-          y: { beginAtZero: true, grid: { color: 'rgba(99,102,241,0.08)' }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' }, callback: function(v) { return inrShort(v); } } }
+          y: { beginAtZero: true, grid: { color: 'rgba(99,102,241,0.08)' }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
@@ -385,7 +414,7 @@ const Dash = {
     const canvas = document.getElementById('donutChart');
     if (!canvas || typeof Chart === 'undefined') return;
     const period = document.getElementById('donutPeriod') ? document.getElementById('donutPeriod').value : 'month';
-    const txns = filterByPeriod(all, period).filter(function(t) { return t.type === 'expense'; });
+    const txns = filterByPeriod(all, period).filter(t => t.type === 'expense');
     const grouped = {};
     for (let i = 0; i < txns.length; i++) {
       const t = txns[i];
@@ -414,6 +443,7 @@ const Dash = {
       },
       options: {
         responsive: true, maintainAspectRatio: false, cutout: '70%',
+        animation: { duration: 1500, easing: 'easeOutQuart', animateRotate: true, animateScale: true },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -421,7 +451,7 @@ const Dash = {
             padding: 14, cornerRadius: 12, borderColor: '#6366f1', borderWidth: 1,
             callbacks: {
               label: function(ctx) {
-                const total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                 const pct = Math.round((ctx.parsed / total) * 100);
                 return ' ' + inr(ctx.parsed) + ' (' + pct + '%)';
               }
@@ -430,12 +460,12 @@ const Dash = {
         }
       }
     });
-    const total = values.reduce(function(a, b) { return a + b; }, 0);
+    const total = values.reduce((a, b) => a + b, 0);
     const legend = document.getElementById('donutLegend');
     if (legend) {
-      legend.innerHTML = labels.map(function(l, i) {
-        return '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i] + '"></div><span class="leg-name">' + escapeHtml(l) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>';
-      }).join('');
+      legend.innerHTML = labels.map((l, i) =>
+        '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i] + '"></div><span class="leg-name">' + escapeHtml(l) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
+      ).join('');
     }
   },
 
@@ -486,33 +516,34 @@ const Dash = {
           {
             label: 'Income', data: income,
             borderColor: '#10b981', backgroundColor: g1,
-            borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2,
+            borderWidth: 3, pointRadius: 0, pointHoverRadius: 8,
+            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 3,
             fill: true, tension: 0.4
           },
           {
             label: 'Expense', data: expense,
             borderColor: '#ef4444', backgroundColor: g2,
-            borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2,
+            borderWidth: 3, pointRadius: 0, pointHoverRadius: 8,
+            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 3,
             fill: true, tension: 0.4
           }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        animation: { duration: 2000, easing: 'easeOutQuart' },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
             backgroundColor: '#1e1b4b', titleColor: '#fff', bodyColor: '#c7d2fe',
             padding: 14, cornerRadius: 12, borderColor: '#6366f1', borderWidth: 1,
-            callbacks: { label: function(ctx) { return ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y); } }
+            callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
           x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 10, weight: '600' }, maxRotation: 0 } },
-          y: { beginAtZero: true, grid: { color: 'rgba(99,102,241,0.08)' }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' }, callback: function(v) { return inrShort(v); } } }
+          y: { beginAtZero: true, grid: { color: 'rgba(99,102,241,0.08)' }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
@@ -526,20 +557,20 @@ const Dash = {
       const q = e.target.value.trim().toLowerCase();
       const all = getTxns();
       if (!q) { self.loadRecent(all); return; }
-      const results = all.filter(function(t) {
-        return (t.category || '').toLowerCase().indexOf(q) > -1 ||
-               (t.notes || '').toLowerCase().indexOf(q) > -1 ||
-               (t.from || '').toLowerCase().indexOf(q) > -1 ||
-               (t.vendor || '').toLowerCase().indexOf(q) > -1 ||
-               String(t.amount).indexOf(q) > -1;
-      }).slice(0, 8);
+      const results = all.filter(t =>
+        (t.category || '').toLowerCase().indexOf(q) > -1 ||
+        (t.notes || '').toLowerCase().indexOf(q) > -1 ||
+        (t.from || '').toLowerCase().indexOf(q) > -1 ||
+        (t.vendor || '').toLowerCase().indexOf(q) > -1 ||
+        String(t.amount).indexOf(q) > -1
+      ).slice(0, 8);
       const tbody = document.getElementById('recentBody');
       if (!tbody) return;
       if (!results.length) {
         tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">🔍</div><h4>No results</h4></div></td></tr>';
         return;
       }
-      tbody.innerHTML = results.map(function(t) {
+      tbody.innerHTML = results.map(t => {
         const isI = t.type === 'income';
         return '<tr><td style="font-size:0.82rem;">' + fmtDate(t.date) + '</td><td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' + (isI ? '💰 In' : '💸 Out') + '</span></td><td style="font-size:0.82rem;font-weight:600;">' + escapeHtml(t.category || '-') + '</td><td class="' + (isI ? 'amt-in' : 'amt-out') + '">' + (isI ? '+' : '-') + inrShort(t.amount) + '</td><td style="font-size:0.78rem;color:var(--text-muted);">' + escapeHtml(t.mode || 'Cash') + '</td></tr>';
       }).join('');
@@ -560,6 +591,7 @@ function switchPeriod(p, btn) {
   for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
   if (btn) btn.classList.add('active');
   Dash.loadSummary(getTxns());
+  setTimeout(() => Dash.animateNumbers(), 100);
 }
 
 function buildBarChart() { Dash.buildBarChart(getTxns()); }
@@ -582,11 +614,8 @@ function saveTransaction(type) {
   const txns = getTxns();
   const entry = { id: editId || uid(), type, date, category: cat, amount, mode, from, vendor, notes, savedAt: new Date().toISOString() };
   if (editId) {
-    const idx = txns.findIndex(function(t) { return t.id === editId; });
-    if (idx !== -1) {
-      entry.savedAt = txns[idx].savedAt || new Date().toISOString();
-      txns[idx] = entry;
-    }
+    const idx = txns.findIndex(t => t.id === editId);
+    if (idx !== -1) { entry.savedAt = txns[idx].savedAt || new Date().toISOString(); txns[idx] = entry; }
   } else {
     txns.push(entry);
   }
@@ -594,13 +623,14 @@ function saveTransaction(type) {
   closeModal(isI ? 'incomeModal' : 'expenseModal');
   resetForm(type);
   Dash.loadAll();
+  setTimeout(() => Dash.animateNumbers(), 500);
   const action = editId ? 'Updated' : 'Added';
   toast(action + ' ' + type + ' of ' + inr(amount), 'success');
 }
 
 function resetForm(type) {
   const isI = type === 'income';
-  const setVal = function(id, val) {
+  const setVal = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.value = val;
   };
@@ -636,7 +666,7 @@ function openExpenseModal() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() { Dash.init(); });
+  document.addEventListener('DOMContentLoaded', () => Dash.init());
 } else {
   Dash.init();
 }

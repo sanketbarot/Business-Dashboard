@@ -1,0 +1,270 @@
+/* ============================================
+   CRUST & CHILLY — DYNAMIC ANIMATIONS v4.0
+   Auto-play on page load
+   ============================================ */
+
+/* ========================================
+   KEYFRAMES
+   ======================================== */
+
+@keyframes fadeUpBounce {
+  0% { opacity: 0; transform: translateY(40px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-8px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes zoomIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0); }
+  70% { opacity: 1; transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+/* ========================================
+   ENTRY ANIMATIONS - AUTO PLAY
+   ======================================== */
+
+/* HERO SECTION */
+.hero {
+  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.hero-text h2 {
+  animation: slideInLeft 0.7s ease 0.2s both;
+}
+
+.hero-text p {
+  animation: slideInLeft 0.7s ease 0.4s both;
+}
+
+.hero-actions .btn {
+  animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.hero-actions .btn:nth-child(1) { animation-delay: 0.5s; }
+.hero-actions .btn:nth-child(2) { animation-delay: 0.6s; }
+.hero-actions .btn:nth-child(3) { animation-delay: 0.7s; }
+
+/* PERIOD BAR */
+.period-wrap {
+  animation: slideInLeft 0.7s ease 0.3s both;
+}
+
+/* SUMMARY CARDS - Staggered */
+.sum-card {
+  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.sum-card:nth-child(1) { animation-delay: 0.4s; }
+.sum-card:nth-child(2) { animation-delay: 0.55s; }
+.sum-card:nth-child(3) { animation-delay: 0.7s; }
+.sum-card:nth-child(4) { animation-delay: 0.85s; }
+
+/* CASH ONLINE CARDS */
+.co-card {
+  animation: zoomIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.co-card:nth-child(1) { animation-delay: 1s; }
+.co-card:nth-child(2) { animation-delay: 1.15s; }
+
+/* ANALYTICS */
+.mini-stat {
+  animation: fadeUpBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.mini-stat:nth-child(1) { animation-delay: 1.3s; }
+.mini-stat:nth-child(2) { animation-delay: 1.4s; }
+.mini-stat:nth-child(3) { animation-delay: 1.5s; }
+
+/* CHARTS */
+.chart-grid .card {
+  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.chart-grid .card:nth-child(1) { animation-delay: 1.6s; }
+.chart-grid .card:nth-child(2) { animation-delay: 1.75s; }
+
+/* Line Chart Card */
+.chart-enhanced:not(.chart-grid .card) {
+  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 1.9s both;
+}
+
+/* BOTTOM GRID */
+.bottom-grid > * {
+  animation: fadeUpBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.bottom-grid > *:nth-child(1) { animation-delay: 2s; }
+.bottom-grid > *:nth-child(2) { animation-delay: 2.15s; }
+
+/* TRANSACTION PAGE */
+.cmd-bar {
+  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tx-analytics .tx-stat {
+  animation: fadeUpBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tx-analytics .tx-stat:nth-child(1) { animation-delay: 0.3s; }
+.tx-analytics .tx-stat:nth-child(2) { animation-delay: 0.45s; }
+.tx-analytics .tx-stat:nth-child(3) { animation-delay: 0.6s; }
+.tx-analytics .tx-stat:nth-child(4) { animation-delay: 0.75s; }
+
+.filter-panel {
+  animation: slideInLeft 0.7s ease 0.9s both;
+}
+
+.t-card {
+  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 1.1s both;
+}
+
+/* SIDEBAR LINKS - Staggered */
+.sb-link {
+  animation: slideInLeft 0.5s ease both;
+}
+
+.sb-link:nth-child(2) { animation-delay: 0.1s; }
+.sb-link:nth-child(3) { animation-delay: 0.15s; }
+.sb-link:nth-child(4) { animation-delay: 0.2s; }
+.sb-link:nth-child(5) { animation-delay: 0.25s; }
+.sb-link:nth-child(6) { animation-delay: 0.3s; }
+.sb-link:nth-child(7) { animation-delay: 0.35s; }
+.sb-link:nth-child(8) { animation-delay: 0.4s; }
+.sb-link:nth-child(9) { animation-delay: 0.45s; }
+.sb-link:nth-child(10) { animation-delay: 0.5s; }
+.sb-link:nth-child(11) { animation-delay: 0.55s; }
+
+/* ========================================
+   BACKGROUND FLOATING BUBBLES
+   ======================================== */
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 10%;
+  right: 5%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 12s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 10%;
+  left: 5%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 15s ease-in-out infinite reverse;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================
+   PROGRESS BAR ANIMATIONS
+   ======================================== */
+
+.tc-fill,
+.ms-fill {
+  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* ========================================
+   TABLE ROW ANIMATIONS
+   ======================================== */
+
+.dtable tbody tr {
+  animation: slideInLeft 0.4s ease both;
+}
+
+.dtable tbody tr:nth-child(1) { animation-delay: 0.05s; }
+.dtable tbody tr:nth-child(2) { animation-delay: 0.1s; }
+.dtable tbody tr:nth-child(3) { animation-delay: 0.15s; }
+.dtable tbody tr:nth-child(4) { animation-delay: 0.2s; }
+.dtable tbody tr:nth-child(5) { animation-delay: 0.25s; }
+.dtable tbody tr:nth-child(6) { animation-delay: 0.3s; }
+.dtable tbody tr:nth-child(7) { animation-delay: 0.35s; }
+.dtable tbody tr:nth-child(8) { animation-delay: 0.4s; }
+
+/* MOBILE ROWS */
+.mobile-txn-row {
+  animation: slideInLeft 0.4s ease both;
+}
+
+/* CATEGORY ITEMS */
+.tc-item, .pm-item, .insight-item {
+  animation: fadeUpBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tc-item:nth-child(1), .pm-item:nth-child(1), .insight-item:nth-child(1) { animation-delay: 0.1s; }
+.tc-item:nth-child(2), .pm-item:nth-child(2), .insight-item:nth-child(2) { animation-delay: 0.2s; }
+.tc-item:nth-child(3), .pm-item:nth-child(3), .insight-item:nth-child(3) { animation-delay: 0.3s; }
+.tc-item:nth-child(4), .pm-item:nth-child(4), .insight-item:nth-child(4) { animation-delay: 0.4s; }
+.tc-item:nth-child(5), .pm-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* LEGEND ROWS */
+.leg-row {
+  animation: slideInLeft 0.4s ease both;
+}
+
+.leg-row:nth-child(1) { animation-delay: 0.1s; }
+.leg-row:nth-child(2) { animation-delay: 0.15s; }
+.leg-row:nth-child(3) { animation-delay: 0.2s; }
+.leg-row:nth-child(4) { animation-delay: 0.25s; }
+.leg-row:nth-child(5) { animation-delay: 0.3s; }
+
+/* TX CARDS */
+.tx-card {
+  animation: fadeUpBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tx-card:nth-child(1) { animation-delay: 0.05s; }
+.tx-card:nth-child(2) { animation-delay: 0.1s; }
+.tx-card:nth-child(3) { animation-delay: 0.15s; }
+.tx-card:nth-child(4) { animation-delay: 0.2s; }
+.tx-card:nth-child(5) { animation-delay: 0.25s; }
+.tx-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* MOBILE OPTIMIZATIONS */
+@media (max-width: 767px) {
+  body::before,
+  body::after {
+    display: none;
+  }
+}
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

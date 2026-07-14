@@ -1,5 +1,6 @@
 /* ============================================
-   CRUST & CHILLY — TRANSACTION-PAGE.JS
+   TRANSACTION-PAGE.JS v4.0
+   Smooth Animations + Dynamic Performance
    ============================================ */
 
 'use strict';
@@ -40,52 +41,53 @@ const TxnPage = {
       this.apply();
       this.setupResize();
       this.setupKeyboard();
-
-      console.log('TxnPage ready');
+      this.animateStats();
     } catch (err) {
       console.error('Init error:', err);
     }
   },
 
+  animateStats: function() {
+    setTimeout(() => {
+      ['tsIncome', 'tsExpense', 'tsProfit', 'tsCount'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.textContent) {
+          animateNumber(el, el.textContent);
+        }
+      });
+    }, 500);
+  },
+
   buildCategoryFilter: function() {
     const sel = document.getElementById('catFilter');
     if (!sel) return;
-
     const current = sel.value;
     sel.innerHTML = '<option value="">📂 All Categories</option>';
-
     const all = getTxns();
     const catSet = new Set();
     for (let i = 0; i < all.length; i++) {
       if (all[i].category) catSet.add(all[i].category);
     }
-
     const cats = Array.from(catSet).sort();
-    cats.forEach(function(c) {
+    cats.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c;
       opt.textContent = c;
       sel.appendChild(opt);
     });
-
-    if (current && cats.indexOf(current) > -1) {
-      sel.value = current;
-    }
+    if (current && cats.indexOf(current) > -1) sel.value = current;
   },
 
   setFilter: function(f, btn) {
     this.state.filter = f;
-
     const tabs = document.querySelectorAll('.ft');
     for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
     if (btn) btn.classList.add('active');
-
     const cr = document.getElementById('customRange');
     if (cr) {
       if (f === 'custom') cr.classList.add('show');
       else cr.classList.remove('show');
     }
-
     this.apply();
   },
 
@@ -93,31 +95,21 @@ const TxnPage = {
     this.state.filter = 'all';
     this.state.page = 1;
     this.state.selected.clear();
-
     const tabs = document.querySelectorAll('.ft');
     for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
     const allTab = document.querySelector('.ft[data-f="all"]');
     if (allTab) allTab.classList.add('active');
-
     const resetIds = {
-      'typeFilter': 'all',
-      'catFilter': '',
-      'modeFilter': '',
-      'sortFilter': 'date-desc',
-      'txnSearch': '',
-      'mainSearch': '',
-      'fStart': '',
-      'fEnd': ''
+      'typeFilter': 'all', 'catFilter': '', 'modeFilter': '',
+      'sortFilter': 'date-desc', 'txnSearch': '', 'mainSearch': '',
+      'fStart': '', 'fEnd': ''
     };
-
     for (const id in resetIds) {
       const el = document.getElementById(id);
       if (el) el.value = resetIds[id];
     }
-
     const cr = document.getElementById('customRange');
     if (cr) cr.classList.remove('show');
-
     this.apply();
     toast('Filters cleared', 'info');
   },
@@ -125,25 +117,18 @@ const TxnPage = {
   apply: function() {
     try {
       let data = getTxns();
-
       const fStart = document.getElementById('fStart') ? document.getElementById('fStart').value : '';
       const fEnd = document.getElementById('fEnd') ? document.getElementById('fEnd').value : '';
       data = filterByPeriod(data, this.state.filter, fStart, fEnd);
 
       const type = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
-      if (type !== 'all') {
-        data = data.filter(function(t) { return t.type === type; });
-      }
+      if (type !== 'all') data = data.filter(t => t.type === type);
 
       const cat = document.getElementById('catFilter') ? document.getElementById('catFilter').value : '';
-      if (cat) {
-        data = data.filter(function(t) { return t.category === cat; });
-      }
+      if (cat) data = data.filter(t => t.category === cat);
 
       const mode = document.getElementById('modeFilter') ? document.getElementById('modeFilter').value : '';
-      if (mode) {
-        data = data.filter(function(t) { return (t.mode || 'Cash') === mode; });
-      }
+      if (mode) data = data.filter(t => (t.mode || 'Cash') === mode);
 
       const q1 = (document.getElementById('txnSearch') ? document.getElementById('txnSearch').value : '').trim().toLowerCase();
       const q2 = (document.getElementById('mainSearch') ? document.getElementById('mainSearch').value : '').trim().toLowerCase();
@@ -151,15 +136,15 @@ const TxnPage = {
 
       if (query) {
         this.state.lastQuery = query;
-        data = data.filter(function(t) {
-          return (t.category || '').toLowerCase().indexOf(query) > -1 ||
-                 String(t.amount || '').indexOf(query) > -1 ||
-                 (t.notes || '').toLowerCase().indexOf(query) > -1 ||
-                 (t.from || '').toLowerCase().indexOf(query) > -1 ||
-                 (t.vendor || '').toLowerCase().indexOf(query) > -1 ||
-                 (t.mode || '').toLowerCase().indexOf(query) > -1 ||
-                 fmtDate(t.date).toLowerCase().indexOf(query) > -1;
-        });
+        data = data.filter(t =>
+          (t.category || '').toLowerCase().indexOf(query) > -1 ||
+          String(t.amount || '').indexOf(query) > -1 ||
+          (t.notes || '').toLowerCase().indexOf(query) > -1 ||
+          (t.from || '').toLowerCase().indexOf(query) > -1 ||
+          (t.vendor || '').toLowerCase().indexOf(query) > -1 ||
+          (t.mode || '').toLowerCase().indexOf(query) > -1 ||
+          fmtDate(t.date).toLowerCase().indexOf(query) > -1
+        );
       } else {
         this.state.lastQuery = '';
       }
@@ -172,7 +157,6 @@ const TxnPage = {
       this.state.filtered = data;
       this.state.page = 1;
       this.state.selected.clear();
-
       this.updateStats(data);
       this.render();
     } catch (err) {
@@ -185,8 +169,7 @@ const TxnPage = {
     const key = parts[0];
     const order = parts[1];
     const dir = order === 'desc' ? -1 : 1;
-
-    return data.slice().sort(function(a, b) {
+    return data.slice().sort((a, b) => {
       let va, vb;
       if (key === 'date') {
         va = new Date(a.date).getTime() || 0;
@@ -206,22 +189,14 @@ const TxnPage = {
 
   updateStats: function(data) {
     let income = 0, expense = 0, iC = 0, eC = 0;
-
     for (let i = 0; i < data.length; i++) {
       const t = data[i];
       const amt = parseFloat(t.amount) || 0;
-      if (t.type === 'income') {
-        income += amt;
-        iC++;
-      } else if (t.type === 'expense') {
-        expense += amt;
-        eC++;
-      }
+      if (t.type === 'income') { income += amt; iC++; }
+      else if (t.type === 'expense') { expense += amt; eC++; }
     }
-
     const profit = income - expense;
     const margin = income > 0 ? Math.round((profit / income) * 100) : 0;
-
     this.setText('tsIncome', inr(income));
     this.setText('tsExpense', inr(expense));
     this.setText('tsProfit', inr(profit));
@@ -230,15 +205,10 @@ const TxnPage = {
     this.setText('tsExpenseCount', eC + ' records');
     this.setText('tsMargin', margin + '% margin');
     this.setText('recTag', data.length + ' records');
-
     const pEl = document.getElementById('tsProfit');
-    if (pEl) {
-      pEl.className = 'tx-stat-val ' + (profit >= 0 ? 'text-profit' : 'text-expense');
-    }
-
+    if (pEl) pEl.className = 'tx-stat-val ' + (profit >= 0 ? 'text-profit' : 'text-expense');
     const start = (this.state.page - 1) * this.state.perPage + 1;
     const end = Math.min(start + this.state.perPage - 1, data.length);
-
     if (data.length === 0) {
       this.setText('tableInfo', 'No records to show');
     } else {
@@ -254,7 +224,6 @@ const TxnPage = {
   render: function() {
     const isMobile = window.innerWidth <= 599;
     const isCard = this.state.view === 'card';
-
     if (isCard && !isMobile) {
       this.renderCards();
     } else if (isMobile) {
@@ -262,7 +231,6 @@ const TxnPage = {
     } else {
       this.renderTable();
     }
-
     this.renderPagination();
     this.updateBulk();
   },
@@ -272,18 +240,14 @@ const TxnPage = {
     const cardView = document.getElementById('cardView');
     if (tableView) tableView.style.display = '';
     if (cardView) cardView.style.display = 'none';
-
     const tbody = document.getElementById('txnBody');
     if (!tbody) return;
-
     const start = (this.state.page - 1) * this.state.perPage;
     const pageData = this.state.filtered.slice(start, start + this.state.perPage);
-
     if (!pageData.length) {
       tbody.innerHTML = this.getEmptyRow(9);
       return;
     }
-
     const self = this;
     tbody.innerHTML = pageData.map(function(t) {
       const isI = t.type === 'income';
@@ -292,7 +256,6 @@ const TxnPage = {
       const notes = t.notes || '';
       const truncNote = notes.length > 20 ? notes.slice(0, 20) + '...' : (notes || '-');
       const customer = t.from || t.vendor || '-';
-
       return '<tr style="' + bg + '">' +
         '<td><input type="checkbox" ' + (sel ? 'checked' : '') +
         ' style="accent-color:var(--brand);cursor:pointer;width:18px;height:18px;"' +
@@ -301,7 +264,7 @@ const TxnPage = {
         '<td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' +
         (isI ? '💰' : '💸') + ' ' + (isI ? 'Income' : 'Expense') + '</span></td>' +
         '<td style="font-size:0.85rem;font-weight:600;">' + escapeHtml(t.category || '-') + '</td>' +
-        '<td class="' + (isI ? 'amt-in' : 'amt-out') + '" style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:0.95rem;">' +
+        '<td class="' + (isI ? 'amt-in' : 'amt-out') + '" style="font-size:0.95rem;">' +
         (isI ? '+' : '-') + ' ' + inr(t.amount) + '</td>' +
         '<td style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">' +
         (self.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</td>' +
@@ -322,24 +285,19 @@ const TxnPage = {
     const cardView = document.getElementById('cardView');
     if (tableView) tableView.style.display = '';
     if (cardView) cardView.style.display = 'none';
-
     const tbody = document.getElementById('txnBody');
     if (!tbody) return;
-
     const start = (this.state.page - 1) * this.state.perPage;
     const pageData = this.state.filtered.slice(start, start + this.state.perPage);
-
     if (!pageData.length) {
       tbody.innerHTML = this.getEmptyRow(9);
       return;
     }
-
     const self = this;
     tbody.innerHTML = pageData.map(function(t) {
       const isI = t.type === 'income';
       const sel = self.state.selected.has(t.id);
       const bg = sel ? 'background:var(--brand-soft);' : '';
-
       return '<tr><td colspan="9" style="padding:0;">' +
         '<div class="mobile-txn-row" style="' + bg + '">' +
         '<div class="mobile-txn-check">' +
@@ -371,21 +329,17 @@ const TxnPage = {
     if (tableView) tableView.style.display = 'none';
     if (!cardView) return;
     cardView.style.display = 'grid';
-
     const start = (this.state.page - 1) * this.state.perPage;
     const pageData = this.state.filtered.slice(start, start + this.state.perPage);
-
     if (!pageData.length) {
       cardView.innerHTML = '<div style="grid-column:1/-1;">' + this.getEmptyContent() + '</div>';
       return;
     }
-
     const self = this;
     cardView.innerHTML = pageData.map(function(t) {
       const isI = t.type === 'income';
       const sel = self.state.selected.has(t.id);
       const style = sel ? 'background:var(--brand-soft);border-color:var(--brand);' : '';
-
       return '<div class="tx-card" style="' + style + '">' +
         '<div class="tx-card-top">' +
         '<div style="flex:1;min-width:0;cursor:pointer;" onclick="TxnPage.view(\'' + t.id + '\')">' +
@@ -435,19 +389,12 @@ const TxnPage = {
   renderPagination: function() {
     const container = document.getElementById('pagination');
     if (!container) return;
-
     const total = Math.ceil(this.state.filtered.length / this.state.perPage);
-    if (total <= 1) {
-      container.innerHTML = '';
-      return;
-    }
-
+    if (total <= 1) { container.innerHTML = ''; return; }
     const current = this.state.page;
     let html = '';
-
     html += '<button class="pg" ' + (current === 1 ? 'disabled' : '') +
       ' onclick="TxnPage.goPage(' + (current - 1) + ')">← Prev</button>';
-
     for (let i = 1; i <= total; i++) {
       if (i === 1 || i === total || (i >= current - 1 && i <= current + 1)) {
         html += '<button class="pg ' + (i === current ? 'active' : '') +
@@ -456,10 +403,8 @@ const TxnPage = {
         html += '<span style="padding:0 6px;color:var(--text-muted);font-weight:700;">...</span>';
       }
     }
-
     html += '<button class="pg" ' + (current === total ? 'disabled' : '') +
       ' onclick="TxnPage.goPage(' + (current + 1) + ')">Next →</button>';
-
     container.innerHTML = html;
   },
 
@@ -469,17 +414,20 @@ const TxnPage = {
     this.state.page = p;
     this.render();
     this.updateStats(this.state.filtered);
-    window.scrollTo({ top: 300, behavior: 'smooth' });
+
+    // Smooth scroll to top of table
+    const content = document.querySelector('.content');
+    if (content) {
+      content.scrollTo({ top: 300, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
   },
 
   select: function(id, cb) {
-    if (cb.checked) {
-      this.state.selected.add(id);
-    } else {
-      this.state.selected.delete(id);
-    }
+    if (cb.checked) this.state.selected.add(id);
+    else this.state.selected.delete(id);
     this.updateBulk();
-
     const selAll = document.getElementById('selAll');
     if (selAll) {
       selAll.checked = this.state.selected.size === this.state.filtered.length && this.state.filtered.length > 0;
@@ -489,13 +437,9 @@ const TxnPage = {
   selectAll: function() {
     const cb = document.getElementById('selAll');
     if (!cb) return;
-
     const self = this;
-    if (cb.checked) {
-      this.state.filtered.forEach(function(t) { self.state.selected.add(t.id); });
-    } else {
-      this.state.selected.clear();
-    }
+    if (cb.checked) this.state.filtered.forEach(t => self.state.selected.add(t.id));
+    else this.state.selected.clear();
     this.render();
   },
 
@@ -503,26 +447,21 @@ const TxnPage = {
     const bar = document.getElementById('bulkBar');
     const txt = document.getElementById('bulkTxt');
     const count = this.state.selected.size;
-
     if (bar) {
       if (count > 0) bar.classList.add('show');
       else bar.classList.remove('show');
     }
-
     if (txt) txt.textContent = count + ' selected';
   },
 
   bulkDel: function() {
     if (!this.state.selected.size) return;
-
     const num = this.state.selected.size;
     if (!confirm('Delete ' + num + ' selected transaction(s)? This cannot be undone.')) return;
-
     const self = this;
     let data = getTxns();
-    data = data.filter(function(t) { return !self.state.selected.has(t.id); });
+    data = data.filter(t => !self.state.selected.has(t.id));
     saveTxns(data);
-
     this.state.selected.clear();
     this.buildCategoryFilter();
     this.apply();
@@ -530,26 +469,21 @@ const TxnPage = {
   },
 
   view: function(id) {
-    const t = getTxns().find(function(x) { return x.id === id; });
+    const t = getTxns().find(x => x.id === id);
     if (!t) return;
-
     const isI = t.type === 'income';
     const hd = document.getElementById('detailHd');
     const grid = document.getElementById('detailGrid');
     const editBtn = document.getElementById('detailEditBtn');
-
     if (!grid) return;
-
     if (hd) {
       hd.style.background = isI ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
       const h3 = hd.querySelector('h3');
       if (h3) h3.textContent = isI ? '💰 Income Details' : '💸 Expense Details';
     }
-
     const customer = t.from || t.vendor;
     const customerLbl = isI ? 'Customer' : 'Vendor';
     const dayName = new Date(t.date).toLocaleDateString('en-IN', { weekday: 'long' });
-
     grid.innerHTML =
       '<div class="detail-item"><div class="detail-lbl">Date</div><div class="detail-val">' + fmtDate(t.date) + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">Day</div><div class="detail-val">' + dayName + '</div></div>' +
@@ -560,61 +494,48 @@ const TxnPage = {
       '<div class="detail-item"><div class="detail-lbl">' + customerLbl + '</div><div class="detail-val">' + escapeHtml(customer || '—') + '</div></div>' +
       (t.notes ? '<div class="detail-item full"><div class="detail-lbl">Notes</div><div class="detail-val" style="font-weight:500;">' + escapeHtml(t.notes) + '</div></div>' : '') +
       (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-size:0.85rem;">' + new Date(t.savedAt).toLocaleString('en-IN') + '</div></div>' : '');
-
     if (editBtn) {
       const self = this;
-      editBtn.onclick = function() {
+      editBtn.onclick = () => {
         closeModal('detailModal');
-        setTimeout(function() { self.edit(id); }, 200);
+        setTimeout(() => self.edit(id), 200);
       };
     }
-
     openModal('detailModal');
   },
 
   edit: function(id) {
-    const t = getTxns().find(function(x) { return x.id === id; });
+    const t = getTxns().find(x => x.id === id);
     if (!t) return;
-
     const isI = t.type === 'income';
-
-    const setVal = function(elId, val) {
+    const setVal = (elId, val) => {
       const el = document.getElementById(elId);
       if (el) el.value = val || '';
     };
-
     setVal(isI ? 'iDate' : 'eDate', t.date);
     setVal(isI ? 'iCat' : 'eCat', t.category);
     setVal(isI ? 'iAmt' : 'eAmt', t.amount);
     setVal(isI ? 'iMode' : 'eMode', t.mode || 'Cash');
     setVal(isI ? 'iNote' : 'eNote', t.notes);
     setVal(isI ? 'iEditId' : 'eEditId', t.id);
-
     if (isI) setVal('iFrom', t.from);
     else setVal('eVendor', t.vendor);
-
     const titleId = isI ? 'incomeTitle' : 'expenseTitle';
     const title = document.getElementById(titleId);
     if (title) title.textContent = isI ? '✏️ Edit Income' : '✏️ Edit Expense';
-
     if (typeof previewAmt === 'function') previewAmt(t.type);
-
     openModal(isI ? 'incomeModal' : 'expenseModal');
   },
 
   del: function(id) {
-    const t = getTxns().find(function(x) { return x.id === id; });
+    const t = getTxns().find(x => x.id === id);
     if (!t) return;
-
     const isI = t.type === 'income';
     const label = isI ? 'income' : 'expense';
-
     if (!confirm('Delete this ' + label + ' of ' + inr(t.amount) + '?\nCategory: ' + t.category + '\nDate: ' + fmtDate(t.date) + '\n\nThis cannot be undone.')) return;
-
     let data = getTxns();
-    data = data.filter(function(x) { return x.id !== id; });
+    data = data.filter(x => x.id !== id);
     saveTxns(data);
-
     this.state.selected.delete(id);
     this.buildCategoryFilter();
     this.apply();
@@ -623,7 +544,6 @@ const TxnPage = {
 
   save: function(type) {
     const isI = type === 'income';
-
     const date = document.getElementById(isI ? 'iDate' : 'eDate').value.trim();
     const cat = document.getElementById(isI ? 'iCat' : 'eCat').value.trim();
     const amt = document.getElementById(isI ? 'iAmt' : 'eAmt').value.trim();
@@ -632,33 +552,22 @@ const TxnPage = {
     const editId = document.getElementById(isI ? 'iEditId' : 'eEditId').value.trim();
     const from = isI ? document.getElementById('iFrom').value.trim() : '';
     const vendor = !isI ? document.getElementById('eVendor').value.trim() : '';
-
     if (!date) { toast('Please select a date', 'error'); return; }
     if (!cat) { toast('Please select a category', 'error'); return; }
-
     const amount = parseFloat(amt);
     if (!amount || amount <= 0 || isNaN(amount)) {
       toast('Please enter a valid amount', 'error');
       return;
     }
-
     const entry = {
       id: editId || uid(),
-      type: type,
-      date: date,
-      category: cat,
-      amount: amount,
-      mode: mode,
-      from: from,
-      vendor: vendor,
-      notes: notes,
+      type: type, date: date, category: cat,
+      amount: amount, mode: mode, from: from, vendor: vendor, notes: notes,
       savedAt: new Date().toISOString()
     };
-
     let data = getTxns();
-
     if (editId) {
-      const idx = data.findIndex(function(t) { return t.id === editId; });
+      const idx = data.findIndex(t => t.id === editId);
       if (idx !== -1) {
         entry.savedAt = data[idx].savedAt || new Date().toISOString();
         data[idx] = entry;
@@ -666,32 +575,28 @@ const TxnPage = {
     } else {
       data.push(entry);
     }
-
     saveTxns(data);
     closeModal(isI ? 'incomeModal' : 'expenseModal');
     this.resetForm(type);
     this.buildCategoryFilter();
     this.apply();
-
+    setTimeout(() => this.animateStats(), 400);
     const action = editId ? 'Updated' : 'Added';
     toast(action + ' ' + type + ' of ' + inr(amount), 'success');
   },
 
   resetForm: function(type) {
     const isI = type === 'income';
-
-    const setVal = function(elId, val) {
+    const setVal = (elId, val) => {
       const el = document.getElementById(elId);
       if (el) el.value = val;
     };
-
     setVal(isI ? 'iDate' : 'eDate', today());
     setVal(isI ? 'iCat' : 'eCat', '');
     setVal(isI ? 'iAmt' : 'eAmt', '');
     setVal(isI ? 'iMode' : 'eMode', 'Cash');
     setVal(isI ? 'iNote' : 'eNote', '');
     setVal(isI ? 'iEditId' : 'eEditId', '');
-
     if (isI) {
       setVal('iFrom', '');
       const p = document.getElementById('iPreview');
@@ -701,7 +606,6 @@ const TxnPage = {
       const p = document.getElementById('ePreview');
       if (p) p.style.display = 'none';
     }
-
     const titleId = isI ? 'incomeTitle' : 'expenseTitle';
     const title = document.getElementById(titleId);
     if (title) title.textContent = isI ? '💰 Add Income' : '💸 Add Expense';
@@ -712,7 +616,7 @@ const TxnPage = {
     let timer;
     window.addEventListener('resize', function() {
       clearTimeout(timer);
-      timer = setTimeout(function() { self.render(); }, 200);
+      timer = setTimeout(() => self.render(), 200);
     });
   },
 
@@ -720,7 +624,6 @@ const TxnPage = {
     const self = this;
     document.addEventListener('keydown', function(e) {
       if (['INPUT', 'TEXTAREA', 'SELECT'].indexOf(e.target.tagName) > -1) return;
-
       if (e.key === 'Delete' && self.state.selected.size > 0) {
         e.preventDefault();
         self.bulkDel();
@@ -729,7 +632,7 @@ const TxnPage = {
   }
 };
 
-// ===== GLOBAL FUNCTIONS =====
+// GLOBAL FUNCTIONS
 function applyFilters() { TxnPage.apply(); }
 function setFilter(f, btn) { TxnPage.setFilter(f, btn); }
 function clearFilters() { TxnPage.clear(); }
@@ -760,11 +663,8 @@ function openExpenseModal() {
   openModal('expenseModal');
 }
 
-// ===== INIT =====
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    TxnPage.init();
-  });
+  document.addEventListener('DOMContentLoaded', () => TxnPage.init());
 } else {
   TxnPage.init();
 }

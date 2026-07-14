@@ -6,11 +6,13 @@
 <title>Dashboard — Crust & Chilly</title>
 <meta name="robots" content="noindex, nofollow"/>
 <meta name="theme-color" content="#6366f1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="assets/css/style.css"/>
-<link rel="stylesheet" href="assets/css/dashboard.css"/>
+<link rel="stylesheet" href="assets/css/style.css?v=4.0"/>
+<link rel="stylesheet" href="assets/css/dashboard.css?v=4.0"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=4.0"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
@@ -93,7 +95,7 @@
 
     <div class="content">
 
-      <section class="hero fade-up">
+      <section class="hero">
         <div class="hero-text">
           <h2 id="welcomeMsg">Welcome back 👋</h2>
           <p id="heroSubtext">Here's your business overview</p>
@@ -105,7 +107,7 @@
         </div>
       </section>
 
-      <div class="period-wrap fade-up">
+      <div class="period-wrap">
         <span class="period-title">📈 Financial Summary</span>
         <div class="period-bar">
           <button class="pb-tab" data-p="today" onclick="switchPeriod('today',this)">Today</button>
@@ -116,7 +118,7 @@
         </div>
       </div>
 
-      <section class="sum-grid fade-up">
+      <section class="sum-grid">
         <div class="sum-card">
           <div class="sc-top">
             <div class="sc-icon">💰</div>
@@ -166,9 +168,7 @@
         </div>
       </section>
 
-      <!-- CASH VS ONLINE -->
-      <section class="cash-online-grid fade-up">
-
+      <section class="cash-online-grid">
         <div class="co-card cash-card">
           <div class="co-header">
             <div class="co-icon">💵</div>
@@ -240,10 +240,9 @@
             </div>
           </div>
         </div>
-
       </section>
 
-      <section class="analytics-grid fade-up">
+      <section class="analytics-grid">
         <div class="mini-stat">
           <div class="ms-top">
             <div class="ms-ic">📊</div>
@@ -275,7 +274,7 @@
         </div>
       </section>
 
-      <section class="chart-grid fade-up">
+      <section class="chart-grid">
         <div class="card chart-enhanced">
           <div class="card-hd">
             <h4>📊 Income vs Expense</h4>
@@ -306,14 +305,12 @@
         </div>
       </section>
 
-      <!-- ENHANCED 30-DAY CASH FLOW -->
-      <section class="card chart-enhanced fade-up" style="margin-bottom:26px;">
+      <section class="card chart-enhanced" style="margin-bottom:26px;">
         <div class="card-hd">
           <h4>📈 30-Day Cash Flow Analysis</h4>
           <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Last 30 days</span>
         </div>
         <div class="card-bd">
-
           <div class="chart-info-bar">
             <div class="chart-info-item">
               <div class="chart-info-dot" style="background:#10b981;"></div>
@@ -334,7 +331,7 @@
         </div>
       </section>
 
-      <section class="bottom-grid fade-up">
+      <section class="bottom-grid">
         <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
           <div class="card">
             <div class="card-hd"><h4>💡 Smart Insights</h4></div>
@@ -556,7 +553,7 @@
 
 <div class="toast-box" id="toastBox"></div>
 
-<script src="assets/js/app.js"></script>
-<script src="assets/js/dashboard.js"></script>
+<script src="assets/js/app.js?v=4.0"></script>
+<script src="assets/js/dashboard.js?v=4.0"></script>
 </body>
 </html>

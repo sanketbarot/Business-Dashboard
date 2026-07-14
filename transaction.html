@@ -6,11 +6,13 @@
 <title>Transactions — Crust & Chilly</title>
 <meta name="robots" content="noindex, nofollow"/>
 <meta name="theme-color" content="#6366f1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="assets/css/style.css"/>
-<link rel="stylesheet" href="assets/css/transaction.css"/>
+<link rel="stylesheet" href="assets/css/style.css?v=4.0"/>
+<link rel="stylesheet" href="assets/css/transaction.css?v=4.0"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=4.0"/>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
@@ -79,7 +81,7 @@
 
     <div class="content">
 
-      <section class="cmd-bar fade-up">
+      <section class="cmd-bar">
         <div class="cmd-inner">
           <div class="cmd-title">
             <h2>💳 Manage Transactions</h2>
@@ -92,7 +94,7 @@
         </div>
       </section>
 
-      <section class="tx-analytics fade-up">
+      <section class="tx-analytics">
         <div class="tx-stat in">
           <div class="tx-stat-ic">💰</div>
           <div class="tx-stat-info">
@@ -127,7 +129,7 @@
         </div>
       </section>
 
-      <section class="filter-panel fade-up">
+      <section class="filter-panel">
         <div class="filter-tabs">
           <button class="ft active" data-f="all" onclick="setFilter('all',this)">📅 All</button>
           <button class="ft" data-f="today" onclick="setFilter('today',this)">Today</button>
@@ -191,7 +193,7 @@
         </div>
       </section>
 
-      <section class="card t-card fade-up">
+      <section class="card t-card">
         <div class="card-hd">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <h4>📋 Records</h4>
@@ -417,7 +419,7 @@
 
 <div class="toast-box" id="toastBox"></div>
 
-<script src="assets/js/app.js"></script>
-<script src="assets/js/transaction-page.js"></script>
+<script src="assets/js/app.js?v=4.0"></script>
+<script src="assets/js/transaction-page.js?v=4.0"></script>
 </body>
 </html>
