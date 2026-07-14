@@ -2,11 +2,11 @@
   "name": "AI Toolcor Business Dashboard",
   "short_name": "AI Toolcor",
   "description": "Smart business finance tracker. Track income, expenses & profits in one dashboard.",
-  "start_url": "/login.html",
-  "scope": "/",
+  "start_url": "login.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "theme_color": "#06b6d4",
+  "theme_color": "#6366f1",
   "background_color": "#0a0e27",
   "lang": "en-IN",
   "dir": "ltr",
@@ -66,21 +66,21 @@
       "name": "Add Income",
       "short_name": "Income",
       "description": "Quickly add new income",
-      "url": "/index.html?action=income",
+      "url": "index.html?action=income",
       "icons": [{ "src": "assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Add Expense",
       "short_name": "Expense",
       "description": "Quickly add new expense",
-      "url": "/index.html?action=expense",
+      "url": "index.html?action=expense",
       "icons": [{ "src": "assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Transactions",
       "short_name": "Transactions",
       "description": "View all transactions",
-      "url": "/transaction.html",
+      "url": "transaction.html",
       "icons": [{ "src": "assets/icons/icon-96.png", "sizes": "96x96" }]
     }
   ]

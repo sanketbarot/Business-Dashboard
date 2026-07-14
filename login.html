@@ -4,7 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Login — Crust & Chilly</title>
+<meta name="theme-color" content="#6366f1"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png"/>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="manifest" href="manifest.json"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 
 <!-- Firebase SDKs -->
@@ -479,6 +486,14 @@ function handleLogin(e) {
 function togP() {
   var i = document.getElementById('pw');
   i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('✅ ServiceWorker registered', reg))
+      .catch(err => console.error('❌ ServiceWorker registration failed', err));
+  });
 }
 </script>
 </body>

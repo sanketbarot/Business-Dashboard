@@ -6,8 +6,14 @@
 <title>Transactions — Crust & Chilly</title>
 <meta name="robots" content="noindex, nofollow"/>
 <meta name="theme-color" content="#6366f1"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png"/>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="manifest" href="manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="stylesheet" href="assets/css/style.css?v=5.0"/>
@@ -50,6 +56,7 @@
       <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
       <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
       <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span><span>Backup Data</span></div>
+      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon">📲</span><span>Install App</span></div>
     </nav>
 
     <div class="sb-footer">
@@ -199,5 +206,14 @@
 <!-- JS Files -->
 <script src="assets/js/app.js?v=5.0"></script>
 <script src="assets/js/transaction-page.js?v=5.0"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('✅ ServiceWorker registered', reg))
+        .catch(err => console.error('❌ ServiceWorker registration failed', err));
+    });
+  }
+</script>
 </body>
 </html>
