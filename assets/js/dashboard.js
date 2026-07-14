@@ -1,5 +1,5 @@
 /* ============================================
-   DASHBOARD.JS v4.0 — Smooth Animations
+   DASHBOARD.JS v4.1 — Yesterday Support
    ============================================ */
 
 'use strict';
@@ -46,7 +46,6 @@ const Dash = {
     }
   },
 
-  // ANIMATE NUMBERS after page load
   animateNumbers: function() {
     setTimeout(() => {
       const numberIds = [
@@ -97,6 +96,26 @@ const Dash = {
     const margin = t.income > 0 ? Math.round((t.profit / t.income) * 100) : 0;
     this.setText('pMargin', margin + '% profit margin');
     this.updateTrends(all, this.period);
+
+    // Update subtext based on period
+    this.updatePeriodLabel();
+  },
+
+  // NEW: Show what period is being viewed
+  updatePeriodLabel: function() {
+    const labels = {
+      'today': "📅 Today's Financial Summary",
+      'yesterday': "📅 Yesterday's Financial Summary",
+      'week': "📅 This Week's Summary",
+      'month': "📅 This Month's Summary",
+      'year': "📅 This Year's Summary",
+      'all': "📅 All Time Summary"
+    };
+    const subtitleEl = document.getElementById('heroSubtext');
+    if (subtitleEl) {
+      const periodLabel = labels[this.period] || labels.month;
+      subtitleEl.textContent = periodLabel;
+    }
   },
 
   loadCashOnline: function(all) {
@@ -134,22 +153,46 @@ const Dash = {
     if (onlineBalEl) onlineBalEl.classList.toggle('negative', onlineBalance < 0);
   },
 
+  // UPDATED: Better trend logic for Yesterday
   updateTrends: function(all, period) {
     let prevPeriod = null;
     if (period === 'today') prevPeriod = 'yesterday';
     else if (period === 'week') prevPeriod = 'lastweek';
     else if (period === 'month') prevPeriod = 'lastmonth';
+    else if (period === 'yesterday') {
+      // For yesterday, compare with day before yesterday (2 days ago)
+      // We'll show trends but they'll require custom logic
+      prevPeriod = null;
+    }
+
     const cur = calcTotals(filterByPeriod(all, period));
     let iTrend = 0, eTrend = 0, pTrend = 0;
+
     if (prevPeriod) {
       const prev = calcTotals(filterByPeriod(all, prevPeriod));
       iTrend = this.calcTrend(cur.income, prev.income);
       eTrend = this.calcTrend(cur.expense, prev.expense);
       pTrend = this.calcTrend(cur.profit, prev.profit);
+    } else if (period === 'yesterday') {
+      // Special case: Compare Yesterday with Day before yesterday
+      const dayBefore = this.getDayBeforeYesterdayTxns(all);
+      const prev = calcTotals(dayBefore);
+      iTrend = this.calcTrend(cur.income, prev.income);
+      eTrend = this.calcTrend(cur.expense, prev.expense);
+      pTrend = this.calcTrend(cur.profit, prev.profit);
     }
+
     this.setTrend('incomeTrend', iTrend);
     this.setTrend('expenseTrend', eTrend);
     this.setTrend('profitTrend', pTrend);
+  },
+
+  // NEW: Get day before yesterday transactions
+  getDayBeforeYesterdayTxns: function(all) {
+    const d = new Date();
+    d.setDate(d.getDate() - 2);
+    const dateStr = d.toISOString().split('T')[0];
+    return all.filter(t => t.date === dateStr);
   },
 
   calcTrend: function(cur, prev) {
@@ -220,11 +263,33 @@ const Dash = {
       const tot = calcTotals(all);
       const monthT = calcTotals(filterByPeriod(all, 'month'));
       const lastMonthT = calcTotals(filterByPeriod(all, 'lastmonth'));
+      const todayT = calcTotals(filterByPeriod(all, 'today'));
+      const yesterdayT = calcTotals(filterByPeriod(all, 'yesterday'));
+
       if (tot.profit > 0) {
         insights.push({ type: 'success', icon: '💰', text: "You're in <strong>profit</strong> of " + inr(tot.profit) });
       } else if (tot.profit < 0) {
         insights.push({ type: 'danger', icon: '⚠️', text: "You're in <strong>loss</strong> by " + inr(Math.abs(tot.profit)) });
       }
+
+      // NEW: Yesterday vs Today insight
+      if (yesterdayT.profit !== 0 && todayT.profit !== 0) {
+        const diff = todayT.profit - yesterdayT.profit;
+        if (diff > 0) {
+          insights.push({
+            type: 'success',
+            icon: '📈',
+            text: 'Today is <strong>' + inr(diff) + ' better</strong> than yesterday!'
+          });
+        } else if (diff < 0) {
+          insights.push({
+            type: 'warn',
+            icon: '📉',
+            text: 'Today is <strong>' + inr(Math.abs(diff)) + ' less</strong> than yesterday'
+          });
+        }
+      }
+
       if (lastMonthT.expense > 0) {
         const diff = monthT.expense - lastMonthT.expense;
         const pct = Math.abs(Math.round((diff / lastMonthT.expense) * 100));
@@ -234,6 +299,7 @@ const Dash = {
           insights.push({ type: 'success', icon: '📉', text: 'Expenses are <strong>' + pct + '% lower</strong> than last month' });
         }
       }
+
       const expenses = all.filter(t => t.type === 'expense');
       if (expenses.length) {
         const grouped = {};
@@ -244,12 +310,6 @@ const Dash = {
         const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
         if (sorted.length) {
           insights.push({ type: 'info', icon: '🎯', text: 'Biggest expense: <strong>' + escapeHtml(sorted[0][0]) + '</strong> (' + inr(sorted[0][1]) + ')' });
-        }
-      }
-      if (tot.income > 0) {
-        const rate = Math.round((tot.profit / tot.income) * 100);
-        if (rate >= 30) {
-          insights.push({ type: 'success', icon: '🏆', text: 'Excellent savings rate of <strong>' + rate + '%</strong>!' });
         }
       }
     }
@@ -302,7 +362,6 @@ const Dash = {
       return '<div class="tc-item"><div class="tc-rank ' + rankClass + '">' + (i + 1) + '</div><div class="tc-info"><div class="tc-name">' + escapeHtml(cat) + '</div><div class="tc-bar"><div class="tc-fill" style="width:0%"></div></div></div><div class="tc-amt">' + inrShort(amt) + '</div></div>';
     }).join('');
 
-    // Animate progress bars
     setTimeout(() => {
       const fills = box.querySelectorAll('.tc-fill');
       sorted.forEach((item, i) => {

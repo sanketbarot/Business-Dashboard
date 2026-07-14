@@ -10,9 +10,9 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="assets/css/style.css?v=4.0"/>
-<link rel="stylesheet" href="assets/css/dashboard.css?v=4.0"/>
-<link rel="stylesheet" href="assets/css/animations.css?v=4.0"/>
+<link rel="stylesheet" href="assets/css/style.css?v=4.1"/>
+<link rel="stylesheet" href="assets/css/dashboard.css?v=4.1"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=4.1"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
@@ -111,6 +111,7 @@
         <span class="period-title">📈 Financial Summary</span>
         <div class="period-bar">
           <button class="pb-tab" data-p="today" onclick="switchPeriod('today',this)">Today</button>
+          <button class="pb-tab" data-p="yesterday" onclick="switchPeriod('yesterday',this)">Yesterday</button>
           <button class="pb-tab" data-p="week" onclick="switchPeriod('week',this)">Weekly</button>
           <button class="pb-tab active" data-p="month" onclick="switchPeriod('month',this)">Monthly</button>
           <button class="pb-tab" data-p="year" onclick="switchPeriod('year',this)">Yearly</button>
@@ -553,7 +554,7 @@
 
 <div class="toast-box" id="toastBox"></div>
 
-<script src="assets/js/app.js?v=4.0"></script>
-<script src="assets/js/dashboard.js?v=4.0"></script>
+<script src="assets/js/app.js?v=4.1"></script>
+<script src="assets/js/dashboard.js?v=4.1"></script>
 </body>
 </html>
