@@ -1,6 +1,6 @@
 /* ============================================
-   TRANSACTION-PAGE.JS v4.0
-   Smooth Animations + Dynamic Performance
+   TRANSACTION-PAGE.JS v5.0
+   Firebase Real-time Sync
    ============================================ */
 
 'use strict';
@@ -51,7 +51,7 @@ const TxnPage = {
     setTimeout(() => {
       ['tsIncome', 'tsExpense', 'tsProfit', 'tsCount'].forEach(id => {
         const el = document.getElementById(id);
-        if (el && el.textContent) {
+        if (el && el.textContent && typeof animateNumber === 'function') {
           animateNumber(el, el.textContent);
         }
       });
@@ -69,7 +69,7 @@ const TxnPage = {
       if (all[i].category) catSet.add(all[i].category);
     }
     const cats = Array.from(catSet).sort();
-    cats.forEach(c => {
+    cats.forEach(function(c) {
       const opt = document.createElement('option');
       opt.value = c;
       opt.textContent = c;
@@ -100,9 +100,14 @@ const TxnPage = {
     const allTab = document.querySelector('.ft[data-f="all"]');
     if (allTab) allTab.classList.add('active');
     const resetIds = {
-      'typeFilter': 'all', 'catFilter': '', 'modeFilter': '',
-      'sortFilter': 'date-desc', 'txnSearch': '', 'mainSearch': '',
-      'fStart': '', 'fEnd': ''
+      'typeFilter': 'all',
+      'catFilter': '',
+      'modeFilter': '',
+      'sortFilter': 'date-desc',
+      'txnSearch': '',
+      'mainSearch': '',
+      'fStart': '',
+      'fEnd': ''
     };
     for (const id in resetIds) {
       const el = document.getElementById(id);
@@ -117,18 +122,25 @@ const TxnPage = {
   apply: function() {
     try {
       let data = getTxns();
+
       const fStart = document.getElementById('fStart') ? document.getElementById('fStart').value : '';
       const fEnd = document.getElementById('fEnd') ? document.getElementById('fEnd').value : '';
       data = filterByPeriod(data, this.state.filter, fStart, fEnd);
 
       const type = document.getElementById('typeFilter') ? document.getElementById('typeFilter').value : 'all';
-      if (type !== 'all') data = data.filter(t => t.type === type);
+      if (type !== 'all') {
+        data = data.filter(function(t) { return t.type === type; });
+      }
 
       const cat = document.getElementById('catFilter') ? document.getElementById('catFilter').value : '';
-      if (cat) data = data.filter(t => t.category === cat);
+      if (cat) {
+        data = data.filter(function(t) { return t.category === cat; });
+      }
 
       const mode = document.getElementById('modeFilter') ? document.getElementById('modeFilter').value : '';
-      if (mode) data = data.filter(t => (t.mode || 'Cash') === mode);
+      if (mode) {
+        data = data.filter(function(t) { return (t.mode || 'Cash') === mode; });
+      }
 
       const q1 = (document.getElementById('txnSearch') ? document.getElementById('txnSearch').value : '').trim().toLowerCase();
       const q2 = (document.getElementById('mainSearch') ? document.getElementById('mainSearch').value : '').trim().toLowerCase();
@@ -136,15 +148,15 @@ const TxnPage = {
 
       if (query) {
         this.state.lastQuery = query;
-        data = data.filter(t =>
-          (t.category || '').toLowerCase().indexOf(query) > -1 ||
-          String(t.amount || '').indexOf(query) > -1 ||
-          (t.notes || '').toLowerCase().indexOf(query) > -1 ||
-          (t.from || '').toLowerCase().indexOf(query) > -1 ||
-          (t.vendor || '').toLowerCase().indexOf(query) > -1 ||
-          (t.mode || '').toLowerCase().indexOf(query) > -1 ||
-          fmtDate(t.date).toLowerCase().indexOf(query) > -1
-        );
+        data = data.filter(function(t) {
+          return (t.category || '').toLowerCase().indexOf(query) > -1 ||
+                 String(t.amount || '').indexOf(query) > -1 ||
+                 (t.notes || '').toLowerCase().indexOf(query) > -1 ||
+                 (t.from || '').toLowerCase().indexOf(query) > -1 ||
+                 (t.vendor || '').toLowerCase().indexOf(query) > -1 ||
+                 (t.mode || '').toLowerCase().indexOf(query) > -1 ||
+                 fmtDate(t.date).toLowerCase().indexOf(query) > -1;
+        });
       } else {
         this.state.lastQuery = '';
       }
@@ -169,7 +181,7 @@ const TxnPage = {
     const key = parts[0];
     const order = parts[1];
     const dir = order === 'desc' ? -1 : 1;
-    return data.slice().sort((a, b) => {
+    return data.slice().sort(function(a, b) {
       let va, vb;
       if (key === 'date') {
         va = new Date(a.date).getTime() || 0;
@@ -414,8 +426,6 @@ const TxnPage = {
     this.state.page = p;
     this.render();
     this.updateStats(this.state.filtered);
-
-    // Smooth scroll to top of table
     const content = document.querySelector('.content');
     if (content) {
       content.scrollTo({ top: 300, behavior: 'smooth' });
@@ -438,7 +448,7 @@ const TxnPage = {
     const cb = document.getElementById('selAll');
     if (!cb) return;
     const self = this;
-    if (cb.checked) this.state.filtered.forEach(t => self.state.selected.add(t.id));
+    if (cb.checked) this.state.filtered.forEach(function(t) { self.state.selected.add(t.id); });
     else this.state.selected.clear();
     this.render();
   },
@@ -454,22 +464,39 @@ const TxnPage = {
     if (txt) txt.textContent = count + ' selected';
   },
 
-  bulkDel: function() {
+  // ============================================
+  // FIREBASE: BULK DELETE
+  // ============================================
+  bulkDel: async function() {
     if (!this.state.selected.size) return;
     const num = this.state.selected.size;
     if (!confirm('Delete ' + num + ' selected transaction(s)? This cannot be undone.')) return;
-    const self = this;
-    let data = getTxns();
-    data = data.filter(t => !self.state.selected.has(t.id));
-    saveTxns(data);
+
+    const ids = Array.from(this.state.selected);
+
+    // Delete from Firebase
+    if (typeof deleteMultipleFromFirebase === 'function') {
+      await deleteMultipleFromFirebase(ids);
+    } else {
+      // Fallback to localStorage
+      let data = getTxns();
+      const self = this;
+      data = data.filter(function(t) { return !self.state.selected.has(t.id); });
+      saveTxns(data);
+    }
+
     this.state.selected.clear();
     this.buildCategoryFilter();
-    this.apply();
-    toast('Deleted ' + num + ' transactions', 'success');
+    // Firebase listener will auto-refresh
+    if (!firebaseReady) this.apply();
+    toast('Deleted ' + num + ' transactions ☁️', 'success');
   },
 
+  // ============================================
+  // VIEW DETAIL
+  // ============================================
   view: function(id) {
-    const t = getTxns().find(x => x.id === id);
+    const t = getTxns().find(function(x) { return x.id === id; });
     if (!t) return;
     const isI = t.type === 'income';
     const hd = document.getElementById('detailHd');
@@ -477,7 +504,9 @@ const TxnPage = {
     const editBtn = document.getElementById('detailEditBtn');
     if (!grid) return;
     if (hd) {
-      hd.style.background = isI ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
+      hd.style.background = isI
+        ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
+        : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
       const h3 = hd.querySelector('h3');
       if (h3) h3.textContent = isI ? '💰 Income Details' : '💸 Expense Details';
     }
@@ -493,22 +522,27 @@ const TxnPage = {
       '<div class="detail-item"><div class="detail-lbl">Mode</div><div class="detail-val">' + (this.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">' + customerLbl + '</div><div class="detail-val">' + escapeHtml(customer || '—') + '</div></div>' +
       (t.notes ? '<div class="detail-item full"><div class="detail-lbl">Notes</div><div class="detail-val" style="font-weight:500;">' + escapeHtml(t.notes) + '</div></div>' : '') +
-      (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-size:0.85rem;">' + new Date(t.savedAt).toLocaleString('en-IN') + '</div></div>' : '');
+      (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-size:0.85rem;">' + new Date(t.savedAt).toLocaleString('en-IN') + '</div></div>' : '') +
+      '<div class="detail-item full"><div class="detail-lbl">Sync Status</div><div class="detail-val" style="font-size:0.82rem;color:var(--income);">☁️ Synced to Cloud</div></div>';
+
     if (editBtn) {
       const self = this;
-      editBtn.onclick = () => {
+      editBtn.onclick = function() {
         closeModal('detailModal');
-        setTimeout(() => self.edit(id), 200);
+        setTimeout(function() { self.edit(id); }, 200);
       };
     }
     openModal('detailModal');
   },
 
+  // ============================================
+  // FIREBASE: EDIT
+  // ============================================
   edit: function(id) {
-    const t = getTxns().find(x => x.id === id);
+    const t = getTxns().find(function(x) { return x.id === id; });
     if (!t) return;
     const isI = t.type === 'income';
-    const setVal = (elId, val) => {
+    const setVal = function(elId, val) {
       const el = document.getElementById(elId);
       if (el) el.value = val || '';
     };
@@ -527,22 +561,37 @@ const TxnPage = {
     openModal(isI ? 'incomeModal' : 'expenseModal');
   },
 
-  del: function(id) {
-    const t = getTxns().find(x => x.id === id);
+  // ============================================
+  // FIREBASE: DELETE SINGLE
+  // ============================================
+  del: async function(id) {
+    const t = getTxns().find(function(x) { return x.id === id; });
     if (!t) return;
     const isI = t.type === 'income';
     const label = isI ? 'income' : 'expense';
     if (!confirm('Delete this ' + label + ' of ' + inr(t.amount) + '?\nCategory: ' + t.category + '\nDate: ' + fmtDate(t.date) + '\n\nThis cannot be undone.')) return;
-    let data = getTxns();
-    data = data.filter(x => x.id !== id);
-    saveTxns(data);
+
+    // Delete from Firebase
+    if (typeof deleteTxnFromFirebase === 'function') {
+      await deleteTxnFromFirebase(id);
+    } else {
+      // Fallback to localStorage
+      let data = getTxns();
+      data = data.filter(function(x) { return x.id !== id; });
+      saveTxns(data);
+    }
+
     this.state.selected.delete(id);
     this.buildCategoryFilter();
-    this.apply();
-    toast('Deleted ' + label + ' of ' + inr(t.amount), 'success');
+    // Firebase listener will auto-refresh
+    if (!firebaseReady) this.apply();
+    toast('Deleted ' + label + ' of ' + inr(t.amount) + ' ☁️', 'success');
   },
 
-  save: function(type) {
+  // ============================================
+  // FIREBASE: SAVE (Create / Update)
+  // ============================================
+  save: async function(type) {
     const isI = type === 'income';
     const date = document.getElementById(isI ? 'iDate' : 'eDate').value.trim();
     const cat = document.getElementById(isI ? 'iCat' : 'eCat').value.trim();
@@ -552,6 +601,7 @@ const TxnPage = {
     const editId = document.getElementById(isI ? 'iEditId' : 'eEditId').value.trim();
     const from = isI ? document.getElementById('iFrom').value.trim() : '';
     const vendor = !isI ? document.getElementById('eVendor').value.trim() : '';
+
     if (!date) { toast('Please select a date', 'error'); return; }
     if (!cat) { toast('Please select a category', 'error'); return; }
     const amount = parseFloat(amt);
@@ -559,35 +609,58 @@ const TxnPage = {
       toast('Please enter a valid amount', 'error');
       return;
     }
+
     const entry = {
       id: editId || uid(),
-      type: type, date: date, category: cat,
-      amount: amount, mode: mode, from: from, vendor: vendor, notes: notes,
+      type: type,
+      date: date,
+      category: cat,
+      amount: amount,
+      mode: mode,
+      from: from,
+      vendor: vendor,
+      notes: notes,
       savedAt: new Date().toISOString()
     };
-    let data = getTxns();
-    if (editId) {
-      const idx = data.findIndex(t => t.id === editId);
-      if (idx !== -1) {
-        entry.savedAt = data[idx].savedAt || new Date().toISOString();
-        data[idx] = entry;
+
+    // Save to Firebase
+    if (typeof saveTxnToFirebase === 'function' && typeof updateTxnInFirebase === 'function') {
+      if (editId) {
+        await updateTxnInFirebase(editId, entry);
+      } else {
+        await saveTxnToFirebase(entry);
       }
     } else {
-      data.push(entry);
+      // Fallback to localStorage
+      let data = getTxns();
+      if (editId) {
+        const idx = data.findIndex(function(t) { return t.id === editId; });
+        if (idx !== -1) {
+          entry.savedAt = data[idx].savedAt || new Date().toISOString();
+          data[idx] = entry;
+        }
+      } else {
+        data.push(entry);
+      }
+      saveTxns(data);
     }
-    saveTxns(data);
+
     closeModal(isI ? 'incomeModal' : 'expenseModal');
     this.resetForm(type);
     this.buildCategoryFilter();
-    this.apply();
+
+    // Firebase listener will auto-refresh
+    if (!firebaseReady) this.apply();
+
     setTimeout(() => this.animateStats(), 400);
+
     const action = editId ? 'Updated' : 'Added';
-    toast(action + ' ' + type + ' of ' + inr(amount), 'success');
+    toast(action + ' ' + type + ' of ' + inr(amount) + ' ☁️', 'success');
   },
 
   resetForm: function(type) {
     const isI = type === 'income';
-    const setVal = (elId, val) => {
+    const setVal = function(elId, val) {
       const el = document.getElementById(elId);
       if (el) el.value = val;
     };
@@ -616,7 +689,7 @@ const TxnPage = {
     let timer;
     window.addEventListener('resize', function() {
       clearTimeout(timer);
-      timer = setTimeout(() => self.render(), 200);
+      timer = setTimeout(function() { self.render(); }, 200);
     });
   },
 
@@ -632,7 +705,9 @@ const TxnPage = {
   }
 };
 
+// ============================================
 // GLOBAL FUNCTIONS
+// ============================================
 function applyFilters() { TxnPage.apply(); }
 function setFilter(f, btn) { TxnPage.setFilter(f, btn); }
 function clearFilters() { TxnPage.clear(); }
@@ -663,8 +738,13 @@ function openExpenseModal() {
   openModal('expenseModal');
 }
 
+// ============================================
+// INIT
+// ============================================
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => TxnPage.init());
+  document.addEventListener('DOMContentLoaded', function() {
+    TxnPage.init();
+  });
 } else {
   TxnPage.init();
 }

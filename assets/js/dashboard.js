@@ -656,7 +656,7 @@ function switchPeriod(p, btn) {
 function buildBarChart() { Dash.buildBarChart(getTxns()); }
 function buildDonutChart() { Dash.buildDonutChart(getTxns()); }
 
-function saveTransaction(type) {
+async function saveTransaction(type) {
   const isI = type === 'income';
   const date = document.getElementById(isI ? 'iDate' : 'eDate').value.trim();
   const cat = document.getElementById(isI ? 'iCat' : 'eCat').value.trim();
@@ -666,25 +666,32 @@ function saveTransaction(type) {
   const vendor = !isI ? document.getElementById('eVendor').value.trim() : '';
   const notes = document.getElementById(isI ? 'iNote' : 'eNote').value.trim();
   const editId = document.getElementById(isI ? 'iEditId' : 'eEditId').value.trim();
+
   if (!date) { toast('Please select a date', 'error'); return; }
   if (!cat) { toast('Please select a category', 'error'); return; }
   const amount = parseFloat(amt);
-  if (!amount || amount <= 0 || isNaN(amount)) { toast('Please enter a valid amount', 'error'); return; }
-  const txns = getTxns();
-  const entry = { id: editId || uid(), type, date, category: cat, amount, mode, from, vendor, notes, savedAt: new Date().toISOString() };
-  if (editId) {
-    const idx = txns.findIndex(t => t.id === editId);
-    if (idx !== -1) { entry.savedAt = txns[idx].savedAt || new Date().toISOString(); txns[idx] = entry; }
-  } else {
-    txns.push(entry);
+  if (!amount || amount <= 0 || isNaN(amount)) {
+    toast('Please enter a valid amount', 'error');
+    return;
   }
-  saveTxns(txns);
+
+  const entry = {
+    id: editId || uid(),
+    type, date, category: cat, amount, mode, from, vendor, notes,
+    savedAt: new Date().toISOString()
+  };
+
+  // Save to Firebase
+  if (editId) {
+    await updateTxnInFirebase(editId, entry);
+  } else {
+    await saveTxnToFirebase(entry);
+  }
+
   closeModal(isI ? 'incomeModal' : 'expenseModal');
   resetForm(type);
-  Dash.loadAll();
-  setTimeout(() => Dash.animateNumbers(), 500);
   const action = editId ? 'Updated' : 'Added';
-  toast(action + ' ' + type + ' of ' + inr(amount), 'success');
+  toast(action + ' ' + type + ' of ' + inr(amount) + ' ✅', 'success');
 }
 
 function resetForm(type) {
