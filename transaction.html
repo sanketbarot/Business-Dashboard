@@ -10,17 +10,19 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="assets/css/style.css?v=4.0"/>
-<link rel="stylesheet" href="assets/css/transaction.css?v=4.0"/>
-<link rel="stylesheet" href="assets/css/animations.css?v=4.0"/>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
-<!-- Firebase SDKs -->
+<link rel="stylesheet" href="assets/css/style.css?v=5.0"/>
+<link rel="stylesheet" href="assets/css/transaction.css?v=5.0"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=5.0"/>
+
+<!-- Firebase SDKs - MUST BE BEFORE app.js -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
 </head>
 <body>
 
@@ -41,11 +43,9 @@
       <div class="sb-section">Overview</div>
       <a href="index.html" class="sb-link"><span class="sb-icon">📊</span><span>Dashboard</span></a>
       <a href="transaction.html" class="sb-link active"><span class="sb-icon">💳</span><span>Transactions</span></a>
-
       <div class="sb-section">Quick Add</div>
       <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
       <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon">💸</span><span>New Expense</span></div>
-
       <div class="sb-section">Reports</div>
       <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
       <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
@@ -70,28 +70,17 @@
     <header class="header">
       <div class="hd-left">
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <div class="hd-title">
-          <h4>Transactions</h4>
-          <p id="headerDate">Loading...</p>
-        </div>
+        <div class="hd-title"><h4>Transactions</h4><p id="headerDate">Loading...</p></div>
       </div>
-      <div class="hd-search">
-        <span>🔍</span>
-        <input type="text" id="mainSearch" placeholder="Quick search..." oninput="applyFilters()" autocomplete="off"/>
-      </div>
-      <div class="hd-right">
-        <div class="hd-live" id="liveTime">--:--</div>
-      </div>
+      <div class="hd-search"><span>🔍</span><input type="text" id="mainSearch" placeholder="Quick search..." oninput="applyFilters()" autocomplete="off"/></div>
+      <div class="hd-right"><div class="hd-live" id="liveTime">--:--</div></div>
     </header>
 
     <div class="content">
 
       <section class="cmd-bar">
         <div class="cmd-inner">
-          <div class="cmd-title">
-            <h2>💳 Manage Transactions</h2>
-            <p>View, filter, edit and manage all your records</p>
-          </div>
+          <div class="cmd-title"><h2>💳 Manage Transactions</h2><p>View, filter, edit and manage all your records</p></div>
           <div class="cmd-actions">
             <button class="btn btn-income" onclick="openIncomeModal()">💰 Add Income</button>
             <button class="btn btn-expense" onclick="openExpenseModal()">💸 Add Expense</button>
@@ -100,38 +89,10 @@
       </section>
 
       <section class="tx-analytics">
-        <div class="tx-stat in">
-          <div class="tx-stat-ic">💰</div>
-          <div class="tx-stat-info">
-            <div class="tx-stat-lbl">Total Income</div>
-            <div class="tx-stat-val text-income" id="tsIncome">₹ 0</div>
-            <div class="tx-stat-sub" id="tsIncomeCount">0 records</div>
-          </div>
-        </div>
-        <div class="tx-stat out">
-          <div class="tx-stat-ic">💸</div>
-          <div class="tx-stat-info">
-            <div class="tx-stat-lbl">Total Expense</div>
-            <div class="tx-stat-val text-expense" id="tsExpense">₹ 0</div>
-            <div class="tx-stat-sub" id="tsExpenseCount">0 records</div>
-          </div>
-        </div>
-        <div class="tx-stat prof">
-          <div class="tx-stat-ic">📈</div>
-          <div class="tx-stat-info">
-            <div class="tx-stat-lbl">Net Profit</div>
-            <div class="tx-stat-val text-profit" id="tsProfit">₹ 0</div>
-            <div class="tx-stat-sub" id="tsMargin">0% margin</div>
-          </div>
-        </div>
-        <div class="tx-stat count">
-          <div class="tx-stat-ic">🔢</div>
-          <div class="tx-stat-info">
-            <div class="tx-stat-lbl">Records</div>
-            <div class="tx-stat-val text-brand" id="tsCount">0</div>
-            <div class="tx-stat-sub">In current view</div>
-          </div>
-        </div>
+        <div class="tx-stat in"><div class="tx-stat-ic">💰</div><div class="tx-stat-info"><div class="tx-stat-lbl">Total Income</div><div class="tx-stat-val text-income" id="tsIncome">₹ 0</div><div class="tx-stat-sub" id="tsIncomeCount">0 records</div></div></div>
+        <div class="tx-stat out"><div class="tx-stat-ic">💸</div><div class="tx-stat-info"><div class="tx-stat-lbl">Total Expense</div><div class="tx-stat-val text-expense" id="tsExpense">₹ 0</div><div class="tx-stat-sub" id="tsExpenseCount">0 records</div></div></div>
+        <div class="tx-stat prof"><div class="tx-stat-ic">📈</div><div class="tx-stat-info"><div class="tx-stat-lbl">Net Profit</div><div class="tx-stat-val text-profit" id="tsProfit">₹ 0</div><div class="tx-stat-sub" id="tsMargin">0% margin</div></div></div>
+        <div class="tx-stat count"><div class="tx-stat-ic">🔢</div><div class="tx-stat-info"><div class="tx-stat-lbl">Records</div><div class="tx-stat-val text-brand" id="tsCount">0</div><div class="tx-stat-sub">In current view</div></div></div>
       </section>
 
       <section class="filter-panel">
@@ -146,53 +107,18 @@
           <button class="ft" data-f="year" onclick="setFilter('year',this)">Year</button>
           <button class="ft" data-f="custom" onclick="setFilter('custom',this)">📆 Custom</button>
         </div>
-
         <div id="customRange" class="cr">
           <span class="cr-label">Range:</span>
-          <input type="date" class="fc" id="fStart"/>
-          <span style="color:#6366f1;font-weight:700;">→</span>
-          <input type="date" class="fc" id="fEnd"/>
+          <input type="date" class="fc" id="fStart"/><span style="color:#6366f1;font-weight:700;">→</span><input type="date" class="fc" id="fEnd"/>
           <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply</button>
         </div>
-
         <div class="filter-body">
-          <div class="filter-search">
-            <span class="filter-search-ic">🔍</span>
-            <input type="text" id="txnSearch" placeholder="Search..." oninput="applyFilters()" autocomplete="off"/>
-          </div>
-
-          <select class="fc fsel" id="typeFilter" onchange="applyFilters()">
-            <option value="all">🎯 All Types</option>
-            <option value="income">💰 Income</option>
-            <option value="expense">💸 Expense</option>
-          </select>
-
-          <select class="fc fsel" id="catFilter" onchange="applyFilters()">
-            <option value="">📂 All Categories</option>
-          </select>
-
-          <select class="fc fsel" id="modeFilter" onchange="applyFilters()">
-            <option value="">💳 All Modes</option>
-            <option>Cash</option>
-            <option>Online</option>
-            <option>UPI</option>
-            <option>Bank Transfer</option>
-            <option>Card</option>
-            <option>Cheque</option>
-          </select>
-
-          <select class="fc fsel" id="sortFilter" onchange="applyFilters()">
-            <option value="date-desc">🕐 Latest First</option>
-            <option value="date-asc">📅 Oldest First</option>
-            <option value="amount-desc">💰 High to Low</option>
-            <option value="amount-asc">💰 Low to High</option>
-          </select>
-
-          <div class="view-toggle">
-            <button class="vt-btn active" id="vtTable" onclick="setView('table')">📋 Table</button>
-            <button class="vt-btn" id="vtCard" onclick="setView('card')">🎴 Cards</button>
-          </div>
-
+          <div class="filter-search"><span class="filter-search-ic">🔍</span><input type="text" id="txnSearch" placeholder="Search..." oninput="applyFilters()" autocomplete="off"/></div>
+          <select class="fc fsel" id="typeFilter" onchange="applyFilters()"><option value="all">🎯 All Types</option><option value="income">💰 Income</option><option value="expense">💸 Expense</option></select>
+          <select class="fc fsel" id="catFilter" onchange="applyFilters()"><option value="">📂 All Categories</option></select>
+          <select class="fc fsel" id="modeFilter" onchange="applyFilters()"><option value="">💳 All Modes</option><option>Cash</option><option>Online</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Cheque</option></select>
+          <select class="fc fsel" id="sortFilter" onchange="applyFilters()"><option value="date-desc">🕐 Latest First</option><option value="date-asc">📅 Oldest First</option><option value="amount-desc">💰 High to Low</option><option value="amount-asc">💰 Low to High</option></select>
+          <div class="view-toggle"><button class="vt-btn active" id="vtTable" onclick="setView('table')">📋 Table</button><button class="vt-btn" id="vtCard" onclick="setView('card')">🎴 Cards</button></div>
           <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Reset</button>
           <button class="btn btn-primary btn-sm" onclick="exportExcel()">📊 Export</button>
         </div>
@@ -200,51 +126,15 @@
 
       <section class="card t-card">
         <div class="card-hd">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><h4>📋 Records</h4><span class="rec-tag" id="recTag">0 records</span></div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <h4>📋 Records</h4>
-            <span class="rec-tag" id="recTag">0 records</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <div class="bulk-bar" id="bulkBar">
-              <span class="bulk-txt" id="bulkTxt">0 selected</span>
-              <button class="btn btn-expense btn-sm" onclick="bulkDelete()">🗑️ Delete</button>
-            </div>
-            <label class="sel-all-lbl">
-              <input type="checkbox" id="selAll" onchange="toggleSelectAll()"/>
-              <span>Select All</span>
-            </label>
+            <div class="bulk-bar" id="bulkBar"><span class="bulk-txt" id="bulkTxt">0 selected</span><button class="btn btn-expense btn-sm" onclick="bulkDelete()">🗑️ Delete</button></div>
+            <label class="sel-all-lbl"><input type="checkbox" id="selAll" onchange="toggleSelectAll()"/><span>Select All</span></label>
           </div>
         </div>
-
-        <div id="tableView">
-          <div class="table-wrap">
-            <table class="dtable">
-              <thead>
-                <tr>
-                  <th style="width:32px;"></th>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>Mode</th>
-                  <th>Customer/Vendor</th>
-                  <th>Notes</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="txnBody">
-                <tr><td colspan="9"><div class="empty"><div class="empty-icon">💳</div><h4>No transactions yet</h4><p>Add your first income or expense</p></div></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
+        <div id="tableView"><div class="table-wrap"><table class="dtable"><thead><tr><th style="width:32px;"></th><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Mode</th><th>Customer/Vendor</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="txnBody"><tr><td colspan="9"><div class="empty"><div class="empty-icon">💳</div><h4>No transactions yet</h4><p>Add your first income or expense</p></div></td></tr></tbody></table></div></div>
         <div id="cardView" class="card-view" style="display:none;"></div>
-
-        <div class="t-foot">
-          <div class="t-foot-info" id="tableInfo">0 records</div>
-          <div class="pag" id="pagination"></div>
-        </div>
+        <div class="t-foot"><div class="t-foot-info" id="tableInfo">0 records</div><div class="pag" id="pagination"></div></div>
       </section>
 
     </div>
@@ -254,71 +144,21 @@
 <!-- INCOME MODAL -->
 <div class="modal-bg" id="incomeModal">
   <div class="modal">
-    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
-      <h3 id="incomeTitle">💰 Add Income</h3>
-      <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
-    </div>
+    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);"><h3 id="incomeTitle">💰 Add Income</h3><button class="modal-x" onclick="closeModal('incomeModal')">✕</button></div>
     <div class="modal-bd">
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">DATE <span class="req">*</span></label>
-          <input type="date" class="fc" id="iDate"/>
-        </div>
-        <div class="fg">
-          <label class="fl">CATEGORY <span class="req">*</span></label>
-          <select class="fc" id="iCat">
-            <option value="">Select</option>
-            <option>💰 Cash Income</option>
-            <option>📱 Online Payment</option>
-            <option>🛒 Sales</option>
-            <option>🔧 Service</option>
-            <option>💻 Freelance</option>
-            <option>🏠 Rental</option>
-            <option>💼 Commission</option>
-            <option>↩️ Refund Received</option>
-            <option>📈 Investment Return</option>
-            <option>🎁 Gift / Bonus</option>
-            <option>📦 Other Income</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="iDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat"><option value="">Select</option><option>💰 Cash Income</option><option>📱 Online Payment</option><option>🛒 Sales</option><option>🔧 Service</option><option>💻 Freelance</option><option>🏠 Rental</option><option>💼 Commission</option><option>↩️ Refund Received</option><option>📈 Investment Return</option><option>🎁 Gift / Bonus</option><option>📦 Other Income</option></select></div>
       </div>
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span>
-            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/>
-          </div>
-        </div>
-        <div class="fg">
-          <label class="fl">MODE</label>
-          <select class="fc" id="iMode">
-            <option value="Cash">💵 Cash</option>
-            <option value="Online">📱 Online</option>
-            <option value="UPI">📲 UPI</option>
-            <option value="Bank Transfer">🏦 Bank Transfer</option>
-            <option value="Card">💳 Card</option>
-            <option value="Cheque">📄 Cheque</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span><input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
       </div>
-      <div class="fg">
-        <label class="fl">CUSTOMER / FROM</label>
-        <input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/>
-      </div>
-      <div class="fg">
-        <label class="fl">NOTES</label>
-        <textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea>
-      </div>
-      <div id="iPreview" class="preview preview-in" style="display:none;">
-        <span>Income Amount</span>
-        <strong id="iPreviewVal">₹ 0.00</strong>
-      </div>
+      <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea></div>
+      <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong id="iPreviewVal">₹ 0.00</strong></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
-      <button class="btn btn-income" onclick="saveTxn('income')">💰 Save</button>
-    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button><button class="btn btn-income" onclick="saveTxn('income')">💰 Save</button></div>
     <input type="hidden" id="iEditId"/>
   </div>
 </div>
@@ -326,81 +166,21 @@
 <!-- EXPENSE MODAL -->
 <div class="modal-bg" id="expenseModal">
   <div class="modal">
-    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
-      <h3 id="expenseTitle">💸 Add Expense</h3>
-      <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
-    </div>
+    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);"><h3 id="expenseTitle">💸 Add Expense</h3><button class="modal-x" onclick="closeModal('expenseModal')">✕</button></div>
     <div class="modal-bd">
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">DATE <span class="req">*</span></label>
-          <input type="date" class="fc" id="eDate"/>
-        </div>
-        <div class="fg">
-          <label class="fl">CATEGORY <span class="req">*</span></label>
-          <select class="fc" id="eCat">
-            <option value="">Select</option>
-            <option>🧾 Electricity Bill</option>
-            <option>💧 Water Bill</option>
-            <option>📡 Internet Bill</option>
-            <option>📱 Mobile Bill</option>
-            <option>🏠 Rent</option>
-            <option>🛒 Grocery</option>
-            <option>🥦 Vegetables</option>
-            <option>🍞 Bread / Bakery</option>
-            <option>🍔 Food & Dining</option>
-            <option>🚗 Transport</option>
-            <option>⛽ Fuel</option>
-            <option>👥 Salary</option>
-            <option>💊 Medical</option>
-            <option>📚 Education</option>
-            <option>🔨 Maintenance</option>
-            <option>📢 Marketing</option>
-            <option>📦 Supplies</option>
-            <option>🛡️ Insurance</option>
-            <option>📋 Tax</option>
-            <option>↩️ Refund Given</option>
-            <option>💸 Other Expense</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="eDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat"><option value="">Select</option><option>🧾 Electricity Bill</option><option>💧 Water Bill</option><option>📡 Internet Bill</option><option>📱 Mobile Bill</option><option>🏠 Rent</option><option>🛒 Grocery</option><option>🥦 Vegetables</option><option>🍞 Bread / Bakery</option><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>⛽ Fuel</option><option>👥 Salary</option><option>💊 Medical</option><option>📚 Education</option><option>🔨 Maintenance</option><option>📢 Marketing</option><option>📦 Supplies</option><option>🛡️ Insurance</option><option>📋 Tax</option><option>↩️ Refund Given</option><option>💸 Other Expense</option></select></div>
       </div>
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span>
-            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/>
-          </div>
-        </div>
-        <div class="fg">
-          <label class="fl">MODE</label>
-          <select class="fc" id="eMode">
-            <option value="Cash">💵 Cash</option>
-            <option value="Online">📱 Online</option>
-            <option value="UPI">📲 UPI</option>
-            <option value="Bank Transfer">🏦 Bank Transfer</option>
-            <option value="Card">💳 Card</option>
-            <option value="Cheque">📄 Cheque</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span><input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
       </div>
-      <div class="fg">
-        <label class="fl">VENDOR</label>
-        <input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/>
-      </div>
-      <div class="fg">
-        <label class="fl">NOTES</label>
-        <textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea>
-      </div>
-      <div id="ePreview" class="preview preview-out" style="display:none;">
-        <span>Expense Amount</span>
-        <strong id="ePreviewVal">₹ 0.00</strong>
-      </div>
+      <div class="fg"><label class="fl">VENDOR</label><input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea></div>
+      <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong id="ePreviewVal">₹ 0.00</strong></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
-      <button class="btn btn-expense" onclick="saveTxn('expense')">💸 Save</button>
-    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button class="btn btn-expense" onclick="saveTxn('expense')">💸 Save</button></div>
     <input type="hidden" id="eEditId"/>
   </div>
 </div>
@@ -408,23 +188,16 @@
 <!-- DETAIL MODAL -->
 <div class="modal-bg" id="detailModal">
   <div class="modal" style="max-width:520px;">
-    <div class="modal-hd" id="detailHd">
-      <h3>📋 Transaction Details</h3>
-      <button class="modal-x" onclick="closeModal('detailModal')">✕</button>
-    </div>
-    <div class="modal-bd">
-      <div class="detail-grid" id="detailGrid"></div>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-outline" onclick="closeModal('detailModal')">Close</button>
-      <button class="btn btn-primary" id="detailEditBtn">✏️ Edit</button>
-    </div>
+    <div class="modal-hd" id="detailHd"><h3>📋 Transaction Details</h3><button class="modal-x" onclick="closeModal('detailModal')">✕</button></div>
+    <div class="modal-bd"><div class="detail-grid" id="detailGrid"></div></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('detailModal')">Close</button><button class="btn btn-primary" id="detailEditBtn">✏️ Edit</button></div>
   </div>
 </div>
 
 <div class="toast-box" id="toastBox"></div>
 
-<script src="assets/js/app.js?v=4.0"></script>
-<script src="assets/js/transaction-page.js?v=4.0"></script>
+<!-- JS Files -->
+<script src="assets/js/app.js?v=5.0"></script>
+<script src="assets/js/transaction-page.js?v=5.0"></script>
 </body>
 </html>

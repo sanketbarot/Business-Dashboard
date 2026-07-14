@@ -10,31 +10,21 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="assets/css/style.css?v=4.1"/>
-<link rel="stylesheet" href="assets/css/dashboard.css?v=4.1"/>
-<link rel="stylesheet" href="assets/css/animations.css?v=4.1"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
-<!-- Firebase SDKs -->
+<link rel="stylesheet" href="assets/css/style.css?v=5.0"/>
+<link rel="stylesheet" href="assets/css/dashboard.css?v=5.0"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=5.0"/>
+
+<!-- Firebase SDKs - MUST BE BEFORE app.js -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
-<style>
-.sb-logo-icon-wrap {
-  width: 42px; height: 42px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-  overflow: hidden; padding: 6px;
-}
-.sb-logo-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
-.sb-logo-info { min-width: 0; flex: 1; overflow: hidden; }
-</style>
+
+<!-- Chart & Export Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
 </head>
 <body>
 
@@ -126,51 +116,20 @@
 
       <section class="sum-grid">
         <div class="sum-card">
-          <div class="sc-top">
-            <div class="sc-icon">💰</div>
-            <span class="sc-trend" id="incomeTrend">→ 0%</span>
-          </div>
-          <div>
-            <div class="sc-label">Total Income</div>
-            <div class="sc-value" id="pIncome">₹ 0.00</div>
-            <div class="sc-sub" id="pIncomeCount">0 records</div>
-          </div>
+          <div class="sc-top"><div class="sc-icon">💰</div><span class="sc-trend" id="incomeTrend">→ 0%</span></div>
+          <div><div class="sc-label">Total Income</div><div class="sc-value" id="pIncome">₹ 0.00</div><div class="sc-sub" id="pIncomeCount">0 records</div></div>
         </div>
-
         <div class="sum-card">
-          <div class="sc-top">
-            <div class="sc-icon">💸</div>
-            <span class="sc-trend" id="expenseTrend">→ 0%</span>
-          </div>
-          <div>
-            <div class="sc-label">Total Expense</div>
-            <div class="sc-value" id="pExpense">₹ 0.00</div>
-            <div class="sc-sub" id="pExpenseCount">0 records</div>
-          </div>
+          <div class="sc-top"><div class="sc-icon">💸</div><span class="sc-trend" id="expenseTrend">→ 0%</span></div>
+          <div><div class="sc-label">Total Expense</div><div class="sc-value" id="pExpense">₹ 0.00</div><div class="sc-sub" id="pExpenseCount">0 records</div></div>
         </div>
-
         <div class="sum-card">
-          <div class="sc-top">
-            <div class="sc-icon">📈</div>
-            <span class="sc-trend" id="profitTrend">→ 0%</span>
-          </div>
-          <div>
-            <div class="sc-label">Net Profit</div>
-            <div class="sc-value" id="pProfit">₹ 0.00</div>
-            <div class="sc-sub" id="pMargin">0% margin</div>
-          </div>
+          <div class="sc-top"><div class="sc-icon">📈</div><span class="sc-trend" id="profitTrend">→ 0%</span></div>
+          <div><div class="sc-label">Net Profit</div><div class="sc-value" id="pProfit">₹ 0.00</div><div class="sc-sub" id="pMargin">0% margin</div></div>
         </div>
-
         <div class="sum-card balance-glow">
-          <div class="sc-top">
-            <div class="sc-icon">🏦</div>
-            <span class="sc-trend">All Time</span>
-          </div>
-          <div>
-            <div class="sc-label">Total Balance</div>
-            <div class="sc-value" id="totalBal">₹ 0.00</div>
-            <div class="sc-sub" id="totalCount">0 records</div>
-          </div>
+          <div class="sc-top"><div class="sc-icon">🏦</div><span class="sc-trend">All Time</span></div>
+          <div><div class="sc-label">Total Balance</div><div class="sc-value" id="totalBal">₹ 0.00</div><div class="sc-sub" id="totalCount">0 records</div></div>
         </div>
       </section>
 
@@ -178,102 +137,44 @@
         <div class="co-card cash-card">
           <div class="co-header">
             <div class="co-icon">💵</div>
-            <div class="co-header-info">
-              <div class="co-title">Cash Balance</div>
-              <div class="co-subtitle">Physical Money</div>
-            </div>
+            <div class="co-header-info"><div class="co-title">Cash Balance</div><div class="co-subtitle">Physical Money</div></div>
             <div class="co-badge cash-badge">CASH</div>
           </div>
-
           <div class="co-body">
-            <div class="co-row">
-              <div class="co-row-icon in">↓</div>
-              <div class="co-row-info">
-                <div class="co-row-label">Cash Received</div>
-                <div class="co-row-count" id="cashInCount">0 transactions</div>
-              </div>
-              <div class="co-row-amt text-income" id="cashIn">₹ 0</div>
-            </div>
-
-            <div class="co-row">
-              <div class="co-row-icon out">↑</div>
-              <div class="co-row-info">
-                <div class="co-row-label">Cash Spent</div>
-                <div class="co-row-count" id="cashOutCount">0 transactions</div>
-              </div>
-              <div class="co-row-amt text-expense" id="cashOut">₹ 0</div>
-            </div>
-
-            <div class="co-balance">
-              <div class="co-balance-label">💰 Net Cash in Hand</div>
-              <div class="co-balance-amt" id="cashBalance">₹ 0</div>
-            </div>
+            <div class="co-row"><div class="co-row-icon in">↓</div><div class="co-row-info"><div class="co-row-label">Cash Received</div><div class="co-row-count" id="cashInCount">0 transactions</div></div><div class="co-row-amt text-income" id="cashIn">₹ 0</div></div>
+            <div class="co-row"><div class="co-row-icon out">↑</div><div class="co-row-info"><div class="co-row-label">Cash Spent</div><div class="co-row-count" id="cashOutCount">0 transactions</div></div><div class="co-row-amt text-expense" id="cashOut">₹ 0</div></div>
+            <div class="co-balance"><div class="co-balance-label">💰 Net Cash in Hand</div><div class="co-balance-amt" id="cashBalance">₹ 0</div></div>
           </div>
         </div>
-
         <div class="co-card online-card">
           <div class="co-header">
             <div class="co-icon">📱</div>
-            <div class="co-header-info">
-              <div class="co-title">Online Balance</div>
-              <div class="co-subtitle">UPI + Bank + Card</div>
-            </div>
+            <div class="co-header-info"><div class="co-title">Online Balance</div><div class="co-subtitle">UPI + Bank + Card</div></div>
             <div class="co-badge online-badge">ONLINE</div>
           </div>
-
           <div class="co-body">
-            <div class="co-row">
-              <div class="co-row-icon in">↓</div>
-              <div class="co-row-info">
-                <div class="co-row-label">Online Received</div>
-                <div class="co-row-count" id="onlineInCount">0 transactions</div>
-              </div>
-              <div class="co-row-amt text-income" id="onlineIn">₹ 0</div>
-            </div>
-
-            <div class="co-row">
-              <div class="co-row-icon out">↑</div>
-              <div class="co-row-info">
-                <div class="co-row-label">Online Spent</div>
-                <div class="co-row-count" id="onlineOutCount">0 transactions</div>
-              </div>
-              <div class="co-row-amt text-expense" id="onlineOut">₹ 0</div>
-            </div>
-
-            <div class="co-balance online-balance">
-              <div class="co-balance-label">📱 Net Online Balance</div>
-              <div class="co-balance-amt" id="onlineBalance">₹ 0</div>
-            </div>
+            <div class="co-row"><div class="co-row-icon in">↓</div><div class="co-row-info"><div class="co-row-label">Online Received</div><div class="co-row-count" id="onlineInCount">0 transactions</div></div><div class="co-row-amt text-income" id="onlineIn">₹ 0</div></div>
+            <div class="co-row"><div class="co-row-icon out">↑</div><div class="co-row-info"><div class="co-row-label">Online Spent</div><div class="co-row-count" id="onlineOutCount">0 transactions</div></div><div class="co-row-amt text-expense" id="onlineOut">₹ 0</div></div>
+            <div class="co-balance online-balance"><div class="co-balance-label">📱 Net Online Balance</div><div class="co-balance-amt" id="onlineBalance">₹ 0</div></div>
           </div>
         </div>
       </section>
 
       <section class="analytics-grid">
         <div class="mini-stat">
-          <div class="ms-top">
-            <div class="ms-ic">📊</div>
-            <div class="ms-title">Avg Income / Day</div>
-          </div>
+          <div class="ms-top"><div class="ms-ic">📊</div><div class="ms-title">Avg Income / Day</div></div>
           <div class="ms-value" id="msAvgIncome">₹ 0</div>
           <div class="ms-sub" id="msIncomeDays">No data yet</div>
           <div class="ms-progress"><div class="ms-fill f-income" id="msIncomeBar" style="width:0%"></div></div>
         </div>
-
         <div class="mini-stat">
-          <div class="ms-top">
-            <div class="ms-ic">💳</div>
-            <div class="ms-title">Avg Expense / Day</div>
-          </div>
+          <div class="ms-top"><div class="ms-ic">💳</div><div class="ms-title">Avg Expense / Day</div></div>
           <div class="ms-value" id="msAvgExpense">₹ 0</div>
           <div class="ms-sub" id="msExpenseDays">No data yet</div>
           <div class="ms-progress"><div class="ms-fill f-expense" id="msExpenseBar" style="width:0%"></div></div>
         </div>
-
         <div class="mini-stat">
-          <div class="ms-top">
-            <div class="ms-ic">🎯</div>
-            <div class="ms-title">Savings Rate</div>
-          </div>
+          <div class="ms-top"><div class="ms-ic">🎯</div><div class="ms-title">Savings Rate</div></div>
           <div class="ms-value" id="msSavings">0%</div>
           <div class="ms-sub" id="msSavingsSub">Start adding data</div>
           <div class="ms-progress"><div class="ms-fill f-brand" id="msSavingsBar" style="width:0%"></div></div>
@@ -282,120 +183,43 @@
 
       <section class="chart-grid">
         <div class="card chart-enhanced">
-          <div class="card-hd">
-            <h4>📊 Income vs Expense</h4>
-            <select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
-          </div>
-          <div class="card-bd">
-            <div style="position:relative;height:300px;">
-              <canvas id="barChart"></canvas>
-            </div>
-          </div>
+          <div class="card-hd"><h4>📊 Income vs Expense</h4><select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select></div>
+          <div class="card-bd"><div style="position:relative;height:300px;"><canvas id="barChart"></canvas></div></div>
         </div>
-
         <div class="card chart-enhanced">
-          <div class="card-hd">
-            <h4>🍩 Expense Breakdown</h4>
+          <div class="card-hd"><h4>🍩 Expense Breakdown</h4>
             <select class="chart-sel" id="donutPeriod" onchange="buildDonutChart()">
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-              <option value="all">All Time</option>
+              <option value="month">This Month</option><option value="year">This Year</option><option value="all">All Time</option>
             </select>
           </div>
-          <div class="card-bd">
-            <div style="position:relative;height:220px;">
-              <canvas id="donutChart"></canvas>
-            </div>
-            <div id="donutLegend" class="donut-legend"></div>
-          </div>
+          <div class="card-bd"><div style="position:relative;height:220px;"><canvas id="donutChart"></canvas></div><div id="donutLegend" class="donut-legend"></div></div>
         </div>
       </section>
 
       <section class="card chart-enhanced" style="margin-bottom:26px;">
-        <div class="card-hd">
-          <h4>📈 30-Day Cash Flow Analysis</h4>
-          <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Last 30 days</span>
-        </div>
+        <div class="card-hd"><h4>📈 30-Day Cash Flow</h4><span style="font-size:0.75rem;color:var(--text-muted);">Last 30 days</span></div>
         <div class="card-bd">
           <div class="chart-info-bar">
-            <div class="chart-info-item">
-              <div class="chart-info-dot" style="background:#10b981;"></div>
-              <span>Income: <strong id="lineIncomeTotal">₹ 0</strong></span>
-            </div>
-            <div class="chart-info-item">
-              <div class="chart-info-dot" style="background:#ef4444;"></div>
-              <span>Expense: <strong id="lineExpenseTotal">₹ 0</strong></span>
-            </div>
-            <div class="chart-info-item" style="margin-left:auto;">
-              <span>Net: <strong id="lineNetTotal" style="color:var(--brand-accent);">₹ 0</strong></span>
-            </div>
+            <div class="chart-info-item"><div class="chart-info-dot" style="background:#10b981;"></div><span>Income: <strong id="lineIncomeTotal">₹ 0</strong></span></div>
+            <div class="chart-info-item"><div class="chart-info-dot" style="background:#ef4444;"></div><span>Expense: <strong id="lineExpenseTotal">₹ 0</strong></span></div>
+            <div class="chart-info-item" style="margin-left:auto;"><span>Net: <strong id="lineNetTotal" style="color:var(--brand-accent);">₹ 0</strong></span></div>
           </div>
-
-          <div style="position:relative;height:280px;">
-            <canvas id="lineChart"></canvas>
-          </div>
+          <div style="position:relative;height:280px;"><canvas id="lineChart"></canvas></div>
         </div>
       </section>
 
       <section class="bottom-grid">
         <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
+          <div class="card"><div class="card-hd"><h4>💡 Smart Insights</h4></div><div class="card-bd" id="insightsBox"><div class="insight-item"><span class="insight-icon">💡</span><div class="insight-text">Add transactions to see insights</div></div></div></div>
           <div class="card">
-            <div class="card-hd"><h4>💡 Smart Insights</h4></div>
-            <div class="card-bd" id="insightsBox">
-              <div class="insight-item">
-                <span class="insight-icon">💡</span>
-                <div class="insight-text">Add transactions to see insights</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-hd">
-              <h4>🕐 Recent Activity</h4>
-              <a href="transaction.html" class="btn btn-outline btn-sm">View All →</a>
-            </div>
-            <div class="table-wrap">
-              <table class="dtable">
-                <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Mode</th></tr></thead>
-                <tbody id="recentBody">
-                  <tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><h4>No transactions yet</h4></div></td></tr>
-                </tbody>
-              </table>
-            </div>
+            <div class="card-hd"><h4>🕐 Recent Activity</h4><a href="transaction.html" class="btn btn-outline btn-sm">View All →</a></div>
+            <div class="table-wrap"><table class="dtable"><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Mode</th></tr></thead><tbody id="recentBody"><tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><h4>No transactions yet</h4></div></td></tr></tbody></table></div>
           </div>
         </div>
-
         <div class="right-col">
-          <div class="card">
-            <div class="card-hd"><h4>📊 Month Comparison</h4></div>
-            <div class="card-bd">
-              <div class="compare-grid">
-                <div class="compare-box">
-                  <div class="cb-lbl">Last Month</div>
-                  <div class="cb-val" id="cmpLast">₹ 0</div>
-                </div>
-                <div class="compare-box">
-                  <div class="cb-lbl">This Month</div>
-                  <div class="cb-val" id="cmpThis">₹ 0</div>
-                </div>
-              </div>
-              <div class="compare-arrow neutral" id="cmpArrow">→ No data</div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-hd"><h4>🔥 Top Expenses</h4></div>
-            <div class="card-bd" id="topCatBox">
-              <div class="empty"><p>No data yet</p></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-hd"><h4>💳 Payment Modes</h4></div>
-            <div class="card-bd" id="payModeBox">
-              <div class="empty"><p>No data yet</p></div>
-            </div>
-          </div>
+          <div class="card"><div class="card-hd"><h4>📊 Month Comparison</h4></div><div class="card-bd"><div class="compare-grid"><div class="compare-box"><div class="cb-lbl">Last Month</div><div class="cb-val" id="cmpLast">₹ 0</div></div><div class="compare-box"><div class="cb-lbl">This Month</div><div class="cb-val" id="cmpThis">₹ 0</div></div></div><div class="compare-arrow neutral" id="cmpArrow">→ No data</div></div></div>
+          <div class="card"><div class="card-hd"><h4>🔥 Top Expenses</h4></div><div class="card-bd" id="topCatBox"><div class="empty"><p>No data yet</p></div></div></div>
+          <div class="card"><div class="card-hd"><h4>💳 Payment Modes</h4></div><div class="card-bd" id="payModeBox"><div class="empty"><p>No data yet</p></div></div></div>
         </div>
       </section>
 
@@ -406,71 +230,21 @@
 <!-- INCOME MODAL -->
 <div class="modal-bg" id="incomeModal">
   <div class="modal">
-    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
-      <h3 id="incomeTitle">💰 Add Income</h3>
-      <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
-    </div>
+    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);"><h3 id="incomeTitle">💰 Add Income</h3><button class="modal-x" onclick="closeModal('incomeModal')">✕</button></div>
     <div class="modal-bd">
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">DATE <span class="req">*</span></label>
-          <input type="date" class="fc" id="iDate"/>
-        </div>
-        <div class="fg">
-          <label class="fl">CATEGORY <span class="req">*</span></label>
-          <select class="fc" id="iCat">
-            <option value="">Select</option>
-            <option>💰 Cash Income</option>
-            <option>📱 Online Payment</option>
-            <option>🛒 Sales</option>
-            <option>🔧 Service</option>
-            <option>💻 Freelance</option>
-            <option>🏠 Rental</option>
-            <option>💼 Commission</option>
-            <option>↩️ Refund Received</option>
-            <option>📈 Investment Return</option>
-            <option>🎁 Gift / Bonus</option>
-            <option>📦 Other Income</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="iDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat"><option value="">Select</option><option>💰 Cash Income</option><option>📱 Online Payment</option><option>🛒 Sales</option><option>🔧 Service</option><option>💻 Freelance</option><option>🏠 Rental</option><option>💼 Commission</option><option>↩️ Refund Received</option><option>📈 Investment Return</option><option>🎁 Gift / Bonus</option><option>📦 Other Income</option></select></div>
       </div>
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span>
-            <input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/>
-          </div>
-        </div>
-        <div class="fg">
-          <label class="fl">MODE</label>
-          <select class="fc" id="iMode">
-            <option value="Cash">💵 Cash</option>
-            <option value="Online">📱 Online</option>
-            <option value="UPI">📲 UPI</option>
-            <option value="Bank Transfer">🏦 Bank Transfer</option>
-            <option value="Card">💳 Card</option>
-            <option value="Cheque">📄 Cheque</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span><input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
       </div>
-      <div class="fg">
-        <label class="fl">CUSTOMER / FROM</label>
-        <input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/>
-      </div>
-      <div class="fg">
-        <label class="fl">NOTES</label>
-        <textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea>
-      </div>
-      <div id="iPreview" class="preview preview-in" style="display:none;">
-        <span>Income Amount</span>
-        <strong id="iPreviewVal">₹ 0.00</strong>
-      </div>
+      <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea></div>
+      <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong id="iPreviewVal">₹ 0.00</strong></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
-      <button class="btn btn-income" onclick="saveTransaction('income')">💰 Save Income</button>
-    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button><button class="btn btn-income" onclick="saveTransaction('income')">💰 Save Income</button></div>
     <input type="hidden" id="iEditId"/>
   </div>
 </div>
@@ -478,88 +252,29 @@
 <!-- EXPENSE MODAL -->
 <div class="modal-bg" id="expenseModal">
   <div class="modal">
-    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
-      <h3 id="expenseTitle">💸 Add Expense</h3>
-      <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
-    </div>
+    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);"><h3 id="expenseTitle">💸 Add Expense</h3><button class="modal-x" onclick="closeModal('expenseModal')">✕</button></div>
     <div class="modal-bd">
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">DATE <span class="req">*</span></label>
-          <input type="date" class="fc" id="eDate"/>
-        </div>
-        <div class="fg">
-          <label class="fl">CATEGORY <span class="req">*</span></label>
-          <select class="fc" id="eCat">
-            <option value="">Select</option>
-            <option>🧾 Electricity Bill</option>
-            <option>💧 Water Bill</option>
-            <option>📡 Internet Bill</option>
-            <option>📱 Mobile Bill</option>
-            <option>🏠 Rent</option>
-            <option>🛒 Grocery</option>
-            <option>🥦 Vegetables</option>
-            <option>🍞 Bread / Bakery</option>
-            <option>🍔 Food & Dining</option>
-            <option>🚗 Transport</option>
-            <option>⛽ Fuel</option>
-            <option>👥 Salary</option>
-            <option>💊 Medical</option>
-            <option>📚 Education</option>
-            <option>🔨 Maintenance</option>
-            <option>📢 Marketing</option>
-            <option>📦 Supplies</option>
-            <option>🛡️ Insurance</option>
-            <option>📋 Tax</option>
-            <option>↩️ Refund Given</option>
-            <option>💸 Other Expense</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="eDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat"><option value="">Select</option><option>🧾 Electricity Bill</option><option>💧 Water Bill</option><option>📡 Internet Bill</option><option>📱 Mobile Bill</option><option>🏠 Rent</option><option>🛒 Grocery</option><option>🥦 Vegetables</option><option>🍞 Bread / Bakery</option><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>⛽ Fuel</option><option>👥 Salary</option><option>💊 Medical</option><option>📚 Education</option><option>🔨 Maintenance</option><option>📢 Marketing</option><option>📦 Supplies</option><option>🛡️ Insurance</option><option>📋 Tax</option><option>↩️ Refund Given</option><option>💸 Other Expense</option></select></div>
       </div>
       <div class="form-row">
-        <div class="fg">
-          <label class="fl">AMOUNT (₹) <span class="req">*</span></label>
-          <div style="position:relative;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span>
-            <input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/>
-          </div>
-        </div>
-        <div class="fg">
-          <label class="fl">MODE</label>
-          <select class="fc" id="eMode">
-            <option value="Cash">💵 Cash</option>
-            <option value="Online">📱 Online</option>
-            <option value="UPI">📲 UPI</option>
-            <option value="Bank Transfer">🏦 Bank Transfer</option>
-            <option value="Card">💳 Card</option>
-            <option value="Cheque">📄 Cheque</option>
-          </select>
-        </div>
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span><input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
       </div>
-      <div class="fg">
-        <label class="fl">VENDOR</label>
-        <input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/>
-      </div>
-      <div class="fg">
-        <label class="fl">NOTES</label>
-        <textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea>
-      </div>
-      <div id="ePreview" class="preview preview-out" style="display:none;">
-        <span>Expense Amount</span>
-        <strong id="ePreviewVal">₹ 0.00</strong>
-      </div>
+      <div class="fg"><label class="fl">VENDOR</label><input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea></div>
+      <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong id="ePreviewVal">₹ 0.00</strong></div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
-      <button class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button>
-    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button></div>
     <input type="hidden" id="eEditId"/>
   </div>
 </div>
 
 <div class="toast-box" id="toastBox"></div>
 
-<script src="assets/js/app.js?v=4.1"></script>
-<script src="assets/js/dashboard.js?v=4.1"></script>
+<!-- JS Files - app.js MUST be before dashboard.js -->
+<script src="assets/js/app.js?v=5.0"></script>
+<script src="assets/js/dashboard.js?v=5.0"></script>
 </body>
 </html>

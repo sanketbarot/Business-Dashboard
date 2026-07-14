@@ -14,7 +14,6 @@
 <script src="firebase-config.js"></script>
 
 <style>
-/* ... same styles as before ... */
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
@@ -23,9 +22,15 @@ body {
   display: flex;
   background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 50%, #ede9fe 100%);
   background-attachment: fixed;
+  background-size: 200% 200%;
+  animation: bgShift 20s ease infinite;
   color: #1e1b4b;
   overflow-x: hidden;
-  position: relative;
+}
+
+@keyframes bgShift {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 body::before {
@@ -36,6 +41,7 @@ body::before {
   top: -200px; left: -200px;
   border-radius: 50%;
   pointer-events: none;
+  animation: float 12s ease-in-out infinite;
 }
 
 body::after {
@@ -46,6 +52,12 @@ body::after {
   bottom: -150px; right: -150px;
   border-radius: 50%;
   pointer-events: none;
+  animation: float 15s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%,100% { transform: translate(0,0); }
+  50% { transform: translate(30px,-30px); }
 }
 
 .left {
@@ -82,19 +94,8 @@ body::after {
 }
 
 .brand-logo img { width: 100%; height: 100%; object-fit: contain; }
-
-.brand-logo-name {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #1e1b4b;
-}
-
-.brand-logo-tag {
-  font-size: 0.7rem;
-  color: #6366f1;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
+.brand-logo-name { font-size: 1.15rem; font-weight: 800; color: #1e1b4b; }
+.brand-logo-tag { font-size: 0.7rem; color: #6366f1; font-weight: 700; }
 
 .logo-badge {
   display: inline-flex;
@@ -133,33 +134,22 @@ body::after {
   margin-bottom: 36px;
 }
 
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 .stat-box {
-  padding: 18px 16px;
+  padding: 18px;
   background: rgba(255,255,255,0.7);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(99,102,241,0.1);
   border-radius: 16px;
   text-align: center;
+  transition: all 0.3s;
 }
 
-.stat-box .num {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #6366f1;
-  margin-bottom: 4px;
-}
+.stat-box:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(99,102,241,0.15); }
 
-.stat-box .lbl {
-  font-size: 0.72rem;
-  color: #64748b;
-  font-weight: 600;
-}
+.stat-box .num { font-size: 1.5rem; font-weight: 800; color: #6366f1; margin-bottom: 4px; }
+.stat-box .lbl { font-size: 0.72rem; color: #64748b; font-weight: 600; }
 
 .right {
   width: 480px;
@@ -180,6 +170,13 @@ body::after {
   border-radius: 28px;
   padding: 44px 36px;
   box-shadow: 0 24px 60px rgba(99,102,241,0.2);
+  animation: popIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  0% { opacity:0; transform: scale(0.5); }
+  70% { transform: scale(1.05); }
+  100% { opacity:1; transform: scale(1); }
 }
 
 .mobile-logo {
@@ -193,8 +190,7 @@ body::after {
 }
 
 .mobile-logo-icon {
-  width: 46px;
-  height: 46px;
+  width: 46px; height: 46px;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   border-radius: 12px;
   display: flex;
@@ -208,19 +204,6 @@ body::after {
 .mobile-logo-icon img { width: 100%; height: 100%; object-fit: contain; }
 .mobile-logo-text { font-size: 1.15rem; font-weight: 800; color: #1e1b4b; }
 
-.form-card h2 {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin-bottom: 6px;
-  color: #1e1b4b;
-}
-
-.form-card > p {
-  font-size: 0.88rem;
-  color: #64748b;
-  margin-bottom: 28px;
-}
-
 .cloud-badge {
   display: inline-flex;
   align-items: center;
@@ -233,6 +216,9 @@ body::after {
   color: #059669;
   margin-bottom: 20px;
 }
+
+.form-card h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; color: #1e1b4b; }
+.form-card > p { font-size: 0.88rem; color: #64748b; margin-bottom: 28px; }
 
 .fg { margin-bottom: 18px; }
 
@@ -267,13 +253,14 @@ body::after {
   font-size: 0.9rem;
   font-family: inherit;
   outline: none;
-  transition: all 0.2s;
+  transition: all 0.3s;
   min-height: 50px;
 }
 
 .fi:focus {
   border-color: #6366f1;
   box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+  transform: translateY(-2px);
 }
 
 .fi::placeholder { color: #94a3b8; }
@@ -300,6 +287,13 @@ body::after {
   font-size: 0.85rem;
   margin-bottom: 16px;
   font-weight: 500;
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
 }
 
 .lb {
@@ -313,32 +307,30 @@ body::after {
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
   margin-top: 8px;
   min-height: 54px;
   box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+  position: relative;
+  overflow: hidden;
 }
 
 .lb:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(99,102,241,0.45);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(99,102,241,0.45);
 }
 
 .lb:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.ft {
-  text-align: center;
-  margin-top: 26px;
-  font-size: 0.75rem;
-  color: #64748b;
-}
+.ft { text-align: center; margin-top: 26px; font-size: 0.75rem; color: #64748b; }
+.dm { margin-top: 10px; text-align: center; font-size: 0.75rem; color: #6366f1; font-weight: 700; }
 
-.dm {
-  margin-top: 10px;
+.status-msg {
   text-align: center;
-  font-size: 0.75rem;
-  color: #6366f1;
-  font-weight: 700;
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 16px;
+  min-height: 20px;
 }
 
 @media (max-width: 900px) {
@@ -352,6 +344,11 @@ body::after {
   .form-card { padding: 32px 24px; }
   .form-card h2 { font-size: 1.4rem; }
   .fi { font-size: 16px; }
+}
+
+@media (max-width: 400px) {
+  .form-card { padding: 26px 20px; }
+  .form-card h2 { font-size: 1.2rem; }
 }
 </style>
 </head>
@@ -371,7 +368,7 @@ body::after {
 
     <div class="logo-badge">☁️ CLOUD SYNC ENABLED</div>
     <h1>Manage business.<br/><span class="accent">Anywhere.</span></h1>
-    <p>Data syncs across all your devices in real-time. Add on phone, view on laptop instantly!</p>
+    <p>Data syncs across all devices in real-time. Add on phone, view on laptop instantly!</p>
 
     <div class="stats-row">
       <div class="stat-box"><div class="num">☁️</div><div class="lbl">Cloud Sync</div></div>
@@ -392,16 +389,16 @@ body::after {
 
     <div class="cloud-badge">☁️ Cloud Sync Active</div>
     <h2>Welcome back 👋</h2>
-    <p>Sign in to access your dashboard from anywhere</p>
+    <p>Sign in to access your dashboard</p>
 
-    <div class="err" id="errBox">❌ Invalid email or password</div>
+    <div class="err" id="errBox">❌ Error</div>
 
     <form onsubmit="handleLogin(event)">
       <div class="fg">
         <label class="fl">Email Address</label>
         <div class="iw">
           <span class="iw-ic">📧</span>
-          <input type="email" class="fi" id="em" value="sanketbarot3901@gmail.com" required autocomplete="email"/>
+          <input type="email" class="fi" id="em" required autocomplete="email" placeholder="your@email.com"/>
         </div>
       </div>
 
@@ -417,14 +414,15 @@ body::after {
       <button type="submit" class="lb" id="lb">Sign in →</button>
     </form>
 
-    <div class="ft">☁️ Your data syncs securely to the cloud</div>
+    <div class="status-msg" id="statusMsg"></div>
+    <div class="ft">☁️ Data syncs securely via Firebase</div>
     <div class="dm">business.aitoolcor.com</div>
   </div>
 </div>
 
 <script>
-// Check if already logged in
-auth.onAuthStateChanged((user) => {
+// Check if already logged in via Firebase
+auth.onAuthStateChanged(function(user) {
   if (user) {
     localStorage.setItem('bd_auth', 'true');
     localStorage.setItem('bd_user', user.email);
@@ -435,43 +433,51 @@ auth.onAuthStateChanged((user) => {
 
 function handleLogin(e) {
   e.preventDefault();
-  const em = document.getElementById('em').value.trim();
-  const pw = document.getElementById('pw').value;
-  const btn = document.getElementById('lb');
-  const err = document.getElementById('errBox');
+  var em = document.getElementById('em').value.trim();
+  var pw = document.getElementById('pw').value;
+  var btn = document.getElementById('lb');
+  var err = document.getElementById('errBox');
+  var status = document.getElementById('statusMsg');
 
   err.style.display = 'none';
-  btn.textContent = 'Signing in...';
+  btn.textContent = '⏳ Signing in...';
   btn.disabled = true;
+  if (status) status.textContent = 'Connecting to Firebase...';
 
   auth.signInWithEmailAndPassword(em, pw)
-    .then((userCredential) => {
-      const user = userCredential.user;
+    .then(function(userCredential) {
+      var user = userCredential.user;
       localStorage.setItem('bd_auth', 'true');
       localStorage.setItem('bd_user', user.email);
       localStorage.setItem('bd_uid', user.uid);
-      btn.textContent = '✅ Success! Redirecting...';
-      setTimeout(() => {
+      btn.textContent = '✅ Success!';
+      if (status) status.textContent = '☁️ Connected! Redirecting...';
+      setTimeout(function() {
         window.location.href = 'index.html';
       }, 500);
     })
-    .catch((error) => {
+    .catch(function(error) {
       let msg = '❌ Invalid email or password';
-      if (error.code === 'auth/user-not-found') msg = '❌ User not found';
+      if (error.code === 'auth/user-not-found') msg = '❌ User not found. Create user in Firebase Auth first.';
       else if (error.code === 'auth/wrong-password') msg = '❌ Wrong password';
-      else if (error.code === 'auth/invalid-email') msg = '❌ Invalid email';
-      else if (error.code === 'auth/too-many-requests') msg = '⚠️ Too many attempts. Try later';
+      else if (error.code === 'auth/invalid-email') msg = '❌ Invalid email format';
+      else if (error.code === 'auth/too-many-requests') msg = '⚠️ Too many attempts. Try later.';
       else if (error.code === 'auth/network-request-failed') msg = '⚠️ No internet connection';
+      else if (error.code === 'auth/invalid-credential') msg = '❌ Invalid credentials. Check email & password.';
+      else if (error.code === 'auth/unauthorized-domain') msg = '⚠️ Domain Unauthorized: Please add business.aitoolcor.com to Firebase Authorized Domains';
+      else if (error.message) msg = '❌ ' + error.message;
 
       err.textContent = msg;
       err.style.display = 'block';
       btn.textContent = 'Sign in →';
       btn.disabled = false;
+      if (status) status.textContent = '';
+      console.error('Login error:', error.code, error.message);
     });
 }
 
 function togP() {
-  const i = document.getElementById('pw');
+  var i = document.getElementById('pw');
   i.type = i.type === 'password' ? 'text' : 'password';
 }
 </script>
