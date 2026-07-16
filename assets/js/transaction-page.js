@@ -512,7 +512,7 @@ const TxnPage = {
     }
     const customer = t.from || t.vendor;
     const customerLbl = isI ? 'Customer' : 'Vendor';
-    const dayName = new Date(t.date).toLocaleDateString('en-IN', { weekday: 'long' });
+    const dayName = new Date(t.date + 'T00:00:00Z').toLocaleDateString('en-IN', { weekday: 'long', timeZone: 'UTC' });
     grid.innerHTML =
       '<div class="detail-item"><div class="detail-lbl">Date</div><div class="detail-val">' + fmtDate(t.date) + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">Day</div><div class="detail-val">' + dayName + '</div></div>' +
@@ -522,7 +522,7 @@ const TxnPage = {
       '<div class="detail-item"><div class="detail-lbl">Mode</div><div class="detail-val">' + (this.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">' + customerLbl + '</div><div class="detail-val">' + escapeHtml(customer || '—') + '</div></div>' +
       (t.notes ? '<div class="detail-item full"><div class="detail-lbl">Notes</div><div class="detail-val" style="font-weight:500;">' + escapeHtml(t.notes) + '</div></div>' : '') +
-      (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-size:0.85rem;">' + new Date(t.savedAt).toLocaleString('en-IN') + '</div></div>' : '') +
+      (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-size:0.85rem;">' + new Date(t.savedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + '</div></div>' : '') +
       '<div class="detail-item full"><div class="detail-lbl">Sync Status</div><div class="detail-val" style="font-size:0.82rem;color:var(--income);">☁️ Synced to Cloud</div></div>';
 
     if (editBtn) {

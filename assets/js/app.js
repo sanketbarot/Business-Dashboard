@@ -313,13 +313,69 @@ function inrShort(amount) {
   return sign + '₹' + abs.toFixed(0);
 }
 
-function today() { return new Date().toISOString().split('T')[0]; }
+// IST Date Helpers
+function getISTDateParts(date = new Date()) {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    const parts = formatter.formatToParts(date);
+    const partVal = (type) => parts.find(p => p.type === type).value;
+    return {
+      year: parseInt(partVal('year')),
+      month: parseInt(partVal('month')),
+      day: parseInt(partVal('day')),
+      hour: parseInt(partVal('hour')),
+      minute: parseInt(partVal('minute')),
+      second: parseInt(partVal('second'))
+    };
+  } catch (e) {
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      hour: date.getHours(),
+      minute: date.getMinutes(),
+      second: date.getSeconds()
+    };
+  }
+}
+
+function getISTDateObject(date = new Date()) {
+  const { year, month, day, hour, minute, second } = getISTDateParts(date);
+  return new Date(year, month - 1, day, hour, minute, second);
+}
+
+function today() {
+  const { year, month, day } = getISTDateParts();
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function yesterday() {
+  const now = getISTDateObject();
+  now.setDate(now.getDate() - 1);
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
 
 function fmtDate(d) {
   if (!d) return '-';
   try {
+    if (typeof d === 'string' && d.includes('-') && d.length === 10) {
+      return new Date(d + 'T00:00:00Z').toLocaleDateString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        timeZone: 'UTC'
+      });
+    }
     return new Date(d).toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric'
+      day: '2-digit', month: 'short', year: 'numeric',
+      timeZone: 'Asia/Kolkata'
     });
   } catch { return d; }
 }
@@ -327,75 +383,79 @@ function fmtDate(d) {
 function fmtDateFull(d) {
   if (!d) return '-';
   try {
+    if (typeof d === 'string' && d.includes('-') && d.length === 10) {
+      return new Date(d + 'T00:00:00Z').toLocaleDateString('en-IN', {
+        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+        timeZone: 'UTC'
+      });
+    }
     return new Date(d).toLocaleDateString('en-IN', {
-      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+      weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+      timeZone: 'Asia/Kolkata'
     });
   } catch { return d; }
 }
 
 function isToday(d) { return d === today(); }
 
-function isYesterday(d) {
-  const y = new Date();
-  y.setDate(y.getDate() - 1);
-  return d === y.toISOString().split('T')[0];
-}
+function isYesterday(d) { return d === yesterday(); }
 
 function isThisWeek(d) {
   if (!d) return false;
-  const date = new Date(d);
-  const now = new Date();
-  const day = now.getDay() || 7;
+  const now = getISTDateObject();
+  const dayOfWeek = now.getDay() || 7;
+  
   const start = new Date(now);
-  start.setDate(now.getDate() - day + 1);
-  start.setHours(0, 0, 0, 0);
+  start.setDate(now.getDate() - dayOfWeek + 1);
+  const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+  
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-  return date >= start && date <= end;
+  const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
+  
+  return d >= startStr && d <= endStr;
 }
 
 function isLastWeek(d) {
   if (!d) return false;
-  const date = new Date(d);
-  const now = new Date();
-  const day = now.getDay() || 7;
+  const now = getISTDateObject();
+  const dayOfWeek = now.getDay() || 7;
+  
   const start = new Date(now);
-  start.setDate(now.getDate() - day - 6);
-  start.setHours(0, 0, 0, 0);
+  start.setDate(now.getDate() - dayOfWeek - 6);
+  const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+  
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-  return date >= start && date <= end;
+  const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
+  
+  return d >= startStr && d <= endStr;
 }
 
 function isThisMonth(d) {
   if (!d) return false;
-  const date = new Date(d);
-  const now = new Date();
-  return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  const { year, month } = getISTDateParts();
+  const target = `${year}-${String(month).padStart(2, '0')}`;
+  return d.substring(0, 7) === target;
 }
 
 function isLastMonth(d) {
   if (!d) return false;
-  const date = new Date(d);
-  const now = new Date();
-  const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  return date.getMonth() === lm.getMonth() && date.getFullYear() === lm.getFullYear();
+  const now = getISTDateObject();
+  now.setMonth(now.getMonth() - 1);
+  const target = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  return d.substring(0, 7) === target;
 }
 
 function isThisYear(d) {
   if (!d) return false;
-  return new Date(d).getFullYear() === new Date().getFullYear();
+  const { year } = getISTDateParts();
+  return d.substring(0, 4) === String(year);
 }
 
 function inRange(d, start, end) {
   if (!d || !start || !end) return false;
-  const date = new Date(d);
-  const s = new Date(start);
-  const e = new Date(end);
-  e.setHours(23, 59, 59, 999);
-  return date >= s && date <= e;
+  return d >= start && d <= end;
 }
 
 function calcTotals(txns) {
@@ -552,10 +612,12 @@ function previewAmt(type) {
 function updateHeaderDateTime() {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-IN', {
-    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+    timeZone: 'Asia/Kolkata'
   });
   const timeStr = now.toLocaleTimeString('en-IN', {
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
+    timeZone: 'Asia/Kolkata'
   });
   const dateEl = document.getElementById('headerDate');
   if (dateEl) dateEl.textContent = dateStr;

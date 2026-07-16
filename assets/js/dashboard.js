@@ -6,7 +6,7 @@
 
 const Dash = {
   charts: { bar: null, donut: null, line: null },
-  period: 'month',
+  period: 'today',
   isFirstLoad: true,
 
   init: function() {
@@ -68,7 +68,7 @@ const Dash = {
   },
 
   setupWelcome: function() {
-    const h = new Date().getHours();
+    const h = getISTDateObject().getHours();
     let msg = '🌙 Good Night';
     if (h >= 5 && h < 12) msg = '🌅 Good Morning';
     else if (h >= 12 && h < 17) msg = '☀️ Good Afternoon';
@@ -189,9 +189,9 @@ const Dash = {
 
   // NEW: Get day before yesterday transactions
   getDayBeforeYesterdayTxns: function(all) {
-    const d = new Date();
+    const d = getISTDateObject();
     d.setDate(d.getDate() - 2);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     return all.filter(t => t.date === dateStr);
   },
 
@@ -403,7 +403,7 @@ const Dash = {
       tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><h4>No transactions yet</h4></div></td></tr>';
       return;
     }
-    const sorted = all.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+    const sorted = all.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
     tbody.innerHTML = sorted.map(t => {
       const isI = t.type === 'income';
       return '<tr><td style="font-size:0.82rem;">' + fmtDate(t.date) + '</td><td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' + (isI ? '💰 In' : '💸 Out') + '</span></td><td style="font-size:0.82rem;font-weight:600;">' + escapeHtml(t.category || '-') + '</td><td class="' + (isI ? 'amt-in' : 'amt-out') + '">' + (isI ? '+' : '-') + inrShort(t.amount) + '</td><td style="font-size:0.78rem;color:var(--text-muted);">' + escapeHtml(t.mode || 'Cash') + '</td></tr>';
@@ -413,7 +413,7 @@ const Dash = {
   setupYearSelector: function() {
     const sel = document.getElementById('chartYear');
     if (!sel || sel.options.length > 0) return;
-    const cur = new Date().getFullYear();
+    const cur = getISTDateParts().year;
     for (let y = cur; y >= cur - 4; y--) {
       const o = document.createElement('option');
       o.value = y;
@@ -426,15 +426,17 @@ const Dash = {
   buildBarChart: function(all) {
     const canvas = document.getElementById('barChart');
     if (!canvas || typeof Chart === 'undefined') return;
-    const year = parseInt(document.getElementById('chartYear') ? document.getElementById('chartYear').value : new Date().getFullYear());
+    const year = parseInt(document.getElementById('chartYear') ? document.getElementById('chartYear').value : getISTDateParts().year);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const income = new Array(12).fill(0);
     const expense = new Array(12).fill(0);
     for (let i = 0; i < all.length; i++) {
       const t = all[i];
-      const d = new Date(t.date);
-      if (d.getFullYear() !== year) continue;
-      const m = d.getMonth();
+      if (!t.date) continue;
+      const parts = t.date.split('-');
+      const y = parseInt(parts[0]);
+      if (y !== year) continue;
+      const m = parseInt(parts[1]) - 1; // 0-indexed month
       const a = parseFloat(t.amount) || 0;
       if (t.type === 'income') income[m] += a;
       else if (t.type === 'expense') expense[m] += a;
@@ -535,7 +537,7 @@ const Dash = {
     const labels = [];
     const income = [];
     const expense = [];
-    const now = new Date();
+    const now = getISTDateObject();
     const dateMap = {};
     for (let i = 0; i < all.length; i++) {
       const t = all[i];
@@ -547,8 +549,8 @@ const Dash = {
     let totalIncome = 0, totalExpense = 0;
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const ds = d.toISOString().split('T')[0];
+      d.setDate(now.getDate() - i);
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       labels.push(d.getDate() + '/' + (d.getMonth() + 1));
       const dayData = dateMap[ds] || { income: 0, expense: 0 };
       income.push(dayData.income);
