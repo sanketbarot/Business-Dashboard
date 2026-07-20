@@ -108,9 +108,9 @@
           <span style="padding-left:12px; font-size:0.78rem; font-weight:700; color:var(--text-light);">FILTER:</span>
           <select class="an-filter-select" id="analyticsPeriod" onchange="AnalyticsPage.onPeriodChange()">
             <option value="week">Weekly</option>
-            <option value="month">Monthly</option>
+            <option value="month" selected>Monthly</option>
             <option value="year">Yearly</option>
-            <option value="all" selected>All Time</option>
+            <option value="all">All Time</option>
           </select>
         </div>
       </section>
@@ -118,7 +118,7 @@
       <!-- Key Analytics Metrics Row -->
       <section class="an-grid">
         <!-- Health Scorecard -->
-        <div class="an-card" style="grid-column: span 1.5;">
+        <div class="an-card an-card-wide">
           <svg style="position: absolute; width: 0; height: 0;">
             <defs>
               <linearGradient id="healthGrad" x1="0%" y1="0%" x2="100%" y2="100%">

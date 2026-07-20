@@ -483,3 +483,125 @@
 .capital-badge.card { background: rgba(236, 72, 153, 0.1); color: var(--pink); }
 .capital-badge.cheque { background: rgba(245, 158, 11, 0.1); color: #d97706; }
 
+.an-card-wide {
+  grid-column: span 2;
+}
+
+/* ============================================
+   TABLET / IPAD VIEW RESPONSIVENESS OVERRIDES (< 1023px)
+   ============================================ */
+@media (max-width: 1023px) {
+  .an-card-wide {
+    grid-column: auto !important;
+  }
+  
+  .charts-grid-3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  .charts-grid-3 > .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-column: auto !important;
+  }
+}
+
+/* ============================================
+   MOBILE RESPONSIVENESS OVERRIDES (< 767px)
+   ============================================ */
+@media (max-width: 767px) {
+  /* 1. Prevent circular ring score widget forced grid expansion */
+  .an-card, .an-card-wide {
+    grid-column: auto !important;
+  }
+  
+  /* 2. Charts grid columns breakdown to flex list */
+  .charts-grid-3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  
+  .chart-card-col-8, 
+  .chart-card-col-4, 
+  .chart-card-col-12 {
+    grid-column: auto !important;
+    width: 100% !important;
+  }
+  
+  /* 3. Hero intro header section flex alignments */
+  .an-hero {
+    padding: 16px 20px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+  
+  .an-hero-text h2 {
+    font-size: 1.35rem !important;
+  }
+  
+  .an-filters {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  
+  .an-filters-wrapper {
+    max-width: 100% !important;
+    flex: 1 !important;
+  }
+  
+  /* 4. Live sync header badge scaling */
+  .an-live-sync-card span {
+    display: none !important;
+  }
+  
+  .an-live-sync-card {
+    padding: 8px !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    justify-content: center !important;
+  }
+
+  /* 5. Chart.js canvas sizing and wrapping fixes */
+  .charts-grid-3 > .card,
+  .chart-enhanced {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  
+  .chart-container-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  .chart-container-wrap canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* 6. Forecast panel flex stack on mobile */
+  .forecast-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  
+  /* 7. Table wrap mobile crop overrides */
+  .table-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+}
+
+

@@ -14,7 +14,7 @@ const AnalyticsPage = {
     cumulativeBalance: null,
     paymentMode: null 
   },
-  period: 'all', // Default period selection
+  period: 'month', // Default period selection
 
   init: function() {
     try {
