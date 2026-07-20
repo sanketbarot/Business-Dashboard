@@ -31,6 +31,7 @@ const Dash = {
     this.loadTopCategories(all);
     this.loadPaymentModes(all);
     this.loadRecent(all);
+    this.loadGoals(all);
     if (typeof Chart !== 'undefined') {
       this.buildBarChart(all);
       this.buildDonutChart(all);
@@ -54,7 +55,8 @@ const Dash = {
         'onlineIn', 'onlineOut', 'onlineBalance',
         'msAvgIncome', 'msAvgExpense', 'msSavings',
         'cmpLast', 'cmpThis',
-        'lineIncomeTotal', 'lineExpenseTotal', 'lineNetTotal'
+        'lineIncomeTotal', 'lineExpenseTotal', 'lineNetTotal',
+        'goalRevCurrent', 'goalExpCurrent', 'goalPrfCurrent'
       ];
 
       numberIds.forEach(id => {
@@ -642,6 +644,94 @@ const Dash = {
   setText: function(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
+  },
+
+  loadGoals: function(all) {
+    const revTarget = parseFloat(localStorage.getItem('vision_revenue_target') || '150000');
+    const expCap = parseFloat(localStorage.getItem('vision_expense_cap') || '60000');
+    const prfTarget = parseFloat(localStorage.getItem('vision_profit_target') || '1000000');
+
+    const parts = getISTDateParts();
+    const currentYear = parts.year;
+    const currentMonthStr = `${currentYear}-${String(parts.month).padStart(2, '0')}`;
+
+    let mtdIncome = 0;
+    let mtdExpense = 0;
+    let ytdIncome = 0;
+    let ytdExpense = 0;
+
+    all.forEach(t => {
+      if (t.date) {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.date.substring(0, 7) === currentMonthStr) {
+          if (t.type === 'income') mtdIncome += amt;
+          else if (t.type === 'expense') mtdExpense += amt;
+        }
+        if (t.date.substring(0, 4) === String(currentYear)) {
+          if (t.type === 'income') ytdIncome += amt;
+          else if (t.type === 'expense') ytdExpense += amt;
+        }
+      }
+    });
+
+    const ytdProfit = ytdIncome - ytdExpense;
+    const revPct = revTarget > 0 ? (mtdIncome / revTarget) * 100 : 0;
+    const expPct = expCap > 0 ? (mtdExpense / expCap) * 100 : 0;
+    const prfPct = prfTarget > 0 ? (ytdProfit / prfTarget) * 100 : 0;
+
+    this.setText('goalRevTarget', inr(revTarget));
+    this.setText('goalRevCurrent', inr(mtdIncome));
+    this.setText('goalRevPct', Math.round(revPct) + '%');
+    const revBar = document.getElementById('goalRevBar');
+    if (revBar) revBar.style.width = Math.min(100, Math.max(0, revPct)) + '%';
+    const revStatusEl = document.getElementById('goalRevStatus');
+    if (revStatusEl) {
+      if (mtdIncome >= revTarget) {
+        revStatusEl.textContent = '🎉 Monthly revenue target achieved!';
+        revStatusEl.style.color = 'var(--income)';
+      } else {
+        revStatusEl.textContent = `₹ ${inrShort(revTarget - mtdIncome)} remaining to hit target`;
+        revStatusEl.style.color = 'var(--text-light)';
+      }
+    }
+
+    this.setText('goalExpTarget', inr(expCap));
+    this.setText('goalExpCurrent', inr(mtdExpense));
+    this.setText('goalExpPct', Math.round(expPct) + '%');
+    const expBar = document.getElementById('goalExpBar');
+    if (expBar) expBar.style.width = Math.min(100, Math.max(0, expPct)) + '%';
+    const expStatusEl = document.getElementById('goalExpStatus');
+    if (expStatusEl) {
+      if (mtdExpense > expCap) {
+        expStatusEl.textContent = '🚨 Over monthly expense budget limit!';
+        expStatusEl.style.color = 'var(--expense)';
+      } else {
+        expStatusEl.textContent = `₹ ${inrShort(expCap - mtdExpense)} remaining before limit`;
+        expStatusEl.style.color = 'var(--text-light)';
+      }
+    }
+
+    this.setText('goalPrfTarget', inr(prfTarget));
+    this.setText('goalPrfCurrent', inr(ytdProfit));
+    this.setText('goalPrfPct', Math.round(prfPct) + '%');
+    const prfBar = document.getElementById('goalPrfBar');
+    if (prfBar) prfBar.style.width = Math.min(100, Math.max(0, prfPct)) + '%';
+    const prfStatusEl = document.getElementById('goalPrfStatus');
+    if (prfStatusEl) {
+      if (ytdProfit >= prfTarget) {
+        prfStatusEl.textContent = '🏆 Milestone achieved!';
+        prfStatusEl.style.color = 'var(--purple)';
+      } else {
+        const remaining = prfTarget - ytdProfit;
+        if (remaining > 0) {
+          prfStatusEl.textContent = `₹ ${inrShort(remaining)} remaining to hit milestone`;
+          prfStatusEl.style.color = 'var(--text-light)';
+        } else {
+          prfStatusEl.textContent = `Goal reached (Current: ${inrShort(ytdProfit)})`;
+          prfStatusEl.style.color = 'var(--purple)';
+        }
+      }
+    }
   }
 };
 
@@ -731,6 +821,44 @@ function openExpenseModal() {
   const d = document.getElementById('eDate');
   if (d) d.value = today();
   openModal('expenseModal');
+}
+
+function openGoalSettingsModal() {
+  const rev = localStorage.getItem('vision_revenue_target') || '150000';
+  const exp = localStorage.getItem('vision_expense_cap') || '60000';
+  const prf = localStorage.getItem('vision_profit_target') || '1000000';
+
+  const revEl = document.getElementById('targetMonthlyRev');
+  const expEl = document.getElementById('targetMonthlyExp');
+  const prfEl = document.getElementById('targetAnnualPrf');
+
+  if (revEl) revEl.value = rev;
+  if (expEl) expEl.value = exp;
+  if (prfEl) prfEl.value = prf;
+
+  openModal('goalSettingsModal');
+}
+
+function saveVisionGoals() {
+  const revVal = document.getElementById('targetMonthlyRev').value.trim();
+  const expVal = document.getElementById('targetMonthlyExp').value.trim();
+  const prfVal = document.getElementById('targetAnnualPrf').value.trim();
+
+  const rev = parseFloat(revVal);
+  const exp = parseFloat(expVal);
+  const prf = parseFloat(prfVal);
+
+  if (isNaN(rev) || rev < 0) { toast('Please enter a valid revenue target', 'error'); return; }
+  if (isNaN(exp) || exp < 0) { toast('Please enter a valid expense cap', 'error'); return; }
+  if (isNaN(prf) || prf < 0) { toast('Please enter a valid profit milestone', 'error'); return; }
+
+  localStorage.setItem('vision_revenue_target', rev);
+  localStorage.setItem('vision_expense_cap', exp);
+  localStorage.setItem('vision_profit_target', prf);
+
+  closeModal('goalSettingsModal');
+  Dash.loadAll();
+  toast('Business targets updated successfully! 🎯', 'success');
 }
 
 if (document.readyState === 'loading') {

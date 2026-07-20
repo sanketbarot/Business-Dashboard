@@ -1,159 +1,195 @@
 /* ============================================
-   CRUST & CHILLY — DYNAMIC ANIMATIONS v4.0
-   Auto-play on page load
+   CRUST & CHILLY — PROFESSIONAL ANIMATIONS v5.0
+   Snappy, Smooth & Clean Business Entry Styles
    ============================================ */
 
 /* ========================================
-   KEYFRAMES
+   KEYFRAMES (Clean, Subtle, Bounce-free)
    ======================================== */
 
-@keyframes fadeUpBounce {
-  0% { opacity: 0; transform: translateY(40px) scale(0.9); }
-  60% { opacity: 1; transform: translateY(-8px) scale(1.02); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes fadeUpSmooth {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-40px); }
+  from { opacity: 0; transform: translateX(-15px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(40px); }
+  from { opacity: 0; transform: translateX(15px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes zoomIn {
-  0% { opacity: 0; transform: scale(0.5); }
+@keyframes zoomInSmooth {
+  0% { opacity: 0; transform: scale(0.96); }
   100% { opacity: 1; transform: scale(1); }
 }
 
-@keyframes popIn {
-  0% { opacity: 0; transform: scale(0); }
-  70% { opacity: 1; transform: scale(1.1); }
-  100% { transform: scale(1); }
+@keyframes popInSmooth {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 /* ========================================
-   ENTRY ANIMATIONS - AUTO PLAY
+   ENTRY ANIMATIONS - AUTO PLAY (Snappy delays < 0.6s)
    ======================================== */
 
 /* HERO SECTION */
 .hero {
-  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero-text h2 {
-  animation: slideInLeft 0.7s ease 0.2s both;
+  animation: slideInLeft 0.4s ease 0.08s both;
 }
 
 .hero-text p {
-  animation: slideInLeft 0.7s ease 0.4s both;
+  animation: slideInLeft 0.4s ease 0.15s both;
 }
 
 .hero-actions .btn {
-  animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: popInSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.hero-actions .btn:nth-child(1) { animation-delay: 0.5s; }
-.hero-actions .btn:nth-child(2) { animation-delay: 0.6s; }
-.hero-actions .btn:nth-child(3) { animation-delay: 0.7s; }
+.hero-actions .btn:nth-child(1) { animation-delay: 0.18s; }
+.hero-actions .btn:nth-child(2) { animation-delay: 0.24s; }
+.hero-actions .btn:nth-child(3) { animation-delay: 0.3s; }
 
 /* PERIOD BAR */
 .period-wrap {
-  animation: slideInLeft 0.7s ease 0.3s both;
+  animation: slideInLeft 0.4s ease 0.12s both;
 }
 
 /* SUMMARY CARDS - Staggered */
 .sum-card {
-  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.sum-card:nth-child(1) { animation-delay: 0.4s; }
-.sum-card:nth-child(2) { animation-delay: 0.55s; }
-.sum-card:nth-child(3) { animation-delay: 0.7s; }
-.sum-card:nth-child(4) { animation-delay: 0.85s; }
+.sum-card:nth-child(1) { animation-delay: 0.15s; }
+.sum-card:nth-child(2) { animation-delay: 0.22s; }
+.sum-card:nth-child(3) { animation-delay: 0.29s; }
+.sum-card:nth-child(4) { animation-delay: 0.36s; }
 
 /* CASH ONLINE CARDS */
 .co-card {
-  animation: zoomIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: zoomInSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.co-card:nth-child(1) { animation-delay: 1s; }
-.co-card:nth-child(2) { animation-delay: 1.15s; }
+.co-card:nth-child(1) { animation-delay: 0.35s; }
+.co-card:nth-child(2) { animation-delay: 0.42s; }
 
 /* ANALYTICS */
 .mini-stat {
-  animation: fadeUpBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.mini-stat:nth-child(1) { animation-delay: 1.3s; }
-.mini-stat:nth-child(2) { animation-delay: 1.4s; }
-.mini-stat:nth-child(3) { animation-delay: 1.5s; }
+.mini-stat:nth-child(1) { animation-delay: 0.45s; }
+.mini-stat:nth-child(2) { animation-delay: 0.5s; }
+.mini-stat:nth-child(3) { animation-delay: 0.55s; }
 
 /* CHARTS */
 .chart-grid .card {
-  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.chart-grid .card:nth-child(1) { animation-delay: 1.6s; }
-.chart-grid .card:nth-child(2) { animation-delay: 1.75s; }
+.chart-grid .card:nth-child(1) { animation-delay: 0.5s; }
+.chart-grid .card:nth-child(2) { animation-delay: 0.58s; }
 
 /* Line Chart Card */
 .chart-enhanced:not(.chart-grid .card) {
-  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 1.9s both;
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
 }
 
 /* BOTTOM GRID */
 .bottom-grid > * {
-  animation: fadeUpBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.bottom-grid > *:nth-child(1) { animation-delay: 2s; }
-.bottom-grid > *:nth-child(2) { animation-delay: 2.15s; }
+.bottom-grid > *:nth-child(1) { animation-delay: 0.6s; }
+.bottom-grid > *:nth-child(2) { animation-delay: 0.65s; }
 
 /* TRANSACTION PAGE */
 .cmd-bar {
-  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .tx-analytics .tx-stat {
-  animation: fadeUpBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.tx-analytics .tx-stat:nth-child(1) { animation-delay: 0.3s; }
-.tx-analytics .tx-stat:nth-child(2) { animation-delay: 0.45s; }
-.tx-analytics .tx-stat:nth-child(3) { animation-delay: 0.6s; }
-.tx-analytics .tx-stat:nth-child(4) { animation-delay: 0.75s; }
+.tx-analytics .tx-stat:nth-child(1) { animation-delay: 0.1s; }
+.tx-analytics .tx-stat:nth-child(2) { animation-delay: 0.16s; }
+.tx-analytics .tx-stat:nth-child(3) { animation-delay: 0.22s; }
+.tx-analytics .tx-stat:nth-child(4) { animation-delay: 0.28s; }
 
 .filter-panel {
-  animation: slideInLeft 0.7s ease 0.9s both;
+  animation: slideInLeft 0.4s ease 0.35s both;
 }
 
 .t-card {
-  animation: fadeUpBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 1.1s both;
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.42s both;
 }
 
 /* SIDEBAR LINKS - Staggered */
 .sb-link {
-  animation: slideInLeft 0.5s ease both;
+  animation: slideInLeft 0.35s ease both;
 }
 
-.sb-link:nth-child(2) { animation-delay: 0.1s; }
-.sb-link:nth-child(3) { animation-delay: 0.15s; }
-.sb-link:nth-child(4) { animation-delay: 0.2s; }
-.sb-link:nth-child(5) { animation-delay: 0.25s; }
-.sb-link:nth-child(6) { animation-delay: 0.3s; }
-.sb-link:nth-child(7) { animation-delay: 0.35s; }
-.sb-link:nth-child(8) { animation-delay: 0.4s; }
-.sb-link:nth-child(9) { animation-delay: 0.45s; }
-.sb-link:nth-child(10) { animation-delay: 0.5s; }
-.sb-link:nth-child(11) { animation-delay: 0.55s; }
+.sb-link:nth-child(2) { animation-delay: 0.04s; }
+.sb-link:nth-child(3) { animation-delay: 0.08s; }
+.sb-link:nth-child(4) { animation-delay: 0.12s; }
+.sb-link:nth-child(5) { animation-delay: 0.16s; }
+.sb-link:nth-child(6) { animation-delay: 0.2s; }
+.sb-link:nth-child(7) { animation-delay: 0.24s; }
+.sb-link:nth-child(8) { animation-delay: 0.28s; }
+.sb-link:nth-child(9) { animation-delay: 0.32s; }
+.sb-link:nth-child(10) { animation-delay: 0.36s; }
+.sb-link:nth-child(11) { animation-delay: 0.4s; }
+
+/* ========================================
+   NEW: ANALYTICS PAGE WIDGETS ENTRY
+   ======================================== */
+.an-hero {
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.an-card {
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.an-card:nth-child(1) { animation-delay: 0.1s; }
+.an-card:nth-child(2) { animation-delay: 0.18s; }
+.an-card:nth-child(3) { animation-delay: 0.26s; }
+.an-card:nth-child(4) { animation-delay: 0.34s; }
+
+.forecast-panel {
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+}
+
+.charts-grid-3 > .card {
+  animation: fadeUpSmooth 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.charts-grid-3 > .card:nth-child(1) { animation-delay: 0.45s; }
+.charts-grid-3 > .card:nth-child(2) { animation-delay: 0.52s; }
+.charts-grid-3 > .card:nth-child(3) { animation-delay: 0.59s; }
+.charts-grid-3 > .card:nth-child(4) { animation-delay: 0.66s; }
+.charts-grid-3 > .card:nth-child(5) { animation-delay: 0.73s; }
+
+#capitalChannelsBody tr {
+  animation: slideInLeft 0.3s ease both;
+}
+#capitalChannelsBody tr:nth-child(1) { animation-delay: 0.1s; }
+#capitalChannelsBody tr:nth-child(2) { animation-delay: 0.15s; }
+#capitalChannelsBody tr:nth-child(3) { animation-delay: 0.2s; }
+#capitalChannelsBody tr:nth-child(4) { animation-delay: 0.25s; }
+#capitalChannelsBody tr:nth-child(5) { animation-delay: 0.3s; }
+#capitalChannelsBody tr:nth-child(6) { animation-delay: 0.35s; }
 
 /* ========================================
    BACKGROUND FLOATING BUBBLES
@@ -168,7 +204,7 @@ body::before {
   height: 300px;
   background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
   border-radius: 50%;
-  animation: float 12s ease-in-out infinite;
+  animation: floatSubtle 15s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
 }
@@ -182,7 +218,7 @@ body::after {
   height: 350px;
   background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
   border-radius: 50%;
-  animation: float 15s ease-in-out infinite reverse;
+  animation: floatSubtle 18s ease-in-out infinite reverse;
   pointer-events: none;
   z-index: 0;
 }
@@ -192,8 +228,10 @@ body::after {
    ======================================== */
 
 .tc-fill,
-.ms-fill {
-  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+.ms-fill,
+.forecast-progress-fill,
+.goal-progress-fill {
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* ========================================
@@ -201,56 +239,56 @@ body::after {
    ======================================== */
 
 .dtable tbody tr {
-  animation: slideInLeft 0.4s ease both;
+  animation: slideInLeft 0.35s ease both;
 }
 
-.dtable tbody tr:nth-child(1) { animation-delay: 0.05s; }
-.dtable tbody tr:nth-child(2) { animation-delay: 0.1s; }
-.dtable tbody tr:nth-child(3) { animation-delay: 0.15s; }
-.dtable tbody tr:nth-child(4) { animation-delay: 0.2s; }
-.dtable tbody tr:nth-child(5) { animation-delay: 0.25s; }
-.dtable tbody tr:nth-child(6) { animation-delay: 0.3s; }
-.dtable tbody tr:nth-child(7) { animation-delay: 0.35s; }
-.dtable tbody tr:nth-child(8) { animation-delay: 0.4s; }
+.dtable tbody tr:nth-child(1) { animation-delay: 0.04s; }
+.dtable tbody tr:nth-child(2) { animation-delay: 0.08s; }
+.dtable tbody tr:nth-child(3) { animation-delay: 0.12s; }
+.dtable tbody tr:nth-child(4) { animation-delay: 0.16s; }
+.dtable tbody tr:nth-child(5) { animation-delay: 0.2s; }
+.dtable tbody tr:nth-child(6) { animation-delay: 0.24s; }
+.dtable tbody tr:nth-child(7) { animation-delay: 0.28s; }
+.dtable tbody tr:nth-child(8) { animation-delay: 0.32s; }
 
 /* MOBILE ROWS */
 .mobile-txn-row {
-  animation: slideInLeft 0.4s ease both;
+  animation: slideInLeft 0.35s ease both;
 }
 
 /* CATEGORY ITEMS */
 .tc-item, .pm-item, .insight-item {
-  animation: fadeUpBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.tc-item:nth-child(1), .pm-item:nth-child(1), .insight-item:nth-child(1) { animation-delay: 0.1s; }
-.tc-item:nth-child(2), .pm-item:nth-child(2), .insight-item:nth-child(2) { animation-delay: 0.2s; }
-.tc-item:nth-child(3), .pm-item:nth-child(3), .insight-item:nth-child(3) { animation-delay: 0.3s; }
-.tc-item:nth-child(4), .pm-item:nth-child(4), .insight-item:nth-child(4) { animation-delay: 0.4s; }
-.tc-item:nth-child(5), .pm-item:nth-child(5) { animation-delay: 0.5s; }
+.tc-item:nth-child(1), .pm-item:nth-child(1), .insight-item:nth-child(1) { animation-delay: 0.05s; }
+.tc-item:nth-child(2), .pm-item:nth-child(2), .insight-item:nth-child(2) { animation-delay: 0.1s; }
+.tc-item:nth-child(3), .pm-item:nth-child(3), .insight-item:nth-child(3) { animation-delay: 0.15s; }
+.tc-item:nth-child(4), .pm-item:nth-child(4), .insight-item:nth-child(4) { animation-delay: 0.2s; }
+.tc-item:nth-child(5), .pm-item:nth-child(5) { animation-delay: 0.25s; }
 
 /* LEGEND ROWS */
 .leg-row {
-  animation: slideInLeft 0.4s ease both;
+  animation: slideInLeft 0.35s ease both;
 }
 
-.leg-row:nth-child(1) { animation-delay: 0.1s; }
-.leg-row:nth-child(2) { animation-delay: 0.15s; }
-.leg-row:nth-child(3) { animation-delay: 0.2s; }
-.leg-row:nth-child(4) { animation-delay: 0.25s; }
-.leg-row:nth-child(5) { animation-delay: 0.3s; }
+.leg-row:nth-child(1) { animation-delay: 0.05s; }
+.leg-row:nth-child(2) { animation-delay: 0.1s; }
+.leg-row:nth-child(3) { animation-delay: 0.15s; }
+.leg-row:nth-child(4) { animation-delay: 0.2s; }
+.leg-row:nth-child(5) { animation-delay: 0.25s; }
 
 /* TX CARDS */
 .tx-card {
-  animation: fadeUpBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeUpSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.tx-card:nth-child(1) { animation-delay: 0.05s; }
-.tx-card:nth-child(2) { animation-delay: 0.1s; }
-.tx-card:nth-child(3) { animation-delay: 0.15s; }
-.tx-card:nth-child(4) { animation-delay: 0.2s; }
-.tx-card:nth-child(5) { animation-delay: 0.25s; }
-.tx-card:nth-child(6) { animation-delay: 0.3s; }
+.tx-card:nth-child(1) { animation-delay: 0.04s; }
+.tx-card:nth-child(2) { animation-delay: 0.08s; }
+.tx-card:nth-child(3) { animation-delay: 0.12s; }
+.tx-card:nth-child(4) { animation-delay: 0.16s; }
+.tx-card:nth-child(5) { animation-delay: 0.2s; }
+.tx-card:nth-child(6) { animation-delay: 0.24s; }
 
 /* MOBILE OPTIMIZATIONS */
 @media (max-width: 767px) {

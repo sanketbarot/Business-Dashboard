@@ -73,6 +73,9 @@ function setupFirebaseSync() {
       if (typeof TxnPage !== 'undefined' && TxnPage.apply) {
         TxnPage.apply();
       }
+      if (typeof AnalyticsPage !== 'undefined' && AnalyticsPage.loadAll) {
+        AnalyticsPage.loadAll();
+      }
 
       console.log('✅ Synced ' + txns.length + ' transactions from Firebase');
     },
@@ -649,13 +652,38 @@ window.addEventListener('resize', debounce(function() {
 }, 200));
 
 function logout() {
-  if (confirm('Are you sure you want to sign out?')) {
-    if (firebaseListener) firebaseListener();
-    auth.signOut().then(() => {
-      localStorage.clear();
-      window.location.href = 'login.html';
-    });
+  let modal = document.getElementById('logoutConfirmModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.className = 'modal-bg';
+    modal.id = 'logoutConfirmModal';
+    modal.innerHTML = `
+      <div class="modal" style="max-width: 400px; text-align: center;">
+        <div class="modal-hd" style="justify-content: center; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+          <h3 style="color: var(--expense);">🚪 Sign Out</h3>
+        </div>
+        <div class="modal-bd" style="padding: 30px 24px;">
+          <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-head);">Are you sure you want to sign out?</p>
+          <p style="font-size: 0.78rem; color: var(--text-light); margin-top: 4px;">You will need to sign in again to access reports.</p>
+        </div>
+        <div class="modal-ft" style="justify-content: center; gap: 14px;">
+          <button class="btn btn-outline" onclick="closeModal('logoutConfirmModal')">Cancel</button>
+          <button class="btn btn-expense" onclick="confirmSignOut()">🚪 Sign Out</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
   }
+  openModal('logoutConfirmModal');
+}
+
+function confirmSignOut() {
+  closeModal('logoutConfirmModal');
+  if (firebaseListener) firebaseListener();
+  auth.signOut().then(() => {
+    localStorage.clear();
+    window.location.href = 'login.html';
+  });
 }
 
 function exportExcel() {
@@ -792,4 +820,109 @@ window.addEventListener('appinstalled', (evt) => {
   if (installBtn) {
     installBtn.style.display = 'none';
   }
+});
+
+// ============================================
+// CUSTOM DROPDOWNS INITIALIZATION ENGINE
+// ============================================
+
+function initializeCustomDropdowns() {
+  const selects = document.querySelectorAll('select');
+  selects.forEach(select => {
+    if (select.getAttribute('data-custom-select') === 'true') return;
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select';
+    
+    if (select.classList.contains('chart-sel')) {
+      wrapper.classList.add('chart-sel-wrapper');
+    } else if (select.classList.contains('an-filter-select')) {
+      wrapper.classList.add('an-filters-wrapper');
+    }
+    
+    select.style.cssText = 'opacity:0; position:absolute; pointer-events:none; z-index:-1; width:0; height:0; overflow:hidden; margin:0; padding:0; border:none;';
+    
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-select-trigger';
+    
+    const optionsList = document.createElement('div');
+    optionsList.className = 'custom-select-options';
+    
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(optionsList);
+    
+    select.parentNode.insertBefore(wrapper, select.nextSibling);
+    select.setAttribute('data-custom-select', 'true');
+    
+    function rebuildOptions() {
+      optionsList.innerHTML = '';
+      const options = select.querySelectorAll('option');
+      let selectedText = '';
+      
+      options.forEach(opt => {
+        const customOpt = document.createElement('div');
+        customOpt.className = 'custom-option';
+        customOpt.textContent = opt.textContent;
+        customOpt.setAttribute('data-value', opt.value);
+        
+        if (opt.selected) {
+          customOpt.classList.add('selected');
+          selectedText = opt.textContent;
+        }
+        
+        customOpt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          optionsList.querySelectorAll('.custom-option').forEach(co => co.classList.remove('selected'));
+          customOpt.classList.add('selected');
+          
+          select.value = opt.value;
+          trigger.textContent = opt.textContent;
+          wrapper.classList.remove('open');
+          
+          const event = new Event('change', { bubbles: true });
+          select.dispatchEvent(event);
+        });
+        
+        optionsList.appendChild(customOpt);
+      });
+      
+      trigger.textContent = selectedText || (options[0] ? options[0].textContent : 'Select');
+    }
+    
+    rebuildOptions();
+    
+    const observer = new MutationObserver(() => {
+      rebuildOptions();
+    });
+    observer.observe(select, { childList: true });
+    
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = wrapper.classList.contains('open');
+      
+      document.querySelectorAll('.custom-select.open').forEach(cs => {
+        if (cs !== wrapper) cs.classList.remove('open');
+      });
+      
+      wrapper.classList.toggle('open', !isOpen);
+    });
+  });
+}
+
+// Bind load callbacks
+window.addEventListener('DOMContentLoaded', () => {
+  initializeCustomDropdowns();
+});
+
+// Setup observer on document body to capture dynamically added selects
+const docObserver = new MutationObserver(() => {
+  initializeCustomDropdowns();
+});
+docObserver.observe(document.body, { childList: true, subtree: true });
+
+// Close all custom dropdowns when clicking outside
+document.addEventListener('click', () => {
+  document.querySelectorAll('.custom-select.open').forEach(cs => {
+    cs.classList.remove('open');
+  });
 });

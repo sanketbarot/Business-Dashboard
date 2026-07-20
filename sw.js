@@ -3,22 +3,25 @@
    AI Toolcor Business Dashboard
    ============================================ */
 
-const CACHE_NAME = 'bd-cache-v1.1';
+const CACHE_NAME = 'bd-cache-v1.2';
 const ASSETS = [
   './',
   './index.html',
   './login.html',
   './transaction.html',
+  './analytics.html',
   './manifest.json',
   './favicon.svg',
   './firebase-config.js',
   './assets/css/style.css?v=5.0',
   './assets/css/dashboard.css?v=5.0',
   './assets/css/transaction.css?v=5.0',
+  './assets/css/analytics.css?v=5.0',
   './assets/css/animations.css?v=5.0',
   './assets/js/app.js?v=5.0',
   './assets/js/dashboard.js?v=5.0',
   './assets/js/transaction-page.js',
+  './assets/js/analytics-page.js?v=5.0',
   './assets/icons/logo.png',
   './assets/icons/icon-72.png',
   './assets/icons/icon-96.png',

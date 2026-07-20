@@ -51,6 +51,7 @@
       <div class="sb-section">Overview</div>
       <a href="index.html" class="sb-link active"><span class="sb-icon">📊</span><span>Dashboard</span></a>
       <a href="transaction.html" class="sb-link"><span class="sb-icon">💳</span><span>Transactions</span></a>
+      <a href="analytics.html" class="sb-link"><span class="sb-icon">📈</span><span>Analytics</span></a>
 
       <div class="sb-section">Quick Add</div>
       <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
@@ -85,10 +86,6 @@
           <h4>Dashboard</h4>
           <p id="headerDate">Loading...</p>
         </div>
-      </div>
-      <div class="hd-search">
-        <span>🔍</span>
-        <input type="text" id="headerSearch" placeholder="Search transactions..." autocomplete="off"/>
       </div>
       <div class="hd-right">
         <div class="hd-live" id="liveTime">--:--</div>
@@ -163,6 +160,73 @@
             <div class="co-row"><div class="co-row-icon in">↓</div><div class="co-row-info"><div class="co-row-label">Online Received</div><div class="co-row-count" id="onlineInCount">0 transactions</div></div><div class="co-row-amt text-income" id="onlineIn">₹ 0</div></div>
             <div class="co-row"><div class="co-row-icon out">↑</div><div class="co-row-info"><div class="co-row-label">Online Spent</div><div class="co-row-count" id="onlineOutCount">0 transactions</div></div><div class="co-row-amt text-expense" id="onlineOut">₹ 0</div></div>
             <div class="co-balance online-balance"><div class="co-balance-label">📱 Net Online Balance</div><div class="co-balance-amt" id="onlineBalance">₹ 0</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUSINESS VISION & KPI TARGETS -->
+      <section class="card" style="margin-bottom:26px;">
+        <div class="card-hd">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <h4>🎯 Business Targets & Vision Roadmap</h4>
+            <span style="font-size:0.72rem; background:var(--brand-soft); color:var(--brand); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">VISION METRICS</span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="openGoalSettingsModal()">⚙️ Configure Goals</button>
+        </div>
+        <div class="card-bd">
+          <div class="goals-wrapper-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+            
+            <!-- Goal 1: Revenue -->
+            <div class="goal-item-card" style="background:rgba(99,102,241,0.02); border:1px solid rgba(99,102,241,0.06); border-radius:var(--r-md); padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">📈 MTD REVENUE TARGET</span>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--income);" id="goalRevPct">0%</span>
+              </div>
+              <div style="margin-bottom:12px;">
+                <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalRevCurrent">₹ 0.00</strong>
+                <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
+                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalRevTarget">₹ 0.00</span>
+              </div>
+              <div style="height:6px; background:rgba(16,185,129,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
+                <div style="height:100%; background:var(--income); border-radius:var(--r-full); width:0%; transition:width 1s;" id="goalRevBar"></div>
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-light);" id="goalRevStatus">MTD Revenue status</div>
+            </div>
+
+            <!-- Goal 2: Expense Cap -->
+            <div class="goal-item-card" style="background:rgba(239,68,68,0.02); border:1px solid rgba(239,68,68,0.06); border-radius:var(--r-md); padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">💸 MTD EXPENSE CAP</span>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--expense);" id="goalExpPct">0%</span>
+              </div>
+              <div style="margin-bottom:12px;">
+                <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalExpCurrent">₹ 0.00</strong>
+                <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
+                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalExpTarget">₹ 0.00</span>
+              </div>
+              <div style="height:6px; background:rgba(239,68,68,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
+                <div style="height:100%; background:var(--expense); border-radius:var(--r-full); width:0%; transition:width 1s;" id="goalExpBar"></div>
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-light);" id="goalExpStatus">MTD Expense status</div>
+            </div>
+
+            <!-- Goal 3: Annual profit target -->
+            <div class="goal-item-card" style="background:rgba(139,92,246,0.02); border:1px solid rgba(139,92,246,0.06); border-radius:var(--r-md); padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">🏆 YTD NET PROFIT MILESTONE</span>
+                <span style="font-size:0.85rem; font-weight:800; color:var(--purple);" id="goalPrfPct">0%</span>
+              </div>
+              <div style="margin-bottom:12px;">
+                <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalPrfCurrent">₹ 0.00</strong>
+                <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
+                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalPrfTarget">₹ 0.00</span>
+              </div>
+              <div style="height:6px; background:rgba(139,92,246,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
+                <div style="height:100%; background:linear-gradient(90deg, var(--brand) 0%, var(--purple) 100%); border-radius:var(--r-full); width:0%; transition:width 1s;" id="goalPrfBar"></div>
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-light);" id="goalPrfStatus">YTD Net Profit milestone</div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -275,6 +339,34 @@
     </div>
     <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button></div>
     <input type="hidden" id="eEditId"/>
+  </div>
+</div>
+
+<!-- GOAL SETTINGS MODAL -->
+<div class="modal-bg" id="goalSettingsModal">
+  <div class="modal" style="max-width: 480px;">
+    <div class="modal-hd" style="background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);">
+      <h3>🎯 Configure Business Goals</h3>
+      <button class="modal-x" onclick="closeModal('goalSettingsModal')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="fg">
+        <label class="fl">MONTHLY REVENUE TARGET (₹) <span class="req">*</span></label>
+        <input type="number" class="fc" id="targetMonthlyRev" placeholder="150000" min="0" step="1000"/>
+      </div>
+      <div class="fg">
+        <label class="fl">MONTHLY EXPENSE CAP (₹) <span class="req">*</span></label>
+        <input type="number" class="fc" id="targetMonthlyExp" placeholder="60000" min="0" step="1000"/>
+      </div>
+      <div class="fg">
+        <label class="fl">ANNUAL NET PROFIT TARGET (₹) <span class="req">*</span></label>
+        <input type="number" class="fc" id="targetAnnualPrf" placeholder="1000000" min="0" step="5000"/>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('goalSettingsModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVisionGoals()">🎯 Save Targets</button>
+    </div>
   </div>
 </div>
 

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Analytics — Crust & Chilly</title>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#6366f1"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="assets/css/style.css?v=5.0"/>
+<link rel="stylesheet" href="assets/css/analytics.css?v=5.0"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=5.0"/>
+
+<!-- Firebase SDKs - MUST BE BEFORE app.js -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<!-- Chart & Export Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon-wrap">
+        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
+      </div>
+      <div class="sb-logo-info">
+        <div class="sb-logo-text">Crust & Chilly</div>
+        <div class="sb-logo-sub">BUSINESS SUITE</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">Overview</div>
+      <a href="index.html" class="sb-link"><span class="sb-icon">📊</span><span>Dashboard</span></a>
+      <a href="transaction.html" class="sb-link"><span class="sb-icon">💳</span><span>Transactions</span></a>
+      <a href="analytics.html" class="sb-link active"><span class="sb-icon">📈</span><span>Analytics</span></a>
+
+      <div class="sb-section">Quick Add</div>
+      <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
+      <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon">💸</span><span>New Expense</span></div>
+
+      <div class="sb-section">Reports</div>
+      <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
+      <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
+      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span><span>Backup Data</span></div>
+      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon">📲</span><span>Install App</span></div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">S</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Sanket Barot</div>
+          <div class="sb-user-email">sanketbarot3901@gmail.com</div>
+        </div>
+      </div>
+      <button class="sb-logout" onclick="logout()">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <main class="main">
+    <header class="header">
+      <div class="hd-left">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="hd-title">
+          <h4>Analytics</h4>
+          <p id="headerDate">Loading...</p>
+        </div>
+      </div>
+      <div class="hd-right" style="display: flex; align-items: center; gap: 14px;">
+        <div class="an-live-sync-card">
+          <div class="pulse-dot"></div>
+          <span>Firebase Sync Connected</span>
+        </div>
+        <div class="hd-live" id="liveTime">--:--</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Hero Header Section -->
+      <section class="an-hero">
+        <div class="an-hero-text">
+          <h2>Business Intelligence & Analytics 📈</h2>
+          <p>Real-time visual insights, health scorecard, and dynamic forecasting models</p>
+        </div>
+        <div class="an-filters">
+          <span style="padding-left:12px; font-size:0.78rem; font-weight:700; color:var(--text-light);">FILTER:</span>
+          <select class="an-filter-select" id="analyticsPeriod" onchange="AnalyticsPage.onPeriodChange()">
+            <option value="week">Weekly</option>
+            <option value="month">Monthly</option>
+            <option value="year">Yearly</option>
+            <option value="all" selected>All Time</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Key Analytics Metrics Row -->
+      <section class="an-grid">
+        <!-- Health Scorecard -->
+        <div class="an-card" style="grid-column: span 1.5;">
+          <svg style="position: absolute; width: 0; height: 0;">
+            <defs>
+              <linearGradient id="healthGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1" />
+                <stop offset="100%" stop-color="#8b5cf6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="health-score-container">
+            <div class="health-ring-wrap">
+              <svg class="health-ring-svg">
+                <circle class="health-ring-bg" cx="35" cy="35" r="31"></circle>
+                <circle class="health-ring-bar" id="healthRingBar" cx="35" cy="35" r="31"></circle>
+              </svg>
+              <div class="health-score-text" id="healthScoreVal">--</div>
+            </div>
+            <div class="health-desc">
+              <div class="health-lbl">BUSINESS HEALTH SCORE</div>
+              <div class="health-status" id="healthScoreStatus">Analyzing...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Burn Rate -->
+        <div class="an-card">
+          <div class="an-card-hd">
+            <span class="an-card-title">BURN RATE</span>
+            <div class="an-card-icon" style="background:rgba(239,68,68,0.1); color:var(--expense);">🔥</div>
+          </div>
+          <div class="an-card-val" id="burnRateVal">--%</div>
+          <div class="an-card-sub" id="burnRateSub">Of income spent</div>
+        </div>
+
+        <!-- Average Transaction -->
+        <div class="an-card">
+          <div class="an-card-hd">
+            <span class="an-card-title">AVG TRANSACTION</span>
+            <div class="an-card-icon" style="background:rgba(16,185,129,0.1); color:var(--income);">📊</div>
+          </div>
+          <div class="an-card-val" id="avgTxVal">₹ 0.00</div>
+          <div class="an-card-sub" id="avgTxSub">Income avg vs Expense avg</div>
+        </div>
+
+        <!-- Busiest Weekday -->
+        <div class="an-card">
+          <div class="an-card-hd">
+            <span class="an-card-title">PEAK ACTIVITY DAY</span>
+            <div class="an-card-icon" style="background:rgba(245,158,11,0.1); color:#d97706;">⚡</div>
+          </div>
+          <div class="an-card-val" id="peakDayVal">--</div>
+          <div class="an-card-sub" id="peakDaySub">Most transaction records</div>
+        </div>
+      </section>
+
+      <!-- Forecast Card -->
+      <section class="forecast-panel">
+        <div class="forecast-hd">
+          <div class="forecast-title">
+            <h3>🔮 Next Month Projections</h3>
+            <span class="forecast-badge" id="forecastModelType">Linear Trend Analysis</span>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-light); font-weight: 600;">Based on last 3 months average</div>
+        </div>
+        <div class="forecast-grid">
+          <div class="forecast-item">
+            <div class="forecast-lbl">PROJECTED REVENUE</div>
+            <div class="forecast-val inc" id="projRevenue">₹ 0</div>
+            <div class="forecast-progress-bar">
+              <div class="forecast-progress-fill inc" id="projRevBar" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div class="forecast-item">
+            <div class="forecast-lbl">PROJECTED EXPENSES</div>
+            <div class="forecast-val exp" id="projExpenses">₹ 0</div>
+            <div class="forecast-progress-bar">
+              <div class="forecast-progress-fill exp" id="projExpBar" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div class="forecast-item">
+            <div class="forecast-lbl">PROJECTED NET PROFIT</div>
+            <div class="forecast-val prf" id="projProfit">₹ 0</div>
+            <div class="forecast-progress-bar">
+              <div class="forecast-progress-fill prf" id="projPrfBar" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Visual Charts Grid -->
+      <section class="charts-grid-3">
+        <!-- 1. Monthly Profit Trend (Col 8) -->
+        <div class="card chart-enhanced chart-card-col-8">
+          <div class="card-hd">
+            <h4>📈 Monthly Net Profit Trend</h4>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Net cashflow trend line</span>
+          </div>
+          <div class="card-bd">
+            <div class="chart-container-wrap">
+              <canvas id="profitTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Expense Category Share (Col 4) -->
+        <div class="card chart-enhanced chart-card-col-4">
+          <div class="card-hd">
+            <h4>🍩 Category Share</h4>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Expense distribution</span>
+          </div>
+          <div class="card-bd">
+            <div class="chart-container-wrap" style="height: 200px;">
+              <canvas id="categoryShareChart"></canvas>
+            </div>
+            <div id="categoryLegend" class="donut-legend-wrap"></div>
+          </div>
+        </div>
+
+        <!-- 3. Peak Weekdays Activity (Col 12) -->
+        <div class="card chart-enhanced chart-card-col-12" style="margin-top: 6px;">
+          <div class="card-hd">
+            <h4>📊 Weekly Volume Heat-chart</h4>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Number of transactions by weekday</span>
+          </div>
+          <div class="card-bd">
+            <div class="chart-container-wrap" style="height: 250px;">
+              <canvas id="weekdayActivityChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Cumulative Capital Area (Col 8) -->
+        <div class="card chart-enhanced chart-card-col-8" style="margin-top: 6px;">
+          <div class="card-hd">
+            <h4>📈 Cumulative Capital Balance</h4>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Cumulative profit growth timeline</span>
+          </div>
+          <div class="card-bd">
+            <div class="chart-container-wrap">
+              <canvas id="cumulativeBalanceChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Payment Mode Distribution (Col 4) -->
+        <div class="card chart-enhanced chart-card-col-4" style="margin-top: 6px;">
+          <div class="card-hd">
+            <h4>💳 Payment Mode Share</h4>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Inflow vs Outflow share</span>
+          </div>
+          <div class="card-bd">
+            <div class="chart-container-wrap" style="height: 200px;">
+              <canvas id="paymentModeChart"></canvas>
+            </div>
+            <div id="paymentModeLegend" class="donut-legend-wrap"></div>
+          </div>
+        </div>
+      </section>
+      <!-- Detailed Business intelligence Report -->
+      <section class="card" style="margin-bottom: 26px;">
+        <div class="card-hd">
+          <h4>📊 Capital Channels & Financial Ratios</h4>
+          <span style="font-size:0.75rem;color:var(--text-muted);">Detailed inward / outward capital breakdown per payment channel</span>
+        </div>
+        <div class="card-bd">
+          <div class="table-wrap" style="margin-bottom: 24px; overflow-x: auto;">
+            <table class="dtable" style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th>Capital Channel</th>
+                  <th>Total Inward (Revenues)</th>
+                  <th>Total Outward (Expenses)</th>
+                  <th>Net Capital Balance</th>
+                  <th>Transactions Count</th>
+                  <th>Activity Share</th>
+                </tr>
+              </thead>
+              <tbody id="capitalChannelsBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-light); padding: 20px;">Analyzing ledger...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Business Performance Detail Stats Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <div style="background: rgba(99, 102, 241, 0.04); border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 16px;">
+              <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 6px;">Operating Expense Ratio</div>
+              <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-head);" id="detExpenseRatio">--%</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Percentage of incoming revenue consumed by overhead costs</div>
+            </div>
+            <div style="background: rgba(99, 102, 241, 0.04); border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 16px;">
+              <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 6px;">Profitability Status</div>
+              <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-head);" id="detProfitStatus">--</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Net operating performance category</div>
+            </div>
+            <div style="background: rgba(99, 102, 241, 0.04); border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 16px;">
+              <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 6px;">Peak Revenue Month</div>
+              <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-head);" id="detPeakMonth">--</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Month with the highest recorded inward cashflows</div>
+            </div>
+            <div style="background: rgba(99, 102, 241, 0.04); border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 16px;">
+              <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 6px;">Operating Consistency</div>
+              <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-head);" id="detConsistency">-- active days</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">Number of unique days with records logged</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- INCOME MODAL -->
+<div class="modal-bg" id="incomeModal">
+  <div class="modal">
+    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);"><h3 id="incomeTitle">💰 Add Income</h3><button class="modal-x" onclick="closeModal('incomeModal')">✕</button></div>
+    <div class="modal-bd">
+      <div class="form-row">
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="iDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat"><option value="">Select</option><option>💰 Cash Income</option><option>📱 Online Payment</option><option>🛒 Sales</option><option>🔧 Service</option><option>💻 Freelance</option><option>🏠 Rental</option><option>💼 Commission</option><option>↩️ Refund Received</option><option>📈 Investment Return</option><option>🎁 Gift / Bonus</option><option>📦 Other Income</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span><input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea></div>
+      <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong id="iPreviewVal">₹ 0.00</strong></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button><button class="btn btn-income" onclick="saveTransaction('income')">💰 Save Income</button></div>
+    <input type="hidden" id="iEditId"/>
+  </div>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-bg" id="expenseModal">
+  <div class="modal">
+    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);"><h3 id="expenseTitle">💸 Add Expense</h3><button class="modal-x" onclick="closeModal('expenseModal')">✕</button></div>
+    <div class="modal-bd">
+      <div class="form-row">
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="eDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat"><option value="">Select</option><option>🧾 Electricity Bill</option><option>💧 Water Bill</option><option>📡 Internet Bill</option><option>📱 Mobile Bill</option><option>🏠 Rent</option><option>🛒 Grocery</option><option>🥦 Vegetables</option><option>🍞 Bread / Bakery</option><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>⛽ Fuel</option><option>👥 Salary</option><option>💊 Medical</option><option>📚 Education</option><option>🔨 Maintenance</option><option>📢 Marketing</option><option>📦 Supplies</option><option>🛡️ Insurance</option><option>📋 Tax</option><option>↩️ Refund Given</option><option>💸 Other Expense</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span><input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">VENDOR</label><input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea></div>
+      <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong id="ePreviewVal">₹ 0.00</strong></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button></div>
+    <input type="hidden" id="eEditId"/>
+  </div>
+</div>
+
+<div class="toast-box" id="toastBox"></div>
+
+<!-- JS Files - app.js MUST be before analytics-page.js -->
+<script src="assets/js/app.js?v=5.0"></script>
+<script src="assets/js/analytics-page.js?v=5.0"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('✅ ServiceWorker registered', reg))
+        .catch(err => console.error('❌ ServiceWorker registration failed', err));
+    });
+  }
+</script>
+</body>
+</html>
