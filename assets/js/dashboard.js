@@ -449,12 +449,12 @@ const Dash = {
     if (this.charts.bar) this.charts.bar.destroy();
     const ctx = canvas.getContext('2d');
     const gInc = ctx.createLinearGradient(0, 0, 0, 300);
-    gInc.addColorStop(0, '#10b981');
-    gInc.addColorStop(1, '#059669');
+    gInc.addColorStop(0, '#059669');
+    gInc.addColorStop(1, '#047857');
     
     const gExp = ctx.createLinearGradient(0, 0, 0, 300);
     gExp.addColorStop(0, '#f87171');
-    gExp.addColorStop(1, '#ef4444');
+    gExp.addColorStop(1, '#dc2626');
 
     this.charts.bar = new Chart(canvas, {
       type: 'bar',
@@ -467,7 +467,7 @@ const Dash = {
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        animation: { duration: 1500, easing: 'easeOutQuart' },
+        animation: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '600' }, padding: 16, color: '#312e81' } },
@@ -520,7 +520,7 @@ const Dash = {
       },
       options: {
         responsive: true, maintainAspectRatio: false, cutout: '70%',
-        animation: { duration: 1500, easing: 'easeOutQuart', animateRotate: true, animateScale: true },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -582,11 +582,11 @@ const Dash = {
     if (this.charts.line) this.charts.line.destroy();
     const ctx = canvas.getContext('2d');
     const g1 = ctx.createLinearGradient(0, 0, 0, 280);
-    g1.addColorStop(0, 'rgba(16,185,129,0.4)');
-    g1.addColorStop(1, 'rgba(16,185,129,0)');
+    g1.addColorStop(0, 'rgba(5,150,105,0.4)');
+    g1.addColorStop(1, 'rgba(5,150,105,0)');
     const g2 = ctx.createLinearGradient(0, 0, 0, 280);
-    g2.addColorStop(0, 'rgba(239,68,68,0.4)');
-    g2.addColorStop(1, 'rgba(239,68,68,0)');
+    g2.addColorStop(0, 'rgba(220,38,38,0.4)');
+    g2.addColorStop(1, 'rgba(220,38,38,0)');
     this.charts.line = new Chart(canvas, {
       type: 'line',
       data: {
@@ -594,23 +594,23 @@ const Dash = {
         datasets: [
           {
             label: 'Income', data: income,
-            borderColor: '#10b981', backgroundColor: g1,
+            borderColor: '#059669', backgroundColor: g1,
             borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 3.5,
+            pointBackgroundColor: '#059669', pointBorderColor: '#fff', pointBorderWidth: 3.5,
             fill: true, tension: 0.4
           },
           {
             label: 'Expense', data: expense,
-            borderColor: '#ef4444', backgroundColor: g2,
+            borderColor: '#dc2626', backgroundColor: g2,
             borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 3.5,
+            pointBackgroundColor: '#dc2626', pointBorderColor: '#fff', pointBorderWidth: 3.5,
             fill: true, tension: 0.4
           }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        animation: { duration: 1800, easing: 'easeOutQuart' },
+        animation: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },

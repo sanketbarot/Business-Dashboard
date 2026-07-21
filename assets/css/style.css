@@ -28,15 +28,15 @@
   --gradient-soft: linear-gradient(135deg, rgba(224, 231, 255, 0.5) 0%, rgba(237, 233, 254, 0.5) 100%);
   --gradient-page: radial-gradient(circle at 50% 50%, #f8fafc 0%, #f1f5f9 100%);
 
-  --income: #10b981;
+  --income: #059669;
   --income-bg: rgba(209, 250, 229, 0.5);
   --income-soft: rgba(236, 253, 245, 0.3);
   --income-border: rgba(110, 231, 183, 0.5);
-  --expense: #ef4444;
+  --expense: #dc2626;
   --expense-bg: rgba(254, 226, 230, 0.5);
   --expense-soft: rgba(254, 242, 242, 0.3);
   --expense-border: rgba(252, 165, 165, 0.5);
-  --profit: #f59e0b;
+  --profit: #d97706;
   --profit-bg: rgba(254, 243, 199, 0.5);
   --profit-soft: rgba(255, 251, 235, 0.3);
 
@@ -111,7 +111,6 @@ body::before {
   filter: blur(60px);
   z-index: -2;
   pointer-events: none;
-  animation: floatOrb1 25s ease-in-out infinite alternate;
 }
 
 body::after {
@@ -126,7 +125,6 @@ body::after {
   filter: blur(60px);
   z-index: -2;
   pointer-events: none;
-  animation: floatOrb2 28s ease-in-out infinite alternate;
 }
 
 .app::before {
@@ -141,22 +139,6 @@ body::after {
   filter: blur(50px);
   z-index: -2;
   pointer-events: none;
-  animation: floatOrb3 22s ease-in-out infinite alternate;
-}
-
-@keyframes floatOrb1 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(60px, 40px) scale(1.1); }
-}
-
-@keyframes floatOrb2 {
-  0% { transform: translate(0, 0) scale(1.1); }
-  100% { transform: translate(-80px, -50px) scale(0.9); }
-}
-
-@keyframes floatOrb3 {
-  0% { transform: translate(0, 0) scale(0.9); }
-  100% { transform: translate(40px, -60px) scale(1.15); }
 }
 
 a { text-decoration: none; color: inherit; }
@@ -269,12 +251,6 @@ input, select, textarea { font-family: inherit; }
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: var(--tr);
 }
-
-.sb-logo-icon-wrap:hover {
-  transform: rotate(-10deg) scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
 .sb-logo-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
 
 .sb-logo-info { flex: 1; min-width: 0; overflow: hidden; }
@@ -377,7 +353,6 @@ input, select, textarea { font-family: inherit; }
 }
 
 .sb-link.active .sb-icon {
-  animation: heartbeat 2s ease infinite;
 }
 
 .sb-icon {
@@ -419,17 +394,6 @@ input, select, textarea { font-family: inherit; }
   font-size: 1rem;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-  animation: pulseGlow 3s ease infinite;
-}
-
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
-  50% { box-shadow: 0 8px 24px rgba(99,102,241,0.6); }
-}
-
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
 }
 
 .sb-user-info { flex: 1; min-width: 0; overflow: hidden; }
@@ -483,12 +447,6 @@ input, select, textarea { font-family: inherit; }
   background: rgba(99,102,241,0.3);
   z-index: 99;
   backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 /* HEADER */
@@ -506,12 +464,6 @@ input, select, textarea { font-family: inherit; }
   position: sticky;
   top: 0;
   z-index: 50;
-  animation: slideDown 0.5s ease;
-}
-
-@keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
 }
 
 .hd-left { flex: 1; display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -609,22 +561,11 @@ input, select, textarea { font-family: inherit; }
   transition: var(--tr);
 }
 
-.hd-live:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99,102,241,0.2);
-}
-
 .hd-live::before {
   content: '';
   width: 7px; height: 7px;
   background: var(--brand);
   border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(99,102,241,0.5); }
-  50% { opacity: 0.5; box-shadow: 0 0 0 8px rgba(99,102,241,0); }
 }
 
 /* BUTTONS - Enhanced */
@@ -690,7 +631,7 @@ input, select, textarea { font-family: inherit; }
 }
 
 .btn-expense {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.15);
@@ -728,11 +669,6 @@ input, select, textarea { font-family: inherit; }
   overflow: hidden;
 }
 
-.card:hover {
-  box-shadow: var(--sh-md);
-  transform: translateY(-3px);
-}
-
 .card-hd {
   padding: 22px 26px;
   border-bottom: 1px solid var(--border-light);
@@ -763,9 +699,6 @@ input, select, textarea { font-family: inherit; }
   white-space: nowrap;
   transition: var(--tr);
 }
-
-.badge:hover { transform: scale(1.1); }
-
 .badge-in { background: var(--income-bg); color: var(--income); }
 .badge-out { background: var(--expense-bg); color: var(--expense); }
 .badge-gold { background: var(--profit-bg); color: #d97706; }
@@ -816,9 +749,9 @@ input, select, textarea { font-family: inherit; }
 .fc {
   width: 100%;
   padding: 12px 20px;
-  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(99, 102, 241, 0.15);
   border-radius: var(--r-full);
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.6);
   color: var(--text-body);
   font-size: 0.9rem;
   font-family: inherit;
@@ -829,9 +762,9 @@ input, select, textarea { font-family: inherit; }
 }
 
 .fc:focus {
-  border-color: rgba(99, 102, 241, 0.5);
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), 0 8px 20px rgba(0, 0, 0, 0.04);
+  border-color: var(--brand);
+  background: #ffffff;
+  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.15), 0 8px 24px rgba(99, 102, 241, 0.12);
   transform: translateY(-1px);
 }
 
@@ -855,7 +788,7 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
 .modal-bg {
   position: fixed;
   inset: 0;
-  background: rgba(30,27,75,0.5);
+  background: rgba(15, 12, 45, 0.45);
   backdrop-filter: blur(12px);
   z-index: 200;
   display: flex;
@@ -871,12 +804,12 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
 .modal-bg.open { opacity: 1; visibility: visible; }
 
 .modal {
-  background: var(--bg-card-solid) !important;
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   border-radius: var(--r-2xl);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.8), inset 0 -1px 1px rgba(0, 0, 0, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 32px 80px rgba(30, 27, 75, 0.25);
   width: 100%;
   max-width: 560px;
   max-height: 92vh;
@@ -893,7 +826,7 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
 
 .modal-hd {
   padding: 22px 26px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.4);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -901,9 +834,9 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
   gap: 10px;
   position: sticky;
   top: 0;
-  background: rgba(255, 255, 255, 0.4) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   z-index: 2;
 }
 
@@ -936,14 +869,16 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
 
 .modal-ft {
   padding: 18px 26px;
-  border-top: 1px solid var(--border-light);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.4);
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
   position: sticky;
   bottom: 0;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
 /* TOAST */
@@ -969,7 +904,6 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
   box-shadow: 0 12px 40px rgba(99,102,241,0.15);
   min-width: 260px;
   max-width: 380px;
-  animation: slideInRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-size: 0.85rem;
   font-weight: 500;
   border-left: 4px solid var(--brand);
@@ -982,12 +916,6 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
   box-shadow: 0 16px 50px rgba(99,102,241,0.25);
 }
 
-@keyframes slideInRight {
-  0% { opacity: 0; transform: translateX(100%) scale(0.8); }
-  60% { transform: translateX(-10%) scale(1.05); }
-  100% { opacity: 1; transform: translateX(0) scale(1); }
-}
-
 .amt-in { color: var(--income); font-weight: 700; }
 .amt-out { color: var(--expense); font-weight: 700; }
 
@@ -996,7 +924,6 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
   font-size: 3rem;
   margin-bottom: 14px;
   opacity: 0.4;
-  animation: bounce 2s ease infinite;
 }
 .empty h4 { font-size: 1rem; color: var(--text-head); margin-bottom: 6px; font-weight: 700; }
 .empty p { font-size: 0.85rem; }
@@ -1010,13 +937,6 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
   font-size: 0.9rem;
   font-weight: 700;
   gap: 8px;
-  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes popIn {
-  0% { opacity: 0; transform: scale(0.5); }
-  70% { transform: scale(1.1); }
-  100% { opacity: 1; transform: scale(1); }
 }
 
 .preview-in { background: var(--income-soft); border: 1px solid var(--income-border); color: var(--income); }
@@ -1177,47 +1097,10 @@ textarea.fc { border-radius: var(--r-lg); resize: vertical; min-height: 80px; }
 .text-brand { color: var(--brand-accent); }
 
 /* ============================================
-   GLASS AURORA PREMIUM DROPDOWNS & MODALS OVERRIDES
+   GLASS AURORA PREMIUM DROPDOWNS OVERRIDES
+   (Modal & .fc glass values are now merged directly
+   into their base rules above — no duplication)
    ============================================ */
-
-/* 1. Modal Glassmorphism Overrides */
-.modal-bg {
-  background: rgba(15, 12, 45, 0.45) !important;
-}
-
-.modal {
-  background: rgba(255, 255, 255, 0.82) !important;
-  backdrop-filter: blur(28px) !important;
-  -webkit-backdrop-filter: blur(28px) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 32px 80px rgba(30, 27, 75, 0.25) !important;
-}
-
-.modal-hd {
-  background: rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(15px) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.4) !important;
-}
-
-.modal-ft {
-  background: rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(15px) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-  border-top: 1.5px solid rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Form input adjustments on frosted glass */
-.fc {
-  background: rgba(255, 255, 255, 0.6) !important;
-  border: 1.5px solid rgba(99, 102, 241, 0.15) !important;
-}
-
-.fc:focus {
-  background: #ffffff !important;
-  border-color: var(--brand) !important;
-  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.15), 0 8px 24px rgba(99, 102, 241, 0.12) !important;
-}
 
 /* 2. Premium Dropdowns / Select styling overrides */
 select.fc, .chart-sel, .an-filter-select {
@@ -1341,7 +1224,6 @@ select option {
 
 .custom-select.open .custom-select-options {
   display: block;
-  animation: fadeUpSmooth 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .custom-option {
@@ -1443,4 +1325,4 @@ select option {
 }
 .pb-tab.active::before, .ft.active::before {
   display: none !important;
-}
+}

@@ -524,31 +524,10 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-function animateNumber(el, endValue, duration = 1500) {
+function animateNumber(el, endValue) {
+  // Count-up animation removed — values are set instantly for real-time updates.
   if (!el) return;
-  const isRupee = endValue.toString().includes('₹');
-  const isPercent = endValue.toString().includes('%');
-  const numericTarget = parseFloat(endValue.toString().replace(/[₹,\s%]/g, '')) || 0;
-  const startTime = performance.now();
-
-  function update(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 4);
-    const currentValue = numericTarget * eased;
-    if (isRupee) {
-      el.textContent = '₹ ' + currentValue.toLocaleString('en-IN', {
-        minimumFractionDigits: 2, maximumFractionDigits: 2
-      });
-    } else if (isPercent) {
-      el.textContent = Math.floor(currentValue) + '%';
-    } else {
-      el.textContent = Math.floor(currentValue).toString();
-    }
-    if (progress < 1) requestAnimationFrame(update);
-    else el.textContent = endValue;
-  }
-  requestAnimationFrame(update);
+  el.textContent = endValue;
 }
 
 function openModal(id) {
@@ -588,7 +567,7 @@ function toast(msg, type) {
   const container = document.getElementById('toastBox');
   if (!container) { alert(msg); return; }
   const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
-  const colors = { success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#6366f1' };
+  const colors = { success:'#059669', error:'#dc2626', warning:'#d97706', info:'#6366f1' };
   const t = document.createElement('div');
   t.className = 'toast';
   t.style.borderLeftColor = colors[type] || colors.success;

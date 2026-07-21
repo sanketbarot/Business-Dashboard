@@ -222,7 +222,7 @@ const AnalyticsPage = {
         scoreStatus.style.color = 'var(--brand)';
       } else if (finalScore >= 40) {
         scoreStatus.textContent = '⚠️ Attention';
-        scoreStatus.style.color = '#f59e0b';
+        scoreStatus.style.color = '#d97706';
       } else {
         scoreStatus.textContent = '🚨 Critical';
         scoreStatus.style.color = 'var(--expense)';
@@ -348,7 +348,7 @@ const AnalyticsPage = {
           {
             label: 'Total Revenue',
             data: incomes.length ? incomes : [0],
-            borderColor: '#10b981',
+            borderColor: '#059669',
             borderWidth: 1.5,
             borderDash: [4, 4],
             fill: false,
@@ -555,8 +555,8 @@ const AnalyticsPage = {
         datasets: [{
           label: 'Cumulative Capital (₹)',
           data: balances.length ? balances : [0],
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.08)',
+          borderColor: '#059669',
+          backgroundColor: 'rgba(5, 150, 105, 0.08)',
           borderWidth: 3,
           fill: true,
           tension: 0.2,
@@ -600,12 +600,12 @@ const AnalyticsPage = {
     const data = activeModes.map(m => modeVolume[m]);
 
     const palette = {
-      'Cash': '#10b981',
+      'Cash': '#059669',
       'Online': '#115e59',
       'UPI': '#14b8a6',
       'Bank Transfer': '#0ea5e9',
       'Card': '#0f766e',
-      'Cheque': '#f59e0b'
+      'Cheque': '#d97706'
     };
 
     const colors = activeModes.map(m => palette[m] || '#64748b');

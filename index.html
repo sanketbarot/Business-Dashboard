@@ -18,7 +18,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="stylesheet" href="assets/css/style.css?v=10.0"/>
 <link rel="stylesheet" href="assets/css/dashboard.css?v=10.0"/>
-<link rel="stylesheet" href="assets/css/animations.css?v=10.0"/>
 
 <!-- Firebase SDKs - MUST BE BEFORE app.js -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -271,8 +270,8 @@
         <div class="card-hd"><h4>📈 7-Day Cash Flow</h4><span style="font-size:0.75rem;color:var(--text-muted);">Last 7 days</span></div>
         <div class="card-bd">
           <div class="chart-info-bar">
-            <div class="chart-info-item"><div class="chart-info-dot" style="background:#10b981;"></div><span>Income: <strong id="lineIncomeTotal">₹ 0</strong></span></div>
-            <div class="chart-info-item"><div class="chart-info-dot" style="background:#ef4444;"></div><span>Expense: <strong id="lineExpenseTotal">₹ 0</strong></span></div>
+            <div class="chart-info-item"><div class="chart-info-dot" style="background:#059669;"></div><span>Income: <strong id="lineIncomeTotal">₹ 0</strong></span></div>
+            <div class="chart-info-item"><div class="chart-info-dot" style="background:#dc2626;"></div><span>Expense: <strong id="lineExpenseTotal">₹ 0</strong></span></div>
             <div class="chart-info-item" style="margin-left:auto;"><span>Net: <strong id="lineNetTotal" style="color:var(--brand-accent);">₹ 0</strong></span></div>
           </div>
           <div style="position:relative;height:280px;"><canvas id="lineChart"></canvas></div>
@@ -308,7 +307,7 @@
         <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat"><option value="">Select</option><option>💰 Cash Income</option><option>📱 Online Payment</option><option>🛒 Sales</option><option>🔧 Service</option><option>💻 Freelance</option><option>🏠 Rental</option><option>💼 Commission</option><option>↩️ Refund Received</option><option>📈 Investment Return</option><option>🎁 Gift / Bonus</option><option>📦 Other Income</option></select></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#10b981;z-index:1;">₹</span><input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/></div></div>
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#059669;z-index:1;">₹</span><input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/></div></div>
         <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
       </div>
       <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/></div>
@@ -330,7 +329,7 @@
         <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat"><option value="">Select</option><option>🧾 Electricity Bill</option><option>💧 Water Bill</option><option>📡 Internet Bill</option><option>📱 Mobile Bill</option><option>🏠 Rent</option><option>🛒 Grocery</option><option>🥦 Vegetables</option><option>🍞 Bread / Bakery</option><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>⛽ Fuel</option><option>👥 Salary</option><option>💊 Medical</option><option>📚 Education</option><option>🔨 Maintenance</option><option>📢 Marketing</option><option>📦 Supplies</option><option>🛡️ Insurance</option><option>📋 Tax</option><option>↩️ Refund Given</option><option>💸 Other Expense</option></select></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#ef4444;z-index:1;">₹</span><input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/></div></div>
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#dc2626;z-index:1;">₹</span><input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/></div></div>
         <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
       </div>
       <div class="fg"><label class="fl">VENDOR</label><input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/></div>
