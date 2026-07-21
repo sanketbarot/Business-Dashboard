@@ -18,6 +18,9 @@ const AnalyticsPage = {
 
   init: function() {
     try {
+      if (typeof Chart !== 'undefined') {
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+      }
       this.setupWelcomeDate();
       this.loadAll();
       this.setupModalDates();
@@ -334,12 +337,12 @@ const AnalyticsPage = {
           {
             label: 'Net Profit',
             data: profits.length ? profits : [0],
-            borderColor: '#6366f1',
-            backgroundColor: 'rgba(99, 102, 241, 0.05)',
+            borderColor: '#115e59',
+            backgroundColor: 'rgba(17, 94, 89, 0.05)',
             borderWidth: 3,
             fill: true,
             tension: 0.35,
-            pointBackgroundColor: '#8b5cf6',
+            pointBackgroundColor: '#14b8a6',
             pointRadius: 3
           },
           {
@@ -389,7 +392,7 @@ const AnalyticsPage = {
     const labels = sortedCats.map(c => c.replace(/^[^\s]+\s+/, ''));
     const data = sortedCats.map(c => categoryMap[c]);
 
-    const palette = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#0ea5e9', '#14b8a6', '#f43f5e', '#a855f7'];
+    const palette = ['#115e59', '#14b8a6', '#10b981', '#f59e0b', '#ef4444', '#0f766e', '#0ea5e9', '#0d9488', '#f43f5e', '#a855f7'];
 
     const ctx = document.getElementById('categoryShareChart');
     if (!ctx) return;
@@ -598,10 +601,10 @@ const AnalyticsPage = {
 
     const palette = {
       'Cash': '#10b981',
-      'Online': '#6366f1',
-      'UPI': '#8b5cf6',
+      'Online': '#115e59',
+      'UPI': '#14b8a6',
       'Bank Transfer': '#0ea5e9',
-      'Card': '#ec4899',
+      'Card': '#0f766e',
       'Cheque': '#f59e0b'
     };
 

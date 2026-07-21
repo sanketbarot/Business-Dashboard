@@ -94,6 +94,10 @@ if (typeof auth !== 'undefined') {
       localStorage.setItem(APP.uidKey, user.uid);
       setupFirebaseSync();
     } else {
+      // If we are in local demo mode, do not clear and redirect
+      if (localStorage.getItem('bd_mode') === 'demo') {
+        return;
+      }
       // User signed out
       localStorage.removeItem(APP.authKey);
       localStorage.removeItem(APP.userKey);

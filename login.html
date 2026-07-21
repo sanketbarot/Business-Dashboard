@@ -27,7 +27,7 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   min-height: 100vh;
   display: flex;
-  background: radial-gradient(circle at 50% 50%, #f5efe9 0%, #e8ded4 100%);
+  background: #f8fafc;
   color: #1e1b4b;
   overflow-x: hidden;
   position: relative;
@@ -39,7 +39,7 @@ body::before {
   width: 45vw;
   height: 45vw;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(139, 92, 246, 0) 70%);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.03) 0%, rgba(99, 102, 241, 0) 70%);
   top: -10vw;
   left: 5vw;
   filter: blur(60px);
@@ -54,7 +54,7 @@ body::after {
   width: 50vw;
   height: 50vw;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(6, 182, 212, 0) 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.02) 0%, rgba(16, 185, 129, 0) 70%);
   bottom: -15vw;
   right: -5vw;
   filter: blur(60px);
@@ -95,15 +95,15 @@ body::after {
 
 .brand-logo {
   width: 56px; height: 56px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 16px;
+  background: transparent;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  padding: 8px;
+  padding: 0;
 }
 
 .brand-logo img { width: 100%; height: 100%; object-fit: contain; }
@@ -207,14 +207,15 @@ body::after {
 
 .mobile-logo-icon {
   width: 46px; height: 46px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 12px;
+  background: transparent;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  padding: 6px;
+  padding: 0;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .mobile-logo-icon img { width: 100%; height: 100%; object-fit: contain; }
@@ -433,6 +434,7 @@ body::after {
       </div>
 
       <button type="submit" class="lb" id="lb">Sign in →</button>
+      <button type="button" class="lb" onclick="loginDemo()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-top: 12px; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);">Try Demo Mode (Offline) →</button>
     </form>
 
     <div class="status-msg" id="statusMsg"></div>
@@ -451,6 +453,26 @@ auth.onAuthStateChanged(function(user) {
     window.location.href = 'index.html';
   }
 });
+
+function loginDemo() {
+  localStorage.setItem('bd_mode', 'demo');
+  localStorage.setItem('bd_auth', 'true');
+  localStorage.setItem('bd_user', 'demo@aitoolcor.com');
+  localStorage.setItem('bd_uid', 'demo_user_id');
+  if (!localStorage.getItem('bd_transactions')) {
+    const demoTxns = [
+      { id: 't1', type: 'income', date: new Date().toISOString().split('T')[0], category: 'Sales', amount: 150000, mode: 'Online', from: 'Client A', vendor: '', notes: 'Monthly retainer' },
+      { id: 't2', type: 'expense', date: new Date().toISOString().split('T')[0], category: 'Rent', amount: 45000, mode: 'Bank Transfer', from: '', vendor: 'Landlord', notes: 'Office rent' },
+      { id: 't3', type: 'income', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], category: 'Consulting', amount: 75000, mode: 'Online', from: 'Client B', notes: '' },
+      { id: 't4', type: 'expense', date: new Date(Date.now() - 2*86400000).toISOString().split('T')[0], category: 'Marketing', amount: 25000, mode: 'Card', vendor: 'Google Ads', notes: '' },
+      { id: 't5', type: 'income', date: new Date(Date.now() - 3*86400000).toISOString().split('T')[0], category: 'Sales', amount: 120000, mode: 'Online', from: 'Client C', notes: '' },
+      { id: 't6', type: 'expense', date: new Date(Date.now() - 4*86400000).toISOString().split('T')[0], category: 'Software', amount: 15000, mode: 'Card', vendor: 'AWS', notes: '' },
+      { id: 't7', type: 'expense', date: new Date(Date.now() - 5*86400000).toISOString().split('T')[0], category: 'Salary', amount: 80000, mode: 'Bank Transfer', vendor: 'Team', notes: '' }
+    ];
+    localStorage.setItem('bd_transactions', JSON.stringify(demoTxns));
+  }
+  window.location.href = 'index.html';
+}
 
 function handleLogin(e) {
   e.preventDefault();

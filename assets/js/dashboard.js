@@ -11,6 +11,9 @@ const Dash = {
 
   init: function() {
     try {
+      if (typeof Chart !== 'undefined') {
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+      }
       this.setupWelcome();
       this.setupYearSelector();
       this.loadAll();
@@ -444,13 +447,22 @@ const Dash = {
       else if (t.type === 'expense') expense[m] += a;
     }
     if (this.charts.bar) this.charts.bar.destroy();
+    const ctx = canvas.getContext('2d');
+    const gInc = ctx.createLinearGradient(0, 0, 0, 300);
+    gInc.addColorStop(0, '#10b981');
+    gInc.addColorStop(1, '#059669');
+    
+    const gExp = ctx.createLinearGradient(0, 0, 0, 300);
+    gExp.addColorStop(0, '#f87171');
+    gExp.addColorStop(1, '#ef4444');
+
     this.charts.bar = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: months,
         datasets: [
-          { label: 'Income', data: income, backgroundColor: 'rgba(16,185,129,0.85)', borderRadius: 8 },
-          { label: 'Expense', data: expense, backgroundColor: 'rgba(239,68,68,0.85)', borderRadius: 8 }
+          { label: 'Income', data: income, backgroundColor: gInc, borderRadius: 8 },
+          { label: 'Expense', data: expense, backgroundColor: gExp, borderRadius: 8 }
         ]
       },
       options: {
@@ -458,16 +470,18 @@ const Dash = {
         animation: { duration: 1500, easing: 'easeOutQuart' },
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 12, weight: '600' }, padding: 16, color: '#312e81' } },
+          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '600' }, padding: 16, color: '#312e81' } },
           tooltip: {
-            backgroundColor: '#1e1b4b', titleColor: '#fff', bodyColor: '#c7d2fe',
-            padding: 14, cornerRadius: 12, borderColor: '#6366f1', borderWidth: 1,
+            backgroundColor: 'rgba(30, 27, 75, 0.95)', titleColor: '#fff', bodyColor: '#c7d2fe',
+            padding: 14, cornerRadius: 14, borderColor: 'rgba(17,94,89,0.5)', borderWidth: 1.5,
+            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+            bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' } } },
-          y: { beginAtZero: true, grid: { color: 'rgba(99,102,241,0.08)' }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' }, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } } },
+          y: { beginAtZero: true, grid: { color: 'rgba(17,94,89,0.08)' }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
@@ -485,7 +499,7 @@ const Dash = {
     }
     const labels = Object.keys(grouped);
     const values = Object.values(grouped);
-    const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#0ea5e9', '#ef4444', '#84cc16', '#f97316', '#a855f7', '#14b8a6', '#eab308'];
+    const colors = ['#115e59', '#14b8a6', '#0d9488', '#0f766e', '#f59e0b', '#10b981', '#0ea5e9', '#ef4444', '#84cc16', '#f97316', '#a855f7', '#eab308'];
     if (this.charts.donut) this.charts.donut.destroy();
     if (!labels.length) {
       const ctx = canvas.getContext('2d');
@@ -510,8 +524,10 @@ const Dash = {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1e1b4b', titleColor: '#fff', bodyColor: '#c7d2fe',
-            padding: 14, cornerRadius: 12, borderColor: '#6366f1', borderWidth: 1,
+            backgroundColor: 'rgba(30, 27, 75, 0.95)', titleColor: '#fff', bodyColor: '#c7d2fe',
+            padding: 14, cornerRadius: 14, borderColor: 'rgba(99,102,241,0.5)', borderWidth: 1.5,
+            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+            bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: {
               label: function(ctx) {
                 const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
@@ -535,7 +551,7 @@ const Dash = {
   buildLineChart: function(all) {
     const canvas = document.getElementById('lineChart');
     if (!canvas || typeof Chart === 'undefined') return;
-    const days = 30;
+    const days = 7;
     const labels = [];
     const income = [];
     const expense = [];
@@ -566,10 +582,10 @@ const Dash = {
     if (this.charts.line) this.charts.line.destroy();
     const ctx = canvas.getContext('2d');
     const g1 = ctx.createLinearGradient(0, 0, 0, 280);
-    g1.addColorStop(0, 'rgba(16,185,129,0.35)');
+    g1.addColorStop(0, 'rgba(16,185,129,0.4)');
     g1.addColorStop(1, 'rgba(16,185,129,0)');
     const g2 = ctx.createLinearGradient(0, 0, 0, 280);
-    g2.addColorStop(0, 'rgba(239,68,68,0.35)');
+    g2.addColorStop(0, 'rgba(239,68,68,0.4)');
     g2.addColorStop(1, 'rgba(239,68,68,0)');
     this.charts.line = new Chart(canvas, {
       type: 'line',
@@ -579,34 +595,36 @@ const Dash = {
           {
             label: 'Income', data: income,
             borderColor: '#10b981', backgroundColor: g1,
-            borderWidth: 3, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 3,
+            borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
+            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 3.5,
             fill: true, tension: 0.4
           },
           {
             label: 'Expense', data: expense,
             borderColor: '#ef4444', backgroundColor: g2,
-            borderWidth: 3, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 3,
+            borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
+            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 3.5,
             fill: true, tension: 0.4
           }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        animation: { duration: 2000, easing: 'easeOutQuart' },
+        animation: { duration: 1800, easing: 'easeOutQuart' },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1e1b4b', titleColor: '#fff', bodyColor: '#c7d2fe',
-            padding: 14, cornerRadius: 12, borderColor: '#6366f1', borderWidth: 1,
+            backgroundColor: 'rgba(30, 27, 75, 0.95)', titleColor: '#fff', bodyColor: '#c7d2fe',
+            padding: 14, cornerRadius: 14, borderColor: 'rgba(17,94,89,0.5)', borderWidth: 1.5,
+            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+            bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 10, weight: '600' }, maxRotation: 0 } },
-          y: { beginAtZero: true, grid: { color: 'rgba(99,102,241,0.08)' }, border: { display: false }, ticks: { color: '#6366f1', font: { size: 11, weight: '600' }, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' }, maxRotation: 0 } },
+          y: { beginAtZero: true, grid: { color: 'rgba(17,94,89,0.08)' }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
