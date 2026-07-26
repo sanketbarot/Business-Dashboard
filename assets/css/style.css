@@ -1313,3 +1313,144 @@ select option {
 .pb-tab.active::before, .ft.active::before {
   display: none !important;
 }
+
+/* ============================================
+   MODAL & FORM — MATCH DARK THEME
+   Overrides the light-glass .modal/.fc defaults
+   so Add Income / Add Expense popups match the
+   dark dashboard theme instead of the old light
+   glass design. Works on desktop AND mobile.
+   ============================================ */
+
+.modal-bg {
+  background: rgba(10, 8, 20, 0.7) !important;
+}
+
+.modal {
+  background: var(--bg-card) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1.5px solid rgba(163, 150, 255, 0.2) !important;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-hd {
+  background: rgba(163, 150, 255, 0.06) !important;
+  border-bottom: 1.5px solid var(--border) !important;
+}
+
+.modal-hd h3 {
+  color: #ffffff !important;
+}
+
+.modal-x {
+  background: rgba(163, 150, 255, 0.15) !important;
+  color: #c4b5fd !important;
+}
+
+.modal-x:hover {
+  background: var(--expense-bg) !important;
+  color: var(--expense) !important;
+}
+
+.modal-bd {
+  background: transparent !important;
+}
+
+.modal-ft {
+  background: rgba(163, 150, 255, 0.04) !important;
+  border-top: 1.5px solid var(--border) !important;
+}
+
+/* Field labels */
+.fl {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Inputs, selects, textareas (.fc) */
+.fc {
+  background: rgba(163, 150, 255, 0.08) !important;
+  border: 1.5px solid rgba(163, 150, 255, 0.2) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.fc::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.fc:focus {
+  background: rgba(163, 150, 255, 0.12) !important;
+  border-color: #a396ff !important;
+  box-shadow: 0 0 0 4px rgba(163, 150, 255, 0.15) !important;
+}
+
+/* Date input — dark calendar icon + native popup */
+.fc[type="date"] {
+  color-scheme: dark !important;
+}
+.fc[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.5) !important;
+  cursor: pointer !important;
+}
+
+/* Native select dropdown options */
+select.fc option {
+  background-color: #1e1b4b !important;
+  color: #ffffff !important;
+}
+
+/* Custom dropdown trigger (e.g. Mode select) */
+.custom-select-trigger {
+  background: rgba(163, 150, 255, 0.08) !important;
+  border: 1.5px solid rgba(163, 150, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.custom-select.open .custom-select-trigger {
+  background: rgba(163, 150, 255, 0.12) !important;
+  border-color: #a396ff !important;
+  box-shadow: 0 0 0 4px rgba(163, 150, 255, 0.15) !important;
+}
+
+.custom-select-options {
+  background: #1e1b4b !important;
+  border: 1.5px solid rgba(163, 150, 255, 0.3) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5) !important;
+}
+
+.custom-option {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.custom-option:hover {
+  background: rgba(163, 150, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.custom-option.selected {
+  background: linear-gradient(135deg, #a396ff 0%, #ad67e6 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Preview boxes inside modal (income/expense summary preview) */
+.preview-in {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #10b981 !important;
+}
+
+.preview-out {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #ef4444 !important;
+}
+
+/* Autofill fix (prevents white flash on saved browser data) */
+.fc:-webkit-autofill,
+.fc:-webkit-autofill:hover,
+.fc:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgba(163, 150, 255, 0.08) inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}

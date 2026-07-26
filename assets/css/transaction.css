@@ -1156,6 +1156,46 @@ mark {
     align-items: center;
   }
   .pg { min-width: 36px; height: 36px; font-size: 0.8rem; }
+
+  .tx-analytics > .tx-stat:nth-child(1),
+  .tx-analytics > .tx-stat:nth-child(2),
+  .tx-analytics > .tx-stat:nth-child(3),
+  .tx-analytics > .tx-stat:nth-child(4) {
+    background-color: #1e1b2e !important;
+    background-image: none !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    opacity: 1 !important;
+  }
+
+  .tx-analytics > .tx-stat.in {
+    background-image: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.08) 100%) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+  .tx-analytics > .tx-stat.out {
+    background-image: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(220, 38, 38, 0.08) 100%) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+  .tx-analytics > .tx-stat.prof {
+    background-image: linear-gradient(135deg, rgba(217, 119, 6, 0.18) 0%, rgba(180, 83, 9, 0.08) 100%) !important;
+    border-color: rgba(217, 119, 6, 0.3) !important;
+  }
+  .tx-analytics > .tx-stat.count {
+    background-image: linear-gradient(135deg, rgba(163, 150, 255, 0.22) 0%, rgba(173, 103, 230, 0.12) 100%) !important;
+    border-color: rgba(163, 150, 255, 0.35) !important;
+  }
+
+  /* Force all text inside these 4 cards to be visible white */
+  .tx-analytics > .tx-stat * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  .tx-analytics > .tx-stat .tx-stat-sub {
+    color: rgba(255, 255, 255, 0.6) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.6) !important;
+  }
 }
 
 @media (max-width: 599px) {

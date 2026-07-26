@@ -2144,89 +2144,78 @@
   .modal-footer .btn { width: 100%; }
 }
 
-/* ============================================================
-   FORCE-WIN OVERRIDE BLOCK — guarantees desktop dark look wins
-   on mobile even if style.css (loaded before this file) has
-   conflicting rules. Uses doubled class + html body prefix to
-   raise specificity above anything reasonable in style.css,
-   without needing to touch that file.
-   ============================================================ */
 @media (max-width: 767px) {
-  html body .app .sum-card.sum-card,
-  html body .app .co-card.co-card,
-  html body .app .mini-stat.mini-stat,
-  html body .app .card.card {
-    background: var(--bg-card) !important;
-    border-color: var(--border) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+
+  /* Force dark background on the grid's first 4 direct children */
+  .sum-grid > *:nth-child(1),
+  .sum-grid > *:nth-child(2),
+  .sum-grid > *:nth-child(3),
+  .sum-grid > *:nth-child(4) {
+    background-color: #1e1b2e !important;
+    background-image: none !important; /* kill any broken/invisible gradient first */
+    border: 1.5px solid rgba(255,255,255,0.12) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
     opacity: 1 !important;
   }
 
-  html body .app .sum-card.sum-card:nth-child(1) {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(129, 140, 248, 0.04) 100%) !important;
-    border-color: rgba(129, 140, 248, 0.25) !important;
+  /* Re-apply the correct tinted gradients per card */
+  .sum-grid > *:nth-child(1) {
+    background-image: linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(129,140,248,0.08) 100%) !important;
   }
-  html body .app .sum-card.sum-card:nth-child(2) {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.04) 100%) !important;
-    border-color: rgba(16, 185, 129, 0.25) !important;
+  .sum-grid > *:nth-child(2) {
+    background-image: linear-gradient(135deg, rgba(16,185,129,0.18) 0%, rgba(5,150,105,0.08) 100%) !important;
   }
-  html body .app .sum-card.sum-card:nth-child(3) {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, rgba(180, 83, 9, 0.04) 100%) !important;
-    border-color: rgba(217, 119, 6, 0.25) !important;
+  .sum-grid > *:nth-child(3) {
+    background-image: linear-gradient(135deg, rgba(217,119,6,0.18) 0%, rgba(180,83,9,0.08) 100%) !important;
   }
-  html body .app .sum-card.sum-card:nth-child(4),
-  html body .app .balance-glow.balance-glow {
-    background: linear-gradient(135deg, rgba(163, 150, 255, 0.15) 0%, rgba(173, 103, 230, 0.08) 100%) !important;
-    border-color: rgba(163, 150, 255, 0.35) !important;
+  .sum-grid > *:nth-child(4) {
+    background-image: linear-gradient(135deg, rgba(163,150,255,0.22) 0%, rgba(173,103,230,0.12) 100%) !important;
   }
 
-  html body .app .cash-card.cash-card {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.06) 0%, var(--bg-card) 100%) !important;
-    border-color: rgba(217, 119, 6, 0.25) !important;
-  }
-  html body .app .online-card.online-card {
-    background: linear-gradient(135deg, rgba(163, 150, 255, 0.06) 0%, var(--bg-card) 100%) !important;
-    border-color: rgba(163, 150, 255, 0.25) !important;
-  }
-
-  /* Text colors — force white/light regardless of any faded style.css rule */
-  html body .app .sc-label.sc-label,
-  html body .app .ms-title.ms-title,
-  html body .app .co-subtitle.co-subtitle,
-  html body .app .card-hd.card-hd span,
-  html body .app .pm-sub.pm-sub,
-  html body .app .co-row-count.co-row-count {
-    color: rgba(255, 255, 255, 0.7) !important;
-    opacity: 1 !important;
-  }
-
-  html body .app .sc-value.sc-value,
-  html body .app .ms-value.ms-value,
-  html body .app .co-title.co-title,
-  html body .app .co-row-label.co-row-label,
-  html body .app .co-balance-label.co-balance-label,
-  html body .app .card-hd.card-hd h4,
-  html body .app .tc-name.tc-name,
-  html body .app .pm-name.pm-name,
-  html body .app .tc-amt.tc-amt,
-  html body .app .pm-amt.pm-amt,
-  html body .app .dtable.dtable td,
-  html body .app .insight-text.insight-text,
-  html body .app .compare-box.compare-box .cb-val,
-  html body .app .goal-item-card.goal-item-card span,
-  html body .app .goal-item-card.goal-item-card strong {
+  /* Force ALL text inside these cards to be visible, no matter what inline style says */
+  .sum-grid > *:nth-child(1) *,
+  .sum-grid > *:nth-child(2) *,
+  .sum-grid > *:nth-child(3) *,
+  .sum-grid > *:nth-child(4) * {
     color: #ffffff !important;
     opacity: 1 !important;
+    -webkit-text-fill-color: #ffffff !important; /* covers gradient-text / background-clip:text tricks */
+  }
+  .chart-info-bar,
+  .chart-info-item,
+  .sc-trend,
+  .card-hd span,
+  .co-badge {
+    overflow: visible !important;
   }
 
-  html body .app .sc-sub.sc-sub,
-  html body .app .ms-sub.ms-sub,
-  html body .app .insight-text.insight-text {
-    color: rgba(255, 255, 255, 0.55) !important;
+  /* Give breathing room so badges don't sit at the very top edge */
+  .co-card,
+  .card {
+    margin-top: 10px !important;
+    overflow: visible !important; /* let badge/pill peek outside if positioned there */
   }
 
-  html body .app .co-row-amt.text-income { color: #10b981 !important; }
-  html body .app .co-row-amt.text-expense { color: #ef4444 !important; }
-  html body .app .cash-card.cash-card .co-balance-amt { color: #fbbf24 !important; }
-  html body .app .online-card.online-card .co-balance-amt { color: #c4b5fd !important; }
+  /* If the badges are absolutely positioned pills sitting above the card,
+     make sure their parent wrapper isn't clipping them */
+  .app,
+  .dashboard,
+  .container,
+  main {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+
+  /* Push content down slightly so nothing gets cut by the viewport/scroll top */
+  body {
+    padding-top: 4px !important;
+  }
+
+  .co-card,
+  .cash-card,
+  .online-card {
+    background: linear-gradient(135deg, #2a2640 0%, #1e1b2e 100%) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+  }
 }
