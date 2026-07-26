@@ -1,5 +1,5 @@
 /* ============================================
-   DASHBOARD.JS v4.1 — Yesterday Support
+   DASHBOARD.JS v1.0.0 — Yesterday Support
    ============================================ */
 
 'use strict';
@@ -449,12 +449,12 @@ const Dash = {
     if (this.charts.bar) this.charts.bar.destroy();
     const ctx = canvas.getContext('2d');
     const gInc = ctx.createLinearGradient(0, 0, 0, 300);
-    gInc.addColorStop(0, '#059669');
-    gInc.addColorStop(1, '#047857');
+    gInc.addColorStop(0, '#10b981');
+    gInc.addColorStop(1, '#059669');
     
     const gExp = ctx.createLinearGradient(0, 0, 0, 300);
-    gExp.addColorStop(0, '#f87171');
-    gExp.addColorStop(1, '#dc2626');
+    gExp.addColorStop(0, '#ef4444');
+    gExp.addColorStop(1, '#b91c1c');
 
     this.charts.bar = new Chart(canvas, {
       type: 'bar',
@@ -470,18 +470,18 @@ const Dash = {
         animation: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '600' }, padding: 16, color: '#312e81' } },
+          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '600' }, padding: 16, color: '#a0aec0' } },
           tooltip: {
-            backgroundColor: 'rgba(30, 27, 75, 0.95)', titleColor: '#fff', bodyColor: '#c7d2fe',
-            padding: 14, cornerRadius: 14, borderColor: 'rgba(17,94,89,0.5)', borderWidth: 1.5,
+            backgroundColor: 'rgba(34, 34, 48, 0.95)', titleColor: '#fff', bodyColor: '#a0aec0',
+            padding: 14, cornerRadius: 14, borderColor: 'rgba(59, 130, 246, 0.3)', borderWidth: 1.5,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } } },
-          y: { beginAtZero: true, grid: { color: 'rgba(17,94,89,0.08)' }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } } },
+          y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
@@ -499,7 +499,7 @@ const Dash = {
     }
     const labels = Object.keys(grouped);
     const values = Object.values(grouped);
-    const colors = ['#115e59', '#14b8a6', '#0d9488', '#0f766e', '#f59e0b', '#10b981', '#0ea5e9', '#ef4444', '#84cc16', '#f97316', '#a855f7', '#eab308'];
+    const colors = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#ad67e6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
     if (this.charts.donut) this.charts.donut.destroy();
     if (!labels.length) {
       const ctx = canvas.getContext('2d');
@@ -515,7 +515,7 @@ const Dash = {
         datasets: [{
           data: values,
           backgroundColor: colors.slice(0, labels.length),
-          borderWidth: 4, borderColor: '#fff', hoverBorderWidth: 5, hoverOffset: 12
+          borderWidth: 4, borderColor: '#222230', hoverBorderWidth: 5, hoverOffset: 12
         }]
       },
       options: {
@@ -524,8 +524,8 @@ const Dash = {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(30, 27, 75, 0.95)', titleColor: '#fff', bodyColor: '#c7d2fe',
-            padding: 14, cornerRadius: 14, borderColor: 'rgba(99,102,241,0.5)', borderWidth: 1.5,
+            backgroundColor: 'rgba(34, 34, 48, 0.95)', titleColor: '#fff', bodyColor: '#a0aec0',
+            padding: 14, cornerRadius: 14, borderColor: 'rgba(59, 130, 246, 0.3)', borderWidth: 1.5,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: {
@@ -582,11 +582,11 @@ const Dash = {
     if (this.charts.line) this.charts.line.destroy();
     const ctx = canvas.getContext('2d');
     const g1 = ctx.createLinearGradient(0, 0, 0, 280);
-    g1.addColorStop(0, 'rgba(5,150,105,0.4)');
-    g1.addColorStop(1, 'rgba(5,150,105,0)');
+    g1.addColorStop(0, 'rgba(16, 185, 129, 0.45)');
+    g1.addColorStop(1, 'rgba(16, 185, 129, 0)');
     const g2 = ctx.createLinearGradient(0, 0, 0, 280);
-    g2.addColorStop(0, 'rgba(220,38,38,0.4)');
-    g2.addColorStop(1, 'rgba(220,38,38,0)');
+    g2.addColorStop(0, 'rgba(239, 68, 68, 0.45)');
+    g2.addColorStop(1, 'rgba(239, 68, 68, 0)');
     this.charts.line = new Chart(canvas, {
       type: 'line',
       data: {
@@ -594,16 +594,16 @@ const Dash = {
         datasets: [
           {
             label: 'Income', data: income,
-            borderColor: '#059669', backgroundColor: g1,
+            borderColor: '#10b981', backgroundColor: g1,
             borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#059669', pointBorderColor: '#fff', pointBorderWidth: 3.5,
+            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 3.5,
             fill: true, tension: 0.4
           },
           {
             label: 'Expense', data: expense,
-            borderColor: '#dc2626', backgroundColor: g2,
+            borderColor: '#ef4444', backgroundColor: g2,
             borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#dc2626', pointBorderColor: '#fff', pointBorderWidth: 3.5,
+            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 3.5,
             fill: true, tension: 0.4
           }
         ]
@@ -615,16 +615,16 @@ const Dash = {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(30, 27, 75, 0.95)', titleColor: '#fff', bodyColor: '#c7d2fe',
-            padding: 14, cornerRadius: 14, borderColor: 'rgba(17,94,89,0.5)', borderWidth: 1.5,
+            backgroundColor: 'rgba(34, 34, 48, 0.95)', titleColor: '#fff', bodyColor: '#a0aec0',
+            padding: 14, cornerRadius: 14, borderColor: 'rgba(59, 130, 246, 0.3)', borderWidth: 1.5,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' }, maxRotation: 0 } },
-          y: { beginAtZero: true, grid: { color: 'rgba(17,94,89,0.08)' }, border: { display: false }, ticks: { color: '#115e59', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' }, maxRotation: 0 } },
+          y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
@@ -768,6 +768,13 @@ function buildDonutChart() { Dash.buildDonutChart(getTxns()); }
 
 async function saveTransaction(type) {
   const isI = type === 'income';
+  const modalId = isI ? 'incomeModal' : 'expenseModal';
+  const btnSelector = isI ? '#incomeModal .btn-income' : '#expenseModal .btn-expense';
+  const saveBtn = document.querySelector(btnSelector);
+  
+  // Prevent double-submit
+  if (saveBtn && saveBtn.classList.contains('loading')) return;
+  
   const date = document.getElementById(isI ? 'iDate' : 'eDate').value.trim();
   const cat = document.getElementById(isI ? 'iCat' : 'eCat').value.trim();
   const amt = document.getElementById(isI ? 'iAmt' : 'eAmt').value.trim();
@@ -777,6 +784,7 @@ async function saveTransaction(type) {
   const notes = document.getElementById(isI ? 'iNote' : 'eNote').value.trim();
   const editId = document.getElementById(isI ? 'iEditId' : 'eEditId').value.trim();
 
+  // Validation
   if (!date) { toast('Please select a date', 'error'); return; }
   if (!cat) { toast('Please select a category', 'error'); return; }
   const amount = parseFloat(amt);
@@ -785,52 +793,125 @@ async function saveTransaction(type) {
     return;
   }
 
+  // Show loading state
+  if (saveBtn) saveBtn.classList.add('loading');
+
   const entry = {
     id: editId || uid(),
     type, date, category: cat, amount, mode, from, vendor, notes,
     savedAt: new Date().toISOString()
   };
 
-  // Save to Firebase
-  if (editId) {
-    await updateTxnInFirebase(editId, entry);
-  } else {
-    await saveTxnToFirebase(entry);
-  }
+  try {
+    // Save to Firebase
+    if (editId) {
+      await updateTxnInFirebase(editId, entry);
+    } else {
+      await saveTxnToFirebase(entry);
+    }
 
-  closeModal(isI ? 'incomeModal' : 'expenseModal');
-  resetForm(type);
-  const action = editId ? 'Updated' : 'Added';
-  toast(action + ' ' + type + ' of ' + inr(amount) + ' ✅', 'success');
+    // ✅ FULL RESET before closing (prevents data reappearing)
+    resetForm(type);
+    
+    // Close modal with animation
+    closeModalWithAnimation(modalId);
+    
+    const action = editId ? 'Updated' : 'Added';
+    toast(action + ' ' + type + ' of ' + inr(amount) + ' ✅', 'success');
+  } catch (err) {
+    console.error('Save error:', err);
+    toast('Failed to save. Please try again.', 'error');
+  } finally {
+    if (saveBtn) saveBtn.classList.remove('loading');
+  }
 }
 
 function resetForm(type) {
   const isI = type === 'income';
   const setVal = (id, val) => {
     const el = document.getElementById(id);
-    if (el) el.value = val;
+    if (el) {
+      el.value = val;
+      // Force clear any browser autofill
+      el.setAttribute('value', val);
+    }
   };
-  setVal(isI ? 'iDate' : 'eDate', today());
+  
+  // Clear all fields
+  setVal(isI ? 'iDate' : 'eDate', '');
   setVal(isI ? 'iCat' : 'eCat', '');
   setVal(isI ? 'iAmt' : 'eAmt', '');
   setVal(isI ? 'iMode' : 'eMode', 'Cash');
   setVal(isI ? 'iNote' : 'eNote', '');
   setVal(isI ? 'iEditId' : 'eEditId', '');
+  
   if (isI) {
     setVal('iFrom', '');
     const p = document.getElementById('iPreview');
     if (p) p.style.display = 'none';
+    const v = document.getElementById('iPreviewVal');
+    if (v) v.textContent = '₹ 0.00';
   } else {
     setVal('eVendor', '');
     const p = document.getElementById('ePreview');
     if (p) p.style.display = 'none';
+    const v = document.getElementById('ePreviewVal');
+    if (v) v.textContent = '₹ 0.00';
   }
+
+  // Reset modal title back to "Add"
+  const titleEl = document.getElementById(isI ? 'incomeTitle' : 'expenseTitle');
+  if (titleEl) {
+    titleEl.textContent = isI ? '💰 Add Income' : '💸 Add Expense';
+  }
+
+  // Sync custom dropdowns (very important!)
+  syncCustomDropdowns(isI ? 'incomeModal' : 'expenseModal');
+}
+
+// NEW: Sync custom dropdowns after reset
+function syncCustomDropdowns(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  
+  const selects = modal.querySelectorAll('select[data-custom-select="true"]');
+  selects.forEach(sel => {
+    const wrapper = sel.nextElementSibling;
+    if (!wrapper || !wrapper.classList.contains('custom-select')) return;
+    
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    const options = wrapper.querySelectorAll('.custom-option');
+    
+    // Find matching option and update
+    let matchedText = '';
+    options.forEach(opt => {
+      opt.classList.remove('selected');
+      if (opt.getAttribute('data-value') === sel.value) {
+        opt.classList.add('selected');
+        matchedText = opt.textContent;
+      }
+    });
+    
+    // Fallback to first option
+    if (!matchedText && options[0]) {
+      matchedText = options[0].textContent;
+    }
+    
+    if (trigger) trigger.textContent = matchedText;
+    
+    // Close if open
+    wrapper.classList.remove('open');
+  });
 }
 
 function openIncomeModal() {
   resetForm('income');
   const d = document.getElementById('iDate');
   if (d) d.value = today();
+  // Re-sync after setting date
+  setTimeout(() => {
+    syncCustomDropdowns('incomeModal');
+  }, 50);
   openModal('incomeModal');
 }
 
@@ -838,7 +919,28 @@ function openExpenseModal() {
   resetForm('expense');
   const d = document.getElementById('eDate');
   if (d) d.value = today();
+  // Re-sync after setting date
+  setTimeout(() => {
+    syncCustomDropdowns('expenseModal');
+  }, 50);
   openModal('expenseModal');
+}
+
+// NEW: Smooth close animation
+function closeModalWithAnimation(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  
+  m.classList.add('closing');
+  setTimeout(() => {
+    m.classList.remove('open');
+    m.classList.remove('closing');
+    document.body.style.overflow = '';
+    
+    // ✅ Extra safety: reset form again after close
+    const type = id === 'incomeModal' ? 'income' : (id === 'expenseModal' ? 'expense' : null);
+    if (type) resetForm(type);
+  }, 250);
 }
 
 function openGoalSettingsModal() {

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Transactions — Crust & Chilly</title>
 <meta name="robots" content="noindex, nofollow"/>
-<meta name="theme-color" content="#6366f1"/>
+<meta name="theme-color" content="#a396ff"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -16,8 +16,8 @@
 <link rel="manifest" href="manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="assets/css/style.css?v=10.0"/>
-<link rel="stylesheet" href="assets/css/transaction.css?v=10.0"/>
+<link rel="stylesheet" href="assets/css/style.css?v=1.0.0"/>
+<link rel="stylesheet" href="assets/css/transaction.css?v=1.0.0"/>
 
 <!-- Firebase SDKs - MUST BE BEFORE app.js -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -116,7 +116,7 @@
         </div>
         <div id="customRange" class="cr">
           <span class="cr-label">Range:</span>
-          <input type="date" class="fc" id="fStart"/><span style="color:#6366f1;font-weight:700;">→</span><input type="date" class="fc" id="fEnd"/>
+          <input type="date" class="fc" id="fStart"/><span style="color:var(--brand);font-weight:700;">→</span><input type="date" class="fc" id="fEnd"/>
           <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply</button>
         </div>
         <div class="filter-body">
@@ -204,8 +204,8 @@
 <div class="toast-box" id="toastBox"></div>
 
 <!-- JS Files -->
-<script src="assets/js/app.js?v=10.0"></script>
-<script src="assets/js/transaction-page.js?v=10.0"></script>
+<script src="assets/js/app.js?v=1.0.0"></script>
+<script src="assets/js/transaction-page.js?v=1.0.0"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

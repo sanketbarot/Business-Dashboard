@@ -1,5 +1,5 @@
 /* ============================================
-   TRANSACTION-PAGE.JS v5.0
+   TRANSACTION-PAGE.JS v1.0.0
    Firebase Real-time Sync
    ============================================ */
 
@@ -505,8 +505,8 @@ const TxnPage = {
     if (!grid) return;
     if (hd) {
       hd.style.background = isI
-        ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
-        : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
+        ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.1) 100%)'
+        : 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.1) 100%)';
       const h3 = hd.querySelector('h3');
       if (h3) h3.textContent = isI ? '💰 Income Details' : '💸 Expense Details';
     }

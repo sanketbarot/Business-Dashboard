@@ -1,5 +1,5 @@
 /* ============================================
-   CRUST & CHILLY — APP.JS v5.0
+   CRUST & CHILLY — APP.JS v1.0.0
    Firebase Real-time Sync
    ============================================ */
 
@@ -541,24 +541,42 @@ function openModal(id) {
 function closeModal(id) {
   const m = document.getElementById(id);
   if (m) {
-    m.classList.remove('open');
-    document.body.style.overflow = '';
+    m.classList.add('closing');
+    setTimeout(() => {
+      m.classList.remove('open');
+      m.classList.remove('closing');
+      document.body.style.overflow = '';
+      
+      // ✅ AUTO-RESET forms on close (prevents old data)
+      if (id === 'incomeModal') {
+        if (typeof resetForm === 'function') {
+          resetForm('income');
+        } else if (typeof TxnPage !== 'undefined' && typeof TxnPage.resetForm === 'function') {
+          TxnPage.resetForm('income');
+        }
+      } else if (id === 'expenseModal') {
+        if (typeof resetForm === 'function') {
+          resetForm('expense');
+        } else if (typeof TxnPage !== 'undefined' && typeof TxnPage.resetForm === 'function') {
+          TxnPage.resetForm('expense');
+        }
+      }
+    }, 250);
   }
 }
 
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('modal-bg')) {
-    e.target.classList.remove('open');
-    document.body.style.overflow = '';
+    const id = e.target.id;
+    closeModal(id);
   }
 });
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-bg.open').forEach(m => {
-      m.classList.remove('open');
+      closeModal(m.id);
     });
-    document.body.style.overflow = '';
   }
 });
 

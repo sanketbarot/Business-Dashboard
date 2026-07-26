@@ -1,5 +1,5 @@
 /* ============================================
-   ANALYTICS-PAGE.JS v2.0 (Expanded)
+   ANALYTICS-PAGE.JS v1.0.0 (Expanded)
    Crust & Chilly Business Dashboard
    Real-time Synced Analytics, Five Interactive Charts & Detailed Capital Channel reports
    ============================================ */
@@ -337,18 +337,18 @@ const AnalyticsPage = {
           {
             label: 'Net Profit',
             data: profits.length ? profits : [0],
-            borderColor: '#115e59',
-            backgroundColor: 'rgba(17, 94, 89, 0.05)',
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
             borderWidth: 3,
             fill: true,
             tension: 0.35,
-            pointBackgroundColor: '#14b8a6',
+            pointBackgroundColor: '#3b82f6',
             pointRadius: 3
           },
           {
             label: 'Total Revenue',
             data: incomes.length ? incomes : [0],
-            borderColor: '#059669',
+            borderColor: '#10b981',
             borderWidth: 1.5,
             borderDash: [4, 4],
             fill: false,
@@ -361,16 +361,16 @@ const AnalyticsPage = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { family: 'Plus Jakarta Sans', weight: 600 } } }
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } } }
         },
         scales: {
           y: {
-            grid: { color: 'rgba(99, 102, 241, 0.05)' },
-            ticks: { font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) }
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { family: 'Plus Jakarta Sans' } }
+            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' } }
           }
         }
       }
@@ -392,7 +392,7 @@ const AnalyticsPage = {
     const labels = sortedCats.map(c => c.replace(/^[^\s]+\s+/, ''));
     const data = sortedCats.map(c => categoryMap[c]);
 
-    const palette = ['#115e59', '#14b8a6', '#10b981', '#f59e0b', '#ef4444', '#0f766e', '#0ea5e9', '#0d9488', '#f43f5e', '#a855f7'];
+    const palette = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#ad67e6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
 
     const ctx = document.getElementById('categoryShareChart');
     if (!ctx) return;
@@ -404,8 +404,7 @@ const AnalyticsPage = {
         datasets: [{
           data: data.length ? data : [1],
           backgroundColor: data.length ? palette.slice(0, data.length) : ['#e2e8f0'],
-          borderWidth: 2,
-          hoverOffset: 6
+          borderWidth: 4, borderColor: '#222230', hoverBorderWidth: 5, hoverOffset: 12
         }]
       },
       options: {
@@ -475,7 +474,7 @@ const AnalyticsPage = {
           {
             label: 'Transactions Count',
             data: countsData,
-            backgroundColor: 'rgba(99, 102, 241, 0.85)',
+            backgroundColor: 'rgba(59, 130, 246, 0.85)',
             hoverBackgroundColor: 'var(--brand)',
             borderRadius: 6,
             yAxisID: 'y'
@@ -494,26 +493,26 @@ const AnalyticsPage = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: true, position: 'top', labels: { font: { family: 'Plus Jakarta Sans', weight: 600 } } }
+          legend: { display: true, position: 'top', labels: { color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } } }
         },
         scales: {
           y: {
             type: 'linear',
             position: 'left',
-            grid: { color: 'rgba(99, 102, 241, 0.05)' },
-            ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans' } },
-            title: { display: true, text: 'Records Count', font: { family: 'Plus Jakarta Sans', weight: 600 } }
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#718096', stepSize: 1, font: { family: 'Plus Jakarta Sans' } },
+            title: { display: true, text: 'Records Count', color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } }
           },
           y1: {
             type: 'linear',
             position: 'right',
             grid: { drawOnChartArea: false },
-            ticks: { font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) },
-            title: { display: true, text: 'Total Value (₹)', font: { family: 'Plus Jakarta Sans', weight: 600 } }
+            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) },
+            title: { display: true, text: 'Total Value (₹)', color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { family: 'Plus Jakarta Sans' } }
+            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' } }
           }
         }
       }
@@ -555,8 +554,8 @@ const AnalyticsPage = {
         datasets: [{
           label: 'Cumulative Capital (₹)',
           data: balances.length ? balances : [0],
-          borderColor: '#059669',
-          backgroundColor: 'rgba(5, 150, 105, 0.08)',
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.08)',
           borderWidth: 3,
           fill: true,
           tension: 0.2,
@@ -571,12 +570,12 @@ const AnalyticsPage = {
         },
         scales: {
           y: {
-            grid: { color: 'rgba(99, 102, 241, 0.05)' },
-            ticks: { font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) }
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { family: 'Plus Jakarta Sans' }, maxTicksLimit: 8 }
+            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, maxTicksLimit: 8 }
           }
         }
       }
@@ -600,12 +599,12 @@ const AnalyticsPage = {
     const data = activeModes.map(m => modeVolume[m]);
 
     const palette = {
-      'Cash': '#059669',
-      'Online': '#115e59',
-      'UPI': '#14b8a6',
-      'Bank Transfer': '#0ea5e9',
-      'Card': '#0f766e',
-      'Cheque': '#d97706'
+      'Cash': '#10b981',
+      'Online': '#3b82f6',
+      'UPI': '#ad67e6',
+      'Bank Transfer': '#06b6d4',
+      'Card': '#ec4899',
+      'Cheque': '#f59e0b'
     };
 
     const colors = activeModes.map(m => palette[m] || '#64748b');
@@ -620,8 +619,7 @@ const AnalyticsPage = {
         datasets: [{
           data: data.length ? data : [1],
           backgroundColor: data.length ? colors : ['#e2e8f0'],
-          borderWidth: 2,
-          hoverOffset: 6
+          borderWidth: 4, borderColor: '#222230', hoverBorderWidth: 5, hoverOffset: 12
         }]
       },
       options: {
