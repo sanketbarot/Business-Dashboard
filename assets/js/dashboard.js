@@ -441,47 +441,67 @@ const Dash = {
       const parts = t.date.split('-');
       const y = parseInt(parts[0]);
       if (y !== year) continue;
-      const m = parseInt(parts[1]) - 1; // 0-indexed month
+      const m = parseInt(parts[1]) - 1;
       const a = parseFloat(t.amount) || 0;
       if (t.type === 'income') income[m] += a;
       else if (t.type === 'expense') expense[m] += a;
     }
-    if (this.charts.bar) this.charts.bar.destroy();
+
     const ctx = canvas.getContext('2d');
     const gInc = ctx.createLinearGradient(0, 0, 0, 300);
-    gInc.addColorStop(0, '#10b981');
-    gInc.addColorStop(1, '#059669');
+    gInc.addColorStop(0, '#22c7ff');
+    gInc.addColorStop(1, '#0ea5e9');
     
     const gExp = ctx.createLinearGradient(0, 0, 0, 300);
-    gExp.addColorStop(0, '#ef4444');
-    gExp.addColorStop(1, '#b91c1c');
+    gExp.addColorStop(0, '#f43f5e');
+    gExp.addColorStop(1, '#e11d48');
+
+    if (this.charts.bar) {
+      this.charts.bar.data.labels = months;
+      this.charts.bar.data.datasets[0].data = income;
+      this.charts.bar.data.datasets[0].backgroundColor = gInc;
+      this.charts.bar.data.datasets[1].data = expense;
+      this.charts.bar.data.datasets[1].backgroundColor = gExp;
+      this.charts.bar.update();
+      return;
+    }
 
     this.charts.bar = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: months,
         datasets: [
-          { label: 'Income', data: income, backgroundColor: gInc, borderRadius: 8 },
-          { label: 'Expense', data: expense, backgroundColor: gExp, borderRadius: 8 }
+          { label: 'Income', data: income, backgroundColor: gInc, borderRadius: { topLeft: 6, topRight: 6 }, maxBarThickness: 32 },
+          { label: 'Expense', data: expense, backgroundColor: gExp, borderRadius: { topLeft: 6, topRight: 6 }, maxBarThickness: 32 }
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 600, easing: 'easeOutQuart' },
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '600' }, padding: 16, color: '#a0aec0' } },
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' }, padding: 16, color: '#6b7280' }
+          },
           tooltip: {
-            backgroundColor: 'rgba(34, 34, 48, 0.95)', titleColor: '#fff', bodyColor: '#a0aec0',
-            padding: 14, cornerRadius: 14, borderColor: 'rgba(59, 130, 246, 0.3)', borderWidth: 1.5,
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } } },
-          y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } } },
+          y: { beginAtZero: true, grid: { color: 'rgba(20, 24, 31, 0.05)' }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
@@ -499,15 +519,35 @@ const Dash = {
     }
     const labels = Object.keys(grouped);
     const values = Object.values(grouped);
-    const colors = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#ad67e6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
-    if (this.charts.donut) this.charts.donut.destroy();
+    const colors = ['#22c7ff', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
+
+    const total = values.reduce((a, b) => a + b, 0);
+
+    const legend = document.getElementById('donutLegend');
+    if (legend) {
+      if (!labels.length) {
+        legend.innerHTML = '<div class="empty" style="padding:24px; text-align:center; color:var(--text-muted);"><p>No expense records</p></div>';
+      } else {
+        legend.innerHTML = labels.map((l, i) =>
+          '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i % colors.length] + '"></div><span class="leg-name">' + escapeHtml(l) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
+        ).join('');
+      }
+    }
+
+    if (this.charts.donut) {
+      this.charts.donut.data.labels = labels.length ? labels : ['No Expenses'];
+      this.charts.donut.data.datasets[0].data = labels.length ? values : [1];
+      this.charts.donut.data.datasets[0].backgroundColor = labels.length ? colors.slice(0, labels.length) : ['#e2e8f0'];
+      this.charts.donut.update();
+      return;
+    }
+
     if (!labels.length) {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const legend = document.getElementById('donutLegend');
-      if (legend) legend.innerHTML = '<div class="empty" style="padding:24px;"><p>No expense data</p></div>';
       return;
     }
+
     this.charts.donut = new Chart(canvas, {
       type: 'doughnut',
       data: {
@@ -515,23 +555,33 @@ const Dash = {
         datasets: [{
           data: values,
           backgroundColor: colors.slice(0, labels.length),
-          borderWidth: 4, borderColor: '#222230', hoverBorderWidth: 5, hoverOffset: 12
+          borderWidth: 3,
+          borderColor: '#ffffff',
+          hoverBorderWidth: 4,
+          hoverOffset: 8
         }]
       },
       options: {
-        responsive: true, maintainAspectRatio: false, cutout: '70%',
-        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        animation: { duration: 600, easing: 'easeOutQuart' },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(34, 34, 48, 0.95)', titleColor: '#fff', bodyColor: '#a0aec0',
-            padding: 14, cornerRadius: 14, borderColor: 'rgba(59, 130, 246, 0.3)', borderWidth: 1.5,
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: {
               label: function(ctx) {
-                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                const pct = Math.round((ctx.parsed / total) * 100);
+                const totalAmt = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = totalAmt > 0 ? Math.round((ctx.parsed / totalAmt) * 100) : 0;
                 return ' ' + inr(ctx.parsed) + ' (' + pct + '%)';
               }
             }
@@ -539,13 +589,6 @@ const Dash = {
         }
       }
     });
-    const total = values.reduce((a, b) => a + b, 0);
-    const legend = document.getElementById('donutLegend');
-    if (legend) {
-      legend.innerHTML = labels.map((l, i) =>
-        '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i] + '"></div><span class="leg-name">' + escapeHtml(l) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
-      ).join('');
-    }
   },
 
   buildLineChart: function(all) {
@@ -579,14 +622,25 @@ const Dash = {
     this.setText('lineIncomeTotal', inr(totalIncome));
     this.setText('lineExpenseTotal', inr(totalExpense));
     this.setText('lineNetTotal', inr(totalIncome - totalExpense));
-    if (this.charts.line) this.charts.line.destroy();
+
     const ctx = canvas.getContext('2d');
     const g1 = ctx.createLinearGradient(0, 0, 0, 280);
-    g1.addColorStop(0, 'rgba(16, 185, 129, 0.45)');
+    g1.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
     g1.addColorStop(1, 'rgba(16, 185, 129, 0)');
     const g2 = ctx.createLinearGradient(0, 0, 0, 280);
-    g2.addColorStop(0, 'rgba(239, 68, 68, 0.45)');
+    g2.addColorStop(0, 'rgba(239, 68, 68, 0.35)');
     g2.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+    if (this.charts.line) {
+      this.charts.line.data.labels = labels;
+      this.charts.line.data.datasets[0].data = income;
+      this.charts.line.data.datasets[0].backgroundColor = g1;
+      this.charts.line.data.datasets[1].data = expense;
+      this.charts.line.data.datasets[1].backgroundColor = g2;
+      this.charts.line.update();
+      return;
+    }
+
     this.charts.line = new Chart(canvas, {
       type: 'line',
       data: {
@@ -595,36 +649,42 @@ const Dash = {
           {
             label: 'Income', data: income,
             borderColor: '#10b981', backgroundColor: g1,
-            borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 3.5,
-            fill: true, tension: 0.4
+            borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
+            pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+            fill: true, tension: 0.42
           },
           {
             label: 'Expense', data: expense,
             borderColor: '#ef4444', backgroundColor: g2,
-            borderWidth: 3.5, pointRadius: 0, pointHoverRadius: 8,
-            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 3.5,
-            fill: true, tension: 0.4
+            borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
+            pointBackgroundColor: '#ef4444', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+            fill: true, tension: 0.42
           }
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 600, easing: 'easeOutQuart' },
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(34, 34, 48, 0.95)', titleColor: '#fff', bodyColor: '#a0aec0',
-            padding: 14, cornerRadius: 14, borderColor: 'rgba(59, 130, 246, 0.3)', borderWidth: 1.5,
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' }, maxRotation: 0 } },
-          y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, border: { display: false }, ticks: { color: '#718096', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' }, maxRotation: 0 } },
+          y: { beginAtZero: true, grid: { color: 'rgba(20, 24, 31, 0.05)' }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });

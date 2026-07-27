@@ -303,8 +303,6 @@ const AnalyticsPage = {
   },
 
   buildProfitTrendChart: function(txns) {
-    if (this.charts.profitTrend) this.charts.profitTrend.destroy();
-
     const monthlyMap = {};
     txns.forEach(t => {
       if (t.date) {
@@ -324,10 +322,17 @@ const AnalyticsPage = {
 
     const profits = months.map(m => monthlyMap[m].income - monthlyMap[m].expense);
     const incomes = months.map(m => monthlyMap[m].income);
-    const expenses = months.map(m => monthlyMap[m].expense);
 
     const ctx = document.getElementById('profitTrendChart');
     if (!ctx) return;
+
+    if (this.charts.profitTrend) {
+      this.charts.profitTrend.data.labels = labels.length ? labels : ['No Data'];
+      this.charts.profitTrend.data.datasets[0].data = profits.length ? profits : [0];
+      this.charts.profitTrend.data.datasets[1].data = incomes.length ? incomes : [0];
+      this.charts.profitTrend.update();
+      return;
+    }
 
     this.charts.profitTrend = new Chart(ctx, {
       type: 'line',
@@ -337,40 +342,53 @@ const AnalyticsPage = {
           {
             label: 'Net Profit',
             data: profits.length ? profits : [0],
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            borderColor: '#22c7ff',
+            backgroundColor: 'rgba(34, 199, 255, 0.08)',
             borderWidth: 3,
             fill: true,
-            tension: 0.35,
-            pointBackgroundColor: '#3b82f6',
-            pointRadius: 3
+            tension: 0.38,
+            pointBackgroundColor: '#22c7ff',
+            pointRadius: 3,
+            pointHoverRadius: 7
           },
           {
             label: 'Total Revenue',
             data: incomes.length ? incomes : [0],
             borderColor: '#10b981',
-            borderWidth: 1.5,
+            borderWidth: 2,
             borderDash: [4, 4],
             fill: false,
             pointRadius: 0,
-            tension: 0.35
+            tension: 0.38
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 600, easing: 'easeOutQuart' },
         plugins: {
-          legend: { display: true, position: 'top', labels: { boxWidth: 12, color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } } }
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, color: '#6b7280', font: { family: "'Plus Jakarta Sans', sans-serif", weight: 700 } } },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+            callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
+          }
         },
         scales: {
           y: {
-            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) }
+            grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
-            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' } }
+            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" } }
           }
         }
       }
@@ -378,8 +396,6 @@ const AnalyticsPage = {
   },
 
   buildCategoryShareChart: function(txns) {
-    if (this.charts.categoryShare) this.charts.categoryShare.destroy();
-
     const categoryMap = {};
     txns.forEach(t => {
       if (t.type === 'expense' && t.category) {
@@ -392,10 +408,42 @@ const AnalyticsPage = {
     const labels = sortedCats.map(c => c.replace(/^[^\s]+\s+/, ''));
     const data = sortedCats.map(c => categoryMap[c]);
 
-    const palette = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#ad67e6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
+    const palette = ['#22c7ff', '#10b981', '#ef4444', '#f59e0b', '#ad67e6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
 
     const ctx = document.getElementById('categoryShareChart');
     if (!ctx) return;
+
+    const legendContainer = document.getElementById('categoryLegend');
+    if (legendContainer) {
+      legendContainer.innerHTML = '';
+      if (!data.length) {
+        legendContainer.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; grid-column:span 2;">No expenses categorized</div>';
+      } else {
+        const total = data.reduce((a, b) => a + b, 0);
+        sortedCats.forEach((cat, idx) => {
+          const rawAmt = categoryMap[cat];
+          const pct = Math.round((rawAmt / total) * 100);
+          const color = palette[idx % palette.length];
+
+          const item = document.createElement('div');
+          item.className = 'legend-item';
+          item.innerHTML = `
+            <div class="legend-color" style="background:${color};"></div>
+            <span style="font-weight:700;">${pct}%</span>
+            <span style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:80px;">${cat}</span>
+          `;
+          legendContainer.appendChild(item);
+        });
+      }
+    }
+
+    if (this.charts.categoryShare) {
+      this.charts.categoryShare.data.labels = labels.length ? labels : ['No Expenses'];
+      this.charts.categoryShare.data.datasets[0].data = data.length ? data : [1];
+      this.charts.categoryShare.data.datasets[0].backgroundColor = data.length ? palette.slice(0, data.length) : ['#e2e8f0'];
+      this.charts.categoryShare.update();
+      return;
+    }
 
     this.charts.categoryShare = new Chart(ctx, {
       type: 'doughnut',
@@ -404,45 +452,31 @@ const AnalyticsPage = {
         datasets: [{
           data: data.length ? data : [1],
           backgroundColor: data.length ? palette.slice(0, data.length) : ['#e2e8f0'],
-          borderWidth: 4, borderColor: '#222230', hoverBorderWidth: 5, hoverOffset: 12
+          borderWidth: 3, borderColor: '#ffffff', hoverBorderWidth: 4, hoverOffset: 8
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        cutout: '65%'
+        animation: { duration: 600, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1
+          }
+        },
+        cutout: '72%'
       }
     });
-
-    const legendContainer = document.getElementById('categoryLegend');
-    if (legendContainer) {
-      legendContainer.innerHTML = '';
-      if (!data.length) {
-        legendContainer.innerHTML = '<div style="font-size:0.75rem; color:var(--text-light); text-align:center; grid-column:span 2;">No expenses categorized</div>';
-        return;
-      }
-      const total = data.reduce((a, b) => a + b, 0);
-      sortedCats.forEach((cat, idx) => {
-        const rawAmt = categoryMap[cat];
-        const pct = Math.round((rawAmt / total) * 100);
-        const color = palette[idx % palette.length];
-
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        item.innerHTML = `
-          <div class="legend-color" style="background:${color};"></div>
-          <span style="font-weight:700;">${pct}%</span>
-          <span style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:80px;">${cat}</span>
-        `;
-        legendContainer.appendChild(item);
-      });
-    }
   },
 
   buildWeekdayActivityChart: function(txns) {
-    if (this.charts.weekdayActivity) this.charts.weekdayActivity.destroy();
-
     const weekdaySums = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
     const weekdayCounts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
 
@@ -459,12 +493,20 @@ const AnalyticsPage = {
     });
 
     const order = [1, 2, 3, 4, 5, 6, 0];
-    const labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const countsData = order.map(d => weekdayCounts[d]);
     const valuesData = order.map(d => weekdaySums[d]);
 
     const ctx = document.getElementById('weekdayActivityChart');
     if (!ctx) return;
+
+    if (this.charts.weekdayActivity) {
+      this.charts.weekdayActivity.data.labels = labels;
+      this.charts.weekdayActivity.data.datasets[0].data = countsData;
+      this.charts.weekdayActivity.data.datasets[1].data = valuesData;
+      this.charts.weekdayActivity.update();
+      return;
+    }
 
     this.charts.weekdayActivity = new Chart(ctx, {
       type: 'bar',
@@ -472,19 +514,17 @@ const AnalyticsPage = {
         labels: labels,
         datasets: [
           {
-            label: 'Transactions Count',
+            label: 'Records Count',
             data: countsData,
-            backgroundColor: 'rgba(59, 130, 246, 0.85)',
-            hoverBackgroundColor: 'var(--brand)',
-            borderRadius: 6,
+            backgroundColor: 'rgba(34, 199, 255, 0.85)',
+            borderRadius: { topLeft: 6, topRight: 6 },
             yAxisID: 'y'
           },
           {
             label: 'Transaction Value (₹)',
             data: valuesData,
-            backgroundColor: 'rgba(16, 185, 129, 0.45)',
-            hoverBackgroundColor: 'var(--income)',
-            borderRadius: 6,
+            backgroundColor: 'rgba(16, 185, 129, 0.55)',
+            borderRadius: { topLeft: 6, topRight: 6 },
             yAxisID: 'y1'
           }
         ]
@@ -492,27 +532,35 @@ const AnalyticsPage = {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 600, easing: 'easeOutQuart' },
         plugins: {
-          legend: { display: true, position: 'top', labels: { color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } } }
+          legend: { display: true, position: 'top', labels: { color: '#6b7280', font: { family: "'Plus Jakarta Sans', sans-serif", weight: 700 } } },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1
+          }
         },
         scales: {
           y: {
             type: 'linear',
             position: 'left',
-            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-            ticks: { color: '#718096', stepSize: 1, font: { family: 'Plus Jakarta Sans' } },
-            title: { display: true, text: 'Records Count', color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } }
+            grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            ticks: { color: '#9aa3b2', stepSize: 1, font: { family: "'Plus Jakarta Sans', sans-serif" } }
           },
           y1: {
             type: 'linear',
             position: 'right',
             grid: { drawOnChartArea: false },
-            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) },
-            title: { display: true, text: 'Total Value (₹)', color: '#a0aec0', font: { family: 'Plus Jakarta Sans', weight: 600 } }
+            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
-            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' } }
+            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" } }
           }
         }
       }
@@ -520,9 +568,6 @@ const AnalyticsPage = {
   },
 
   buildCumulativeBalanceChart: function(txns) {
-    if (this.charts.cumulativeBalance) this.charts.cumulativeBalance.destroy();
-
-    // Group ledger values by date ascending
     const dailyMap = {};
     txns.forEach(t => {
       if (t.date) {
@@ -547,6 +592,13 @@ const AnalyticsPage = {
     const ctx = document.getElementById('cumulativeBalanceChart');
     if (!ctx) return;
 
+    if (this.charts.cumulativeBalance) {
+      this.charts.cumulativeBalance.data.labels = labels.length ? labels : ['No Data'];
+      this.charts.cumulativeBalance.data.datasets[0].data = balances.length ? balances : [0];
+      this.charts.cumulativeBalance.update();
+      return;
+    }
+
     this.charts.cumulativeBalance = new Chart(ctx, {
       type: 'line',
       data: {
@@ -554,28 +606,39 @@ const AnalyticsPage = {
         datasets: [{
           label: 'Cumulative Capital (₹)',
           data: balances.length ? balances : [0],
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.08)',
+          borderColor: '#22c7ff',
+          backgroundColor: 'rgba(34, 199, 255, 0.08)',
           borderWidth: 3,
           fill: true,
-          tension: 0.2,
-          pointRadius: sortedDates.length > 25 ? 0 : 2
+          tension: 0.25,
+          pointRadius: sortedDates.length > 25 ? 0 : 3,
+          pointHoverRadius: 7
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 600, easing: 'easeOutQuart' },
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1
+          }
         },
         scales: {
           y: {
-            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, callback: value => inrShort(value) }
+            grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
-            ticks: { color: '#718096', font: { family: 'Plus Jakarta Sans' }, maxTicksLimit: 8 }
+            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, maxTicksLimit: 8 }
           }
         }
       }
@@ -583,8 +646,6 @@ const AnalyticsPage = {
   },
 
   buildPaymentModeChart: function(txns) {
-    if (this.charts.paymentMode) this.charts.paymentMode.destroy();
-
     const modeVolume = { 'Cash': 0, 'UPI': 0, 'Bank Transfer': 0, 'Card': 0, 'Cheque': 0, 'Online': 0 };
     txns.forEach(t => {
       const mode = t.mode || 'Cash';
@@ -594,13 +655,12 @@ const AnalyticsPage = {
       }
     });
 
-    // filter only modes that have transactions
     const activeModes = Object.keys(modeVolume).filter(m => modeVolume[m] > 0);
     const data = activeModes.map(m => modeVolume[m]);
 
     const palette = {
       'Cash': '#10b981',
-      'Online': '#3b82f6',
+      'Online': '#22c7ff',
       'UPI': '#ad67e6',
       'Bank Transfer': '#06b6d4',
       'Card': '#ec4899',
@@ -612,6 +672,38 @@ const AnalyticsPage = {
     const ctx = document.getElementById('paymentModeChart');
     if (!ctx) return;
 
+    const legendContainer = document.getElementById('paymentModeLegend');
+    if (legendContainer) {
+      legendContainer.innerHTML = '';
+      if (!data.length) {
+        legendContainer.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; grid-column:span 2;">No capital channels loaded</div>';
+      } else {
+        const total = data.reduce((a, b) => a + b, 0);
+        activeModes.forEach((mode, idx) => {
+          const rawAmt = modeVolume[mode];
+          const pct = Math.round((rawAmt / total) * 100);
+          const color = colors[idx];
+
+          const item = document.createElement('div');
+          item.className = 'legend-item';
+          item.innerHTML = `
+            <div class="legend-color" style="background:${color};"></div>
+            <span style="font-weight:700;">${pct}%</span>
+            <span style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:80px;">${mode}</span>
+          `;
+          legendContainer.appendChild(item);
+        });
+      }
+    }
+
+    if (this.charts.paymentMode) {
+      this.charts.paymentMode.data.labels = activeModes.length ? activeModes : ['No capital flows'];
+      this.charts.paymentMode.data.datasets[0].data = data.length ? data : [1];
+      this.charts.paymentMode.data.datasets[0].backgroundColor = data.length ? colors : ['#e2e8f0'];
+      this.charts.paymentMode.update();
+      return;
+    }
+
     this.charts.paymentMode = new Chart(ctx, {
       type: 'doughnut',
       data: {
@@ -619,40 +711,28 @@ const AnalyticsPage = {
         datasets: [{
           data: data.length ? data : [1],
           backgroundColor: data.length ? colors : ['#e2e8f0'],
-          borderWidth: 4, borderColor: '#222230', hoverBorderWidth: 5, hoverOffset: 12
+          borderWidth: 3, borderColor: '#ffffff', hoverBorderWidth: 4, hoverOffset: 8
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        cutout: '65%'
+        animation: { duration: 600, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1
+          }
+        },
+        cutout: '72%'
       }
     });
-
-    const legendContainer = document.getElementById('paymentModeLegend');
-    if (legendContainer) {
-      legendContainer.innerHTML = '';
-      if (!data.length) {
-        legendContainer.innerHTML = '<div style="font-size:0.75rem; color:var(--text-light); text-align:center; grid-column:span 2;">No capital channels loaded</div>';
-        return;
-      }
-      const total = data.reduce((a, b) => a + b, 0);
-      activeModes.forEach((mode, idx) => {
-        const rawAmt = modeVolume[mode];
-        const pct = Math.round((rawAmt / total) * 100);
-        const color = colors[idx];
-
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        item.innerHTML = `
-          <div class="legend-color" style="background:${color};"></div>
-          <span style="font-weight:700;">${pct}%</span>
-          <span style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:85px;">${mode}</span>
-        `;
-        legendContainer.appendChild(item);
-      });
-    }
   },
 
   loadCapitalChannelsReport: function(filtered, all) {
