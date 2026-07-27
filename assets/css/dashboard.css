@@ -1525,7 +1525,7 @@
   }
   
   .cash-card .co-balance-amt { color: #fbbf24 !important; }
-  .online-card .co-balance-amt { color: #c4b5fd !important; }
+  .online-card .co-balance-amt { color: #532be9 !important; }
   
   .online-balance {
     background: linear-gradient(135deg, rgba(163, 150, 255, 0.08) 0%, rgba(20, 24, 31, 0.02) 100%) !important;
