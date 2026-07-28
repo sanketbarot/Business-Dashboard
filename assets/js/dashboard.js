@@ -41,7 +41,6 @@ const Dash = {
       this.setupSearch();
       this.animateNumbers();
       this.loadNotifications();
-      if (typeof calculateGST === 'function') calculateGST();
 
       // Outside click closes notifications
       document.addEventListener('click', e => {
@@ -1909,51 +1908,6 @@ const PizzaCafeSimulator = {
     }
   }
 };
-
-let currentGSTRate = 5;
-
-function setGSTRate(rate, btn) {
-  currentGSTRate = rate;
-  const parent = btn.parentElement;
-  if (parent) {
-    parent.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-  }
-  btn.classList.add('active');
-  calculateGST();
-}
-
-function calculateGST() {
-  const amtEl = document.getElementById('gstAmount');
-  if (!amtEl) return;
-  const amt = parseFloat(amtEl.value) || 0;
-  
-  const typeRadio = document.querySelector('input[name="gstType"]:checked');
-  const type = typeRadio ? typeRadio.value : 'exclusive';
-
-  let base = 0;
-  let tax = 0;
-
-  if (type === 'inclusive') {
-    base = amt / (1 + currentGSTRate / 100);
-    tax = amt - base;
-  } else {
-    base = amt;
-    tax = amt * (currentGSTRate / 100);
-  }
-
-  const net = base + tax;
-  const split = tax / 2;
-
-  const baseEl = document.getElementById('gstBaseVal');
-  const splitEl = document.getElementById('gstSplitVal');
-  const taxEl = document.getElementById('gstTotalTax');
-  const netEl = document.getElementById('gstNetTotal');
-
-  if (baseEl) baseEl.textContent = inr(base);
-  if (splitEl) splitEl.textContent = `${inr(split)} (${(currentGSTRate / 2)}%)`;
-  if (taxEl) taxEl.textContent = inr(tax);
-  if (netEl) netEl.textContent = inr(net);
-}
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => Dash.init());

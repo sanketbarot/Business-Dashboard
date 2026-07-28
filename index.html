@@ -582,68 +582,6 @@
               </div>
             </div>
 
-            <!-- QUICK GST ESTIMATOR WIDGET -->
-            <div class="card chart-enhanced" style="margin-top:16px;">
-              <div class="card-hd">
-                <h4>🧮 Quick GST Calculator</h4>
-              </div>
-              <div class="card-bd" style="padding:16px 20px;">
-                <div class="fg" style="margin-bottom:12px;">
-                  <label class="fl" style="font-size:0.75rem;">TRANSACTION AMOUNT (₹)</label>
-                  <input type="number" class="fc" id="gstAmount" value="1000" oninput="calculateGST()"
-                    style="padding:8px 12px; font-size:0.9rem;" />
-                </div>
-                <div
-                  style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-                  <span style="font-size:0.72rem; color:var(--text-light); font-weight:700;">GST RATE:</span>
-                  <div style="display:flex; gap:4px; flex-grow:1; justify-content:flex-end;">
-                    <button class="btn btn-outline btn-xs active" id="gstRate5" onclick="setGSTRate(5, this)"
-                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">5%</button>
-                    <button class="btn btn-outline btn-xs" id="gstRate12" onclick="setGSTRate(12, this)"
-                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">12%</button>
-                    <button class="btn btn-outline btn-xs" id="gstRate18" onclick="setGSTRate(18, this)"
-                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">18%</button>
-                    <button class="btn btn-outline btn-xs" id="gstRate28" onclick="setGSTRate(28, this)"
-                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">28%</button>
-                  </div>
-                </div>
-                <div style="display:flex; gap:12px; margin-bottom:14px;">
-                  <label
-                    style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--text-light); cursor:pointer;">
-                    <input type="radio" name="gstType" value="exclusive" checked onchange="calculateGST()"
-                      style="accent-color:var(--brand);" />
-                    <span>Exclusive</span>
-                  </label>
-                  <label
-                    style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--text-light); cursor:pointer;">
-                    <input type="radio" name="gstType" value="inclusive" onchange="calculateGST()"
-                      style="accent-color:var(--brand);" />
-                    <span>Inclusive</span>
-                  </label>
-                </div>
-                <div
-                  style="background:rgba(99,102,241,0.02); border:1px dashed var(--border); border-radius:var(--r-md); padding:12px; font-size:0.75rem; display:flex; flex-direction:column; gap:8px;">
-                  <div style="display:flex; justify-content:space-between; color:var(--text-light);">
-                    <span>Base Value:</span>
-                    <span id="gstBaseVal">₹ 0.00</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; color:var(--text-light);">
-                    <span>CGST + SGST (Each):</span>
-                    <span id="gstSplitVal">₹ 0.00</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; color:var(--text-light); font-weight:700;">
-                    <span>Total GST Amount:</span>
-                    <span id="gstTotalTax" style="color:var(--brand);">₹ 0.00</span>
-                  </div>
-                  <div
-                    style="display:flex; justify-content:space-between; color:var(--text-head); font-weight:800; font-size:0.82rem; border-top:1px solid var(--border); padding-top:6px; margin-top:2px;">
-                    <span>Net Total:</span>
-                    <span id="gstNetTotal">₹ 0.00</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div class="card">
               <div class="card-hd">
                 <h4>🔥 Top Expenses</h4>
