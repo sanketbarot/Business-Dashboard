@@ -6,7 +6,7 @@
 'use strict';
 
 // AUTH CHECK
-(function() {
+(function () {
   if (!localStorage.getItem('bd_auth')) {
     window.location.href = 'login.html';
   }
@@ -411,15 +411,15 @@ function isThisWeek(d) {
   if (!d) return false;
   const now = getISTDateObject();
   const dayOfWeek = now.getDay() || 7;
-  
+
   const start = new Date(now);
   start.setDate(now.getDate() - dayOfWeek + 1);
   const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-  
+
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-  
+
   return d >= startStr && d <= endStr;
 }
 
@@ -427,15 +427,15 @@ function isLastWeek(d) {
   if (!d) return false;
   const now = getISTDateObject();
   const dayOfWeek = now.getDay() || 7;
-  
+
   const start = new Date(now);
   start.setDate(now.getDate() - dayOfWeek - 6);
   const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-  
+
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-  
+
   return d >= startStr && d <= endStr;
 }
 
@@ -508,7 +508,7 @@ function uid() {
 
 function debounce(fn, wait) {
   let timer;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), wait);
   };
@@ -546,7 +546,7 @@ function closeModal(id) {
       m.classList.remove('open');
       m.classList.remove('closing');
       document.body.style.overflow = '';
-      
+
       // ✅ AUTO-RESET forms on close (prevents old data)
       if (id === 'incomeModal') {
         if (typeof resetForm === 'function') {
@@ -565,14 +565,14 @@ function closeModal(id) {
   }
 }
 
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
   if (e.target.classList.contains('modal-bg')) {
     const id = e.target.id;
     closeModal(id);
   }
 });
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-bg.open').forEach(m => {
       closeModal(m.id);
@@ -584,17 +584,17 @@ function toast(msg, type) {
   type = type || 'success';
   const container = document.getElementById('toastBox');
   if (!container) { alert(msg); return; }
-  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
-  const colors = { success:'#059669', error:'#dc2626', warning:'#d97706', info:'#6366f1' };
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const colors = { success: '#059669', error: '#dc2626', warning: '#d97706', info: '#6366f1' };
   const t = document.createElement('div');
   t.className = 'toast';
   t.style.borderLeftColor = colors[type] || colors.success;
   t.innerHTML = '<span>' + (icons[type] || '✅') + '</span><span>' + escapeHtml(msg) + '</span>';
   container.appendChild(t);
-  setTimeout(function() {
+  setTimeout(function () {
     t.style.opacity = '0';
     t.style.transform = 'translateX(20px)';
-    setTimeout(function() { if (t.parentNode) t.remove(); }, 300);
+    setTimeout(function () { if (t.parentNode) t.remove(); }, 300);
   }, 3000);
 }
 
@@ -648,7 +648,7 @@ function closeSidebar() {
   if (overlay) overlay.style.display = 'none';
 }
 
-window.addEventListener('resize', debounce(function() {
+window.addEventListener('resize', debounce(function () {
   if (window.innerWidth > 1023) closeSidebar();
 }, 200));
 
@@ -831,80 +831,80 @@ function initializeCustomDropdowns() {
   const selects = document.querySelectorAll('select');
   selects.forEach(select => {
     if (select.getAttribute('data-custom-select') === 'true') return;
-    
+
     const wrapper = document.createElement('div');
     wrapper.className = 'custom-select';
-    
+
     if (select.classList.contains('chart-sel')) {
       wrapper.classList.add('chart-sel-wrapper');
     } else if (select.classList.contains('an-filter-select')) {
       wrapper.classList.add('an-filters-wrapper');
     }
-    
+
     select.style.cssText = 'opacity:0; position:absolute; pointer-events:none; z-index:-1; width:0; height:0; overflow:hidden; margin:0; padding:0; border:none;';
-    
+
     const trigger = document.createElement('div');
     trigger.className = 'custom-select-trigger';
-    
+
     const optionsList = document.createElement('div');
     optionsList.className = 'custom-select-options';
-    
+
     wrapper.appendChild(trigger);
     wrapper.appendChild(optionsList);
-    
+
     select.parentNode.insertBefore(wrapper, select.nextSibling);
     select.setAttribute('data-custom-select', 'true');
-    
+
     function rebuildOptions() {
       optionsList.innerHTML = '';
       const options = select.querySelectorAll('option');
       let selectedText = '';
-      
+
       options.forEach(opt => {
         const customOpt = document.createElement('div');
         customOpt.className = 'custom-option';
         customOpt.textContent = opt.textContent;
         customOpt.setAttribute('data-value', opt.value);
-        
+
         if (opt.selected) {
           customOpt.classList.add('selected');
           selectedText = opt.textContent;
         }
-        
+
         customOpt.addEventListener('click', (e) => {
           e.stopPropagation();
           optionsList.querySelectorAll('.custom-option').forEach(co => co.classList.remove('selected'));
           customOpt.classList.add('selected');
-          
+
           select.value = opt.value;
           trigger.textContent = opt.textContent;
           wrapper.classList.remove('open');
-          
+
           const event = new Event('change', { bubbles: true });
           select.dispatchEvent(event);
         });
-        
+
         optionsList.appendChild(customOpt);
       });
-      
+
       trigger.textContent = selectedText || (options[0] ? options[0].textContent : 'Select');
     }
-    
+
     rebuildOptions();
-    
+
     const observer = new MutationObserver(() => {
       rebuildOptions();
     });
     observer.observe(select, { childList: true });
-    
+
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = wrapper.classList.contains('open');
-      
+
       document.querySelectorAll('.custom-select.open').forEach(cs => {
         if (cs !== wrapper) cs.classList.remove('open');
       });
-      
+
       wrapper.classList.toggle('open', !isOpen);
     });
   });

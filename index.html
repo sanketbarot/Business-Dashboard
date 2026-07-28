@@ -1,388 +1,739 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Dashboard — Crust & Chilly</title>
-<meta name="robots" content="noindex, nofollow"/>
-<meta name="theme-color" content="#a396ff"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png"/>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="assets/css/style.css?v=1.0.0"/>
-<link rel="stylesheet" href="assets/css/dashboard.css?v=1.0.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Crust & Chilly</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#a396ff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AI Toolcor" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/css/style.css?v=1.0.0" />
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=1.0.0" />
 
 
-<!-- Firebase SDKs - MUST BE BEFORE app.js -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+  <!-- Firebase SDKs - MUST BE BEFORE app.js -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
 
-<!-- Chart & Export Libraries -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
+  <!-- Chart & Export Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
 </head>
+
 <body>
 
-<div class="app">
+  <div class="app">
 
-  <aside class="sidebar" id="sidebar">
-    <div class="sb-logo">
-      <div class="sb-logo-icon-wrap">
-        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
-      </div>
-      <div class="sb-logo-info">
-        <div class="sb-logo-text">Crust & Chilly</div>
-        <div class="sb-logo-sub">BUSINESS SUITE</div>
-      </div>
-    </div>
-
-    <nav class="sb-nav">
-      <div class="sb-section">Overview</div>
-      <a href="index.html" class="sb-link active"><span class="sb-icon">📊</span><span>Dashboard</span></a>
-      <a href="transaction.html" class="sb-link"><span class="sb-icon">💳</span><span>Transactions</span></a>
-      <a href="analytics.html" class="sb-link"><span class="sb-icon">📈</span><span>Analytics</span></a>
-
-      <div class="sb-section">Quick Add</div>
-      <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
-      <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon">💸</span><span>New Expense</span></div>
-
-      <div class="sb-section">Reports</div>
-      <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
-      <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
-      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span><span>Backup Data</span></div>
-      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon">📲</span><span>Install App</span></div>
-    </nav>
-
-    <div class="sb-footer">
-      <div class="sb-user">
-        <div class="sb-avatar">S</div>
-        <div class="sb-user-info">
-          <div class="sb-user-name">Sanket Barot</div>
-          <div class="sb-user-email">sanketbarot3901@gmail.com</div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-icon-wrap">
+          <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';" />
         </div>
-      </div>
-      <button class="sb-logout" onclick="logout()">🚪 Sign Out</button>
-    </div>
-  </aside>
-
-  <div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
-
-  <main class="main">
-    <header class="header">
-      <div class="hd-left">
-        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <div class="hd-title">
-          <h4>Dashboard</h4>
-          <p id="headerDate">Loading...</p>
-        </div>
-      </div>
-      <div class="hd-right">
-        <div class="hd-live" id="liveTime">--:--</div>
-      </div>
-    </header>
-
-    <div class="content">
-
-      <section class="hero">
-        <div class="hero-text">
-          <h2 id="welcomeMsg">Welcome back 👋</h2>
-          <p id="heroSubtext">Here's your business overview</p>
-        </div>
-        <div class="hero-actions">
-          <button class="btn btn-primary" onclick="openIncomeModal()">💰 Add Income</button>
-          <button class="btn btn-expense" onclick="openExpenseModal()">💸 Add Expense</button>
-          <button class="btn btn-outline" onclick="exportPDF()">📄 Report</button>
-        </div>
-      </section>
-
-      <div class="period-wrap">
-        <span class="period-title">📈 Financial Summary</span>
-        <div class="period-bar">
-          <button class="pb-tab active" data-p="today" onclick="switchPeriod('today',this)">Today</button>
-          <button class="pb-tab" data-p="yesterday" onclick="switchPeriod('yesterday',this)">Yesterday</button>
-          <button class="pb-tab" data-p="week" onclick="switchPeriod('week',this)">Weekly</button>
-          <button class="pb-tab" data-p="month" onclick="switchPeriod('month',this)">Monthly</button>
-          <button class="pb-tab" data-p="year" onclick="switchPeriod('year',this)">Yearly</button>
-          <button class="pb-tab" data-p="all" onclick="switchPeriod('all',this)">All Time</button>
+        <div class="sb-logo-info">
+          <div class="sb-logo-text">Crust & Chilly</div>
+          <div class="sb-logo-sub">BUSINESS SUITE</div>
         </div>
       </div>
 
-      <section class="sum-grid">
-        <div class="sum-card">
-          <div class="sc-top"><div class="sc-icon">💰</div><span class="sc-trend" id="incomeTrend">→ 0%</span></div>
-          <div><div class="sc-label">Total Income</div><div class="sc-value" id="pIncome">₹ 0.00</div><div class="sc-sub" id="pIncomeCount">0 records</div></div>
-        </div>
-        <div class="sum-card">
-          <div class="sc-top"><div class="sc-icon">💸</div><span class="sc-trend" id="expenseTrend">→ 0%</span></div>
-          <div><div class="sc-label">Total Expense</div><div class="sc-value" id="pExpense">₹ 0.00</div><div class="sc-sub" id="pExpenseCount">0 records</div></div>
-        </div>
-        <div class="sum-card">
-          <div class="sc-top"><div class="sc-icon">📈</div><span class="sc-trend" id="profitTrend">→ 0%</span></div>
-          <div><div class="sc-label">Net Profit</div><div class="sc-value" id="pProfit">₹ 0.00</div><div class="sc-sub" id="pMargin">0% margin</div></div>
-        </div>
-        <div class="sum-card balance-glow">
-          <div class="sc-top"><div class="sc-icon">🏦</div><span class="sc-trend">All Time</span></div>
-          <div><div class="sc-label">Total Balance</div><div class="sc-value" id="totalBal">₹ 0.00</div><div class="sc-sub" id="totalCount">0 records</div></div>
-        </div>
-      </section>
+      <nav class="sb-nav">
+        <div class="sb-section">Overview</div>
+        <a href="index.html" class="sb-link active"><span class="sb-icon">📊</span><span>Dashboard</span></a>
+        <a href="transaction.html" class="sb-link"><span class="sb-icon">💳</span><span>Transactions</span></a>
+        <a href="analytics.html" class="sb-link"><span class="sb-icon">📈</span><span>Analytics</span></a>
 
-      <section class="cash-online-grid">
-        <div class="co-card cash-card">
-          <div class="co-header">
-            <div class="co-icon">💵</div>
-            <div class="co-header-info"><div class="co-title">Cash Balance</div><div class="co-subtitle">Physical Money</div></div>
-            <div class="co-badge cash-badge">CASH</div>
-          </div>
-          <div class="co-body">
-            <div class="co-row"><div class="co-row-icon in">↓</div><div class="co-row-info"><div class="co-row-label">Cash Received</div><div class="co-row-count" id="cashInCount">0 transactions</div></div><div class="co-row-amt text-income" id="cashIn">₹ 0</div></div>
-            <div class="co-row"><div class="co-row-icon out">↑</div><div class="co-row-info"><div class="co-row-label">Cash Spent</div><div class="co-row-count" id="cashOutCount">0 transactions</div></div><div class="co-row-amt text-expense" id="cashOut">₹ 0</div></div>
-            <div class="co-balance"><div class="co-balance-label">💰 Net Cash in Hand</div><div class="co-balance-amt" id="cashBalance">₹ 0</div></div>
+        <div class="sb-section">Quick Add</div>
+        <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
+        <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon">💸</span><span>New Expense</span></div>
+
+        <div class="sb-section">Reports</div>
+        <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
+        <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
+        <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span><span>Backup Data</span></div>
+        <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span
+            class="sb-icon">📲</span><span>Install App</span></div>
+      </nav>
+
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">S</div>
+          <div class="sb-user-info">
+            <div class="sb-user-name">Sanket Barot</div>
+            <div class="sb-user-email">sanketbarot3901@gmail.com</div>
           </div>
         </div>
-        <div class="co-card online-card">
-          <div class="co-header">
-            <div class="co-icon">📱</div>
-            <div class="co-header-info"><div class="co-title">Online Balance</div><div class="co-subtitle">UPI + Bank + Card</div></div>
-            <div class="co-badge online-badge">ONLINE</div>
-          </div>
-          <div class="co-body">
-            <div class="co-row"><div class="co-row-icon in">↓</div><div class="co-row-info"><div class="co-row-label">Online Received</div><div class="co-row-count" id="onlineInCount">0 transactions</div></div><div class="co-row-amt text-income" id="onlineIn">₹ 0</div></div>
-            <div class="co-row"><div class="co-row-icon out">↑</div><div class="co-row-info"><div class="co-row-label">Online Spent</div><div class="co-row-count" id="onlineOutCount">0 transactions</div></div><div class="co-row-amt text-expense" id="onlineOut">₹ 0</div></div>
-            <div class="co-balance online-balance"><div class="co-balance-label">📱 Net Online Balance</div><div class="co-balance-amt" id="onlineBalance">₹ 0</div></div>
-          </div>
-        </div>
-      </section>
+        <button class="sb-logout" onclick="logout()">🚪 Sign Out</button>
+      </div>
+    </aside>
 
-      <!-- BUSINESS VISION & KPI TARGETS -->
-      <section class="card" style="margin-bottom:26px;">
-        <div class="card-hd">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <h4>🎯 Business Targets & Vision Roadmap</h4>
-            <span style="font-size:0.72rem; background:var(--brand-soft); color:var(--brand); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">VISION METRICS</span>
+    <div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <main class="main">
+      <header class="header">
+        <div class="hd-left">
+          <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+          <div class="hd-title">
+            <h4>Dashboard</h4>
+            <p id="headerDate">Loading...</p>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="openGoalSettingsModal()">⚙️ Configure Goals</button>
         </div>
-        <div class="card-bd">
-          <div class="goals-wrapper-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
-            
-            <!-- Goal 1: Revenue -->
-            <div class="goal-item-card" style="background:rgba(99,102,241,0.02); border:1px solid rgba(99,102,241,0.06); border-radius:var(--r-md); padding:16px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">📈 MTD REVENUE TARGET</span>
-                <span style="font-size:0.85rem; font-weight:800; color:var(--income);" id="goalRevPct">0%</span>
+        <div class="hd-right" style="display:flex; align-items:center; gap:16px;">
+          <!-- Notification Bell -->
+          <div class="notif-wrapper" style="position:relative;">
+            <button class="notif-btn" onclick="Dash.toggleNotifDropdown()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; position:relative; padding:4px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr);">
+              🔔
+              <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-2px; right:-2px; background:var(--expense); color:white; font-size:0.65rem; font-weight:800; padding:2px 5px; border-radius:100px; line-height:1; border:1.5px solid var(--bg-card); box-shadow:0 0 6px rgba(239,68,68,0.4);">0</span>
+            </button>
+            <div class="notif-dropdown" id="notifDropdown" style="display:none; position:absolute; top:calc(100% + 12px); right:0; width:320px; background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--r-xl); box-shadow:var(--sh-lg); z-index:1001; overflow:hidden;">
+              <div class="notif-header" style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:800; font-size:0.9rem; color:var(--text-head);">🔔 Notifications</span>
+                <button onclick="Dash.clearNotifs()" style="background:none; border:none; font-size:0.72rem; font-weight:700; color:var(--brand); cursor:pointer; font-family:inherit;">Clear All</button>
               </div>
-              <div style="margin-bottom:12px;">
-                <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalRevCurrent">₹ 0.00</strong>
-                <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
-                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalRevTarget">₹ 0.00</span>
+              <div class="notif-body" id="notifBody" style="max-height:280px; overflow-y:auto; padding:8px 0;">
+                <div style="padding:24px; text-align:center; color:var(--text-muted); font-size:0.8rem;">No new notifications</div>
               </div>
-              <div style="height:6px; background:rgba(16,185,129,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
-                <div style="height:100%; background:var(--income); border-radius:var(--r-full); width:0%; transition:width 1s;" id="goalRevBar"></div>
-              </div>
-              <div style="font-size:0.72rem; color:var(--text-light);" id="goalRevStatus">MTD Revenue status</div>
             </div>
+          </div>
+          <div class="hd-live" id="liveTime">--:--</div>
+        </div>
+      </header>
 
-            <!-- Goal 2: Expense Cap -->
-            <div class="goal-item-card" style="background:rgba(239,68,68,0.02); border:1px solid rgba(239,68,68,0.06); border-radius:var(--r-md); padding:16px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">💸 MTD EXPENSE CAP</span>
-                <span style="font-size:0.85rem; font-weight:800; color:var(--expense);" id="goalExpPct">0%</span>
-              </div>
-              <div style="margin-bottom:12px;">
-                <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalExpCurrent">₹ 0.00</strong>
-                <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
-                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalExpTarget">₹ 0.00</span>
-              </div>
-              <div style="height:6px; background:rgba(239,68,68,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
-                <div style="height:100%; background:var(--expense); border-radius:var(--r-full); width:0%; transition:width 1s;" id="goalExpBar"></div>
-              </div>
-              <div style="font-size:0.72rem; color:var(--text-light);" id="goalExpStatus">MTD Expense status</div>
+      <div class="content">
+
+        <section class="hero">
+          <div class="hero-text">
+            <h2 id="welcomeMsg">Welcome back 👋</h2>
+            <p id="heroSubtext">Here's your business overview</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="openIncomeModal()">💰 Add Income</button>
+            <button class="btn btn-expense" onclick="openExpenseModal()">💸 Add Expense</button>
+            <button class="btn btn-outline" onclick="exportPDF()">📄 Report</button>
+          </div>
+        </section>
+
+        <div class="period-wrap">
+          <span class="period-title">📈 Financial Summary</span>
+          <div class="period-bar">
+            <button class="pb-tab" data-p="today" onclick="switchPeriod('today',this)">Today</button>
+            <button class="pb-tab" data-p="yesterday" onclick="switchPeriod('yesterday',this)">Yesterday</button>
+            <button class="pb-tab" data-p="week" onclick="switchPeriod('week',this)">Weekly</button>
+            <button class="pb-tab active" data-p="month" onclick="switchPeriod('month',this)">Monthly</button>
+            <button class="pb-tab" data-p="year" onclick="switchPeriod('year',this)">Yearly</button>
+            <button class="pb-tab" data-p="all" onclick="switchPeriod('all',this)">All Time</button>
+          </div>
+        </div>
+
+        <section class="sum-grid">
+          <div class="sum-card">
+            <div class="sc-top">
+              <div class="sc-icon">💰</div><span class="sc-trend" id="incomeTrend">→ 0%</span>
             </div>
-
-            <!-- Goal 3: Annual profit target -->
-            <div class="goal-item-card" style="background:rgba(139,92,246,0.02); border:1px solid rgba(139,92,246,0.06); border-radius:var(--r-md); padding:16px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">🏆 YTD NET PROFIT MILESTONE</span>
-                <span style="font-size:0.85rem; font-weight:800; color:var(--purple);" id="goalPrfPct">0%</span>
+            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+              <div>
+                <div class="sc-label">Total Income</div>
+                <div class="sc-value" id="pIncome">₹ 0.00</div>
+                <div class="sc-sub" id="pIncomeCount">0 records</div>
               </div>
-              <div style="margin-bottom:12px;">
-                <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalPrfCurrent">₹ 0.00</strong>
-                <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
-                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalPrfTarget">₹ 0.00</span>
-              </div>
-              <div style="height:6px; background:rgba(139,92,246,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
-                <div style="height:100%; background:linear-gradient(90deg, var(--brand) 0%, var(--purple) 100%); border-radius:var(--r-full); width:0%; transition:width 1s;" id="goalPrfBar"></div>
-              </div>
-              <div style="font-size:0.72rem; color:var(--text-light);" id="goalPrfStatus">YTD Net Profit milestone</div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineIncome"></canvas></div>
             </div>
-
           </div>
-        </div>
-      </section>
-
-      <section class="analytics-grid">
-        <div class="mini-stat">
-          <div class="ms-top"><div class="ms-ic">📊</div><div class="ms-title">Avg Income / Day</div></div>
-          <div class="ms-value" id="msAvgIncome">₹ 0</div>
-          <div class="ms-sub" id="msIncomeDays">No data yet</div>
-          <div class="ms-progress"><div class="ms-fill f-income" id="msIncomeBar" style="width:0%"></div></div>
-        </div>
-        <div class="mini-stat">
-          <div class="ms-top"><div class="ms-ic">💳</div><div class="ms-title">Avg Expense / Day</div></div>
-          <div class="ms-value" id="msAvgExpense">₹ 0</div>
-          <div class="ms-sub" id="msExpenseDays">No data yet</div>
-          <div class="ms-progress"><div class="ms-fill f-expense" id="msExpenseBar" style="width:0%"></div></div>
-        </div>
-        <div class="mini-stat">
-          <div class="ms-top"><div class="ms-ic">🎯</div><div class="ms-title">Savings Rate</div></div>
-          <div class="ms-value" id="msSavings">0%</div>
-          <div class="ms-sub" id="msSavingsSub">Start adding data</div>
-          <div class="ms-progress"><div class="ms-fill f-brand" id="msSavingsBar" style="width:0%"></div></div>
-        </div>
-      </section>
-
-      <section class="chart-grid">
-        <div class="card chart-enhanced">
-          <div class="card-hd"><h4>📊 Income vs Expense</h4><select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select></div>
-          <div class="card-bd"><div style="position:relative;height:300px;"><canvas id="barChart"></canvas></div></div>
-        </div>
-        <div class="card chart-enhanced">
-          <div class="card-hd"><h4>🍩 Expense Breakdown</h4>
-            <select class="chart-sel" id="donutPeriod" onchange="buildDonutChart()">
-              <option value="month">This Month</option><option value="year">This Year</option><option value="all">All Time</option>
-            </select>
+          <div class="sum-card">
+            <div class="sc-top">
+              <div class="sc-icon">💸</div><span class="sc-trend" id="expenseTrend">→ 0%</span>
+            </div>
+            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+              <div>
+                <div class="sc-label">Total Expense</div>
+                <div class="sc-value" id="pExpense">₹ 0.00</div>
+                <div class="sc-sub" id="pExpenseCount">0 records</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineExpense"></canvas></div>
+            </div>
           </div>
-          <div class="card-bd"><div style="position:relative;height:220px;"><canvas id="donutChart"></canvas></div><div id="donutLegend" class="donut-legend"></div></div>
-        </div>
-      </section>
-
-      <section class="card chart-enhanced" style="margin-bottom:26px;">
-        <div class="card-hd"><h4>📈 7-Day Cash Flow</h4><span style="font-size:0.75rem;color:var(--text-muted);">Last 7 days</span></div>
-        <div class="card-bd">
-          <div class="chart-info-bar">
-            <div class="chart-info-item"><div class="chart-info-dot" style="background:#059669;"></div><span>Income: <strong id="lineIncomeTotal">₹ 0</strong></span></div>
-            <div class="chart-info-item"><div class="chart-info-dot" style="background:#dc2626;"></div><span>Expense: <strong id="lineExpenseTotal">₹ 0</strong></span></div>
-            <div class="chart-info-item" style="margin-left:auto;"><span>Net: <strong id="lineNetTotal" style="color:var(--brand-accent);">₹ 0</strong></span></div>
+          <div class="sum-card">
+            <div class="sc-top">
+              <div class="sc-icon">📈</div><span class="sc-trend" id="profitTrend">→ 0%</span>
+            </div>
+            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+              <div>
+                <div class="sc-label">Net Profit</div>
+                <div class="sc-value" id="pProfit">₹ 0.00</div>
+                <div class="sc-sub" id="pMargin">0% margin</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineProfit"></canvas></div>
+            </div>
           </div>
-          <div style="position:relative;height:280px;"><canvas id="lineChart"></canvas></div>
-        </div>
-      </section>
-
-      <section class="bottom-grid">
-        <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
-          <div class="card"><div class="card-hd"><h4>💡 Smart Insights</h4></div><div class="card-bd" id="insightsBox"><div class="insight-item"><span class="insight-icon">💡</span><div class="insight-text">Add transactions to see insights</div></div></div></div>
-          <div class="card">
-            <div class="card-hd"><h4>🕐 Recent Activity</h4><a href="transaction.html" class="btn btn-outline btn-sm">View All →</a></div>
-            <div class="table-wrap"><table class="dtable"><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Mode</th></tr></thead><tbody id="recentBody"><tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><h4>No transactions yet</h4></div></td></tr></tbody></table></div>
+          <div class="sum-card balance-glow">
+            <div class="sc-top">
+              <div class="sc-icon">🏦</div><span class="sc-trend">All Time</span>
+            </div>
+            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+              <div>
+                <div class="sc-label">Total Balance</div>
+                <div class="sc-value" id="totalBal">₹ 0.00</div>
+                <div class="sc-sub" id="totalCount">0 records</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineBalance"></canvas></div>
+            </div>
           </div>
-        </div>
-        <div class="right-col">
-          <div class="card"><div class="card-hd"><h4>📊 Month Comparison</h4></div><div class="card-bd"><div class="compare-grid"><div class="compare-box"><div class="cb-lbl">Last Month</div><div class="cb-val" id="cmpLast">₹ 0</div></div><div class="compare-box"><div class="cb-lbl">This Month</div><div class="cb-val" id="cmpThis">₹ 0</div></div></div><div class="compare-arrow neutral" id="cmpArrow">→ No data</div></div></div>
-          <div class="card"><div class="card-hd"><h4>🔥 Top Expenses</h4></div><div class="card-bd" id="topCatBox"><div class="empty"><p>No data yet</p></div></div></div>
-          <div class="card"><div class="card-hd"><h4>💳 Payment Modes</h4></div><div class="card-bd" id="payModeBox"><div class="empty"><p>No data yet</p></div></div></div>
-        </div>
-      </section>
+        </section>
 
-    </div>
-  </main>
-</div>
+        <section class="cash-online-grid">
+          <div class="co-card cash-card">
+            <div class="co-header">
+              <div class="co-icon">💵</div>
+              <div class="co-header-info">
+                <div class="co-title">Cash Balance</div>
+                <div class="co-subtitle">Physical Money</div>
+              </div>
+              <div class="co-badge cash-badge">CASH</div>
+            </div>
+            <div class="co-body">
+              <div class="co-row">
+                <div class="co-row-icon in">↓</div>
+                <div class="co-row-info">
+                  <div class="co-row-label">Cash Received</div>
+                  <div class="co-row-count" id="cashInCount">0 transactions</div>
+                </div>
+                <div class="co-row-amt text-income" id="cashIn">₹ 0</div>
+              </div>
+              <div class="co-row">
+                <div class="co-row-icon out">↑</div>
+                <div class="co-row-info">
+                  <div class="co-row-label">Cash Spent</div>
+                  <div class="co-row-count" id="cashOutCount">0 transactions</div>
+                </div>
+                <div class="co-row-amt text-expense" id="cashOut">₹ 0</div>
+              </div>
+              <div class="co-balance">
+                <div class="co-balance-label">💰 Net Cash in Hand</div>
+                <div class="co-balance-amt" id="cashBalance">₹ 0</div>
+              </div>
+            </div>
+          </div>
+          <div class="co-card online-card">
+            <div class="co-header">
+              <div class="co-icon">📱</div>
+              <div class="co-header-info">
+                <div class="co-title">Online Balance</div>
+                <div class="co-subtitle">UPI + Bank + Card</div>
+              </div>
+              <div class="co-badge online-badge">ONLINE</div>
+            </div>
+            <div class="co-body">
+              <div class="co-row">
+                <div class="co-row-icon in">↓</div>
+                <div class="co-row-info">
+                  <div class="co-row-label">Online Received</div>
+                  <div class="co-row-count" id="onlineInCount">0 transactions</div>
+                </div>
+                <div class="co-row-amt text-income" id="onlineIn">₹ 0</div>
+              </div>
+              <div class="co-row">
+                <div class="co-row-icon out">↑</div>
+                <div class="co-row-info">
+                  <div class="co-row-label">Online Spent</div>
+                  <div class="co-row-count" id="onlineOutCount">0 transactions</div>
+                </div>
+                <div class="co-row-amt text-expense" id="onlineOut">₹ 0</div>
+              </div>
+              <div class="co-balance online-balance">
+                <div class="co-balance-label">📱 Net Online Balance</div>
+                <div class="co-balance-amt" id="onlineBalance">₹ 0</div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-<!-- INCOME MODAL -->
-<div class="modal-bg" id="incomeModal">
-  <div class="modal">
-    <div class="modal-hd" style="background: linear-gradient(135deg, rgba(209, 250, 229, 0.4) 0%, rgba(167, 243, 208, 0.4) 100%) !important;"><h3 id="incomeTitle">💰 Add Income</h3><button class="modal-x" onclick="closeModal('incomeModal')">✕</button></div>
-    <div class="modal-bd">
-      <div class="form-row">
-        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="iDate"/></div>
-        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat"><option value="">Select</option><option>💰 Cash Income</option><option>📱 Online Payment</option><option>🛒 Sales</option><option>🔧 Service</option><option>💻 Freelance</option><option>🏠 Rental</option><option>💼 Commission</option><option>↩️ Refund Received</option><option>📈 Investment Return</option><option>🎁 Gift / Bonus</option><option>📦 Other Income</option></select></div>
+        <!-- BUSINESS VISION & KPI TARGETS -->
+        <section class="card" style="margin-bottom:26px;">
+          <div class="card-hd">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <h4>🎯 Business Targets & Vision Roadmap</h4>
+              <span
+                style="font-size:0.72rem; background:var(--brand-soft); color:var(--brand); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">VISION
+                METRICS</span>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="openGoalSettingsModal()">⚙️ Configure Goals</button>
+          </div>
+          <div class="card-bd">
+            <div class="goals-wrapper-grid"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+
+              <!-- Goal 1: Revenue -->
+              <div class="goal-item-card"
+                style="background:rgba(99,102,241,0.02); border:1px solid rgba(99,102,241,0.06); border-radius:var(--r-md); padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">📈 MTD REVENUE
+                    TARGET</span>
+                  <span style="font-size:0.85rem; font-weight:800; color:var(--income);" id="goalRevPct">0%</span>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalRevCurrent">₹
+                    0.00</strong>
+                  <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
+                  <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalRevTarget">₹
+                    0.00</span>
+                </div>
+                <div
+                  style="height:6px; background:rgba(16,185,129,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
+                  <div
+                    style="height:100%; background:var(--income); border-radius:var(--r-full); width:0%; transition:width 1s;"
+                    id="goalRevBar"></div>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-light);" id="goalRevStatus">MTD Revenue status</div>
+              </div>
+
+              <!-- Goal 2: Expense Cap -->
+              <div class="goal-item-card"
+                style="background:rgba(239,68,68,0.02); border:1px solid rgba(239,68,68,0.06); border-radius:var(--r-md); padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">💸 MTD EXPENSE CAP</span>
+                  <span style="font-size:0.85rem; font-weight:800; color:var(--expense);" id="goalExpPct">0%</span>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalExpCurrent">₹
+                    0.00</strong>
+                  <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
+                  <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalExpTarget">₹
+                    0.00</span>
+                </div>
+                <div
+                  style="height:6px; background:rgba(239,68,68,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
+                  <div
+                    style="height:100%; background:var(--expense); border-radius:var(--r-full); width:0%; transition:width 1s;"
+                    id="goalExpBar"></div>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-light);" id="goalExpStatus">MTD Expense status</div>
+              </div>
+
+              <!-- Goal 3: Annual profit target -->
+              <div class="goal-item-card"
+                style="background:rgba(139,92,246,0.02); border:1px solid rgba(139,92,246,0.06); border-radius:var(--r-md); padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">🏆 YTD NET PROFIT
+                    MILESTONE</span>
+                  <span style="font-size:0.85rem; font-weight:800; color:var(--purple);" id="goalPrfPct">0%</span>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalPrfCurrent">₹
+                    0.00</strong>
+                  <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
+                  <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalPrfTarget">₹
+                    0.00</span>
+                </div>
+                <div
+                  style="height:6px; background:rgba(139,92,246,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
+                  <div
+                    style="height:100%; background:linear-gradient(90deg, var(--brand) 0%, var(--purple) 100%); border-radius:var(--r-full); width:0%; transition:width 1s;"
+                    id="goalPrfBar"></div>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-light);" id="goalPrfStatus">YTD Net Profit milestone
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <section class="analytics-grid">
+          <div class="mini-stat">
+            <div class="ms-top">
+              <div class="ms-ic">📊</div>
+              <div class="ms-title">Avg Income / Day</div>
+            </div>
+            <div class="ms-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+              <div>
+                <div class="ms-value" id="msAvgIncome">₹ 0</div>
+                <div class="ms-sub" id="msIncomeDays">No data yet</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineAvgIncome"></canvas></div>
+            </div>
+            <div class="ms-progress">
+              <div class="ms-fill f-income" id="msIncomeBar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-top">
+              <div class="ms-ic">💳</div>
+              <div class="ms-title">Avg Expense / Day</div>
+            </div>
+            <div class="ms-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+              <div>
+                <div class="ms-value" id="msAvgExpense">₹ 0</div>
+                <div class="ms-sub" id="msExpenseDays">No data yet</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineAvgExpense"></canvas></div>
+            </div>
+            <div class="ms-progress">
+              <div class="ms-fill f-expense" id="msExpenseBar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-top">
+              <div class="ms-ic">🎯</div>
+              <div class="ms-title">Savings Rate</div>
+            </div>
+            <div class="ms-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+              <div>
+                <div class="ms-value" id="msSavings">0%</div>
+                <div class="ms-sub" id="msSavingsSub">Start adding data</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineSavingsRate"></canvas></div>
+            </div>
+            <div class="ms-progress">
+              <div class="ms-fill f-brand" id="msSavingsBar" style="width:0%"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="chart-grid">
+          <div class="card chart-enhanced">
+            <div class="card-hd">
+              <h4>📊 Income vs Expense</h4><select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
+            </div>
+            <div class="card-bd">
+              <div style="position:relative;height:300px;"><canvas id="barChart"></canvas></div>
+            </div>
+          </div>
+          <div class="card chart-enhanced">
+            <div class="card-hd">
+              <h4>🍩 Expense Breakdown</h4>
+              <select class="chart-sel" id="donutPeriod" onchange="buildDonutChart()">
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+              </select>
+            </div>
+            <div class="card-bd">
+              <div style="position:relative;height:220px;"><canvas id="donutChart"></canvas></div>
+              <div id="donutLegend" class="donut-legend"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card chart-enhanced" style="margin-bottom:26px;">
+          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:16px;">
+              <button class="pb-tab active" id="chartTabLine" onclick="switchLineChartTab('historical', this)" style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-head); cursor:pointer; font-family:inherit;">📈 7-Day Cash Flow</button>
+              <button class="pb-tab" id="chartTabVelocity" onclick="switchLineChartTab('live', this)" style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-light); cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px;">
+                <span class="live-pulse" style="width:8px; height:8px; border-radius:50%; background:var(--expense); display:none; box-shadow: 0 0 6px var(--expense);"></span>
+                <span>⚡ Real-Time Sales (Live)</span>
+              </button>
+            </div>
+            <span style="font-size:0.75rem;color:var(--text-muted);" id="lineChartSubtext">Last 7 days</span>
+          </div>
+          <div class="card-bd">
+            <div class="chart-info-bar">
+              <div class="chart-info-item">
+                <div class="chart-info-dot" style="background:#059669;"></div><span>Income: <strong
+                    id="lineIncomeTotal">₹ 0</strong></span>
+              </div>
+              <div class="chart-info-item">
+                <div class="chart-info-dot" style="background:#dc2626;"></div><span>Expense: <strong
+                    id="lineExpenseTotal">₹ 0</strong></span>
+              </div>
+              <div class="chart-info-item" style="margin-left:auto;">
+                <div class="chart-info-dot" style="background:#ad67e6;"></div><span>Net Cash Flow: <strong id="lineNetTotal"
+                    style="color:#ad67e6;">₹ 0</strong></span>
+              </div>
+            </div>
+            <div style="position:relative;height:280px;"><canvas id="lineChart"></canvas></div>
+          </div>
+        </section>
+
+        <section class="bottom-grid">
+          <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
+            <div class="card chart-enhanced">
+              <div class="card-hd">
+                <h4>💡 Smart Insights & AI Copilot</h4>
+              </div>
+              <div class="card-bd" style="display:flex; flex-direction:column; gap:20px; padding:20px 24px;">
+                <!-- Health Score SVG circular gauge -->
+                <div class="insights-top-row" style="display:flex; gap:22px; align-items:center; border-bottom:1.5px solid var(--border); padding-bottom:18px; flex-wrap:wrap; width:100%;">
+                  <div class="health-score-gauge" style="position:relative; width:80px; height:80px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="80" height="80" viewBox="0 0 80 80" style="transform: rotate(-90deg);">
+                      <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="5" fill="transparent" />
+                      <circle id="healthScoreCircle" cx="40" cy="40" r="34" stroke="var(--brand)" stroke-width="5" fill="transparent" stroke-dasharray="213.63" stroke-dashoffset="213.63" style="transition: stroke-dashoffset 0.8s ease-in-out;" />
+                    </svg>
+                    <div style="position:absolute; text-align:center;">
+                      <div id="healthScoreValue" style="font-size:1.1rem; font-weight:900; color:var(--text-head);">0%</div>
+                      <div style="font-size:0.55rem; color:var(--text-light); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Health</div>
+                    </div>
+                  </div>
+                  <div style="flex:1; min-width:180px;">
+                    <div id="healthStatusText" style="font-size:0.85rem; font-weight:800; color:var(--text-head); margin-bottom:4px;">Calculating Health Score...</div>
+                    <div id="healthScoreDesc" style="font-size:0.75rem; color:var(--text-light); line-height:1.4;">Based on MTD savings rate, expense cap margin, and revenue goals velocity.</div>
+                  </div>
+                </div>
+                <!-- Smart Insights recommendations -->
+                <div id="insightsBox" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; width:100%;">
+                  <div class="insight-item info" style="grid-column: span 2;"><span class="insight-icon">💡</span>
+                    <div class="insight-text">Add transactions to see insights</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <h4>🕐 Recent Activity</h4>
+                <div style="display:flex; gap:8px;">
+                  <button onclick="exportTransactionsCSV()" class="btn btn-outline btn-sm" style="padding: 6px 12px; font-size: 0.75rem;">📥 Export CSV</button>
+                  <a href="transaction.html" class="btn btn-outline btn-sm">View All →</a>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="dtable">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Category</th>
+                      <th>Amount</th>
+                      <th>Mode</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentBody">
+                    <tr>
+                      <td colspan="5">
+                        <div class="empty">
+                          <div class="empty-icon">📋</div>
+                          <h4>No transactions yet</h4>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="right-col">
+            <div class="card chart-enhanced">
+              <div class="card-hd">
+                <h4>📊 Month Comparison</h4>
+              </div>
+              <div class="card-bd">
+                <div class="compare-grid" style="margin-bottom:10px;">
+                  <div class="compare-box">
+                    <div class="cb-lbl">Last Month</div>
+                    <div class="cb-val" id="cmpLast">₹ 0</div>
+                  </div>
+                  <div class="compare-box">
+                    <div class="cb-lbl">This Month</div>
+                    <div class="cb-val" id="cmpThis">₹ 0</div>
+                  </div>
+                </div>
+                <div style="position:relative;height:120px;margin-bottom:10px;"><canvas id="compareChart"></canvas></div>
+                <div class="compare-arrow neutral" id="cmpArrow">→ No data</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hd">
+                <h4>🔥 Top Expenses</h4>
+              </div>
+              <div class="card-bd" id="topCatBox">
+                <div class="empty">
+                  <p>No data yet</p>
+                </div>
+              </div>
+            </div>
+            <div class="card chart-enhanced">
+              <div class="card-hd">
+                <h4>💳 Payment Modes</h4>
+              </div>
+              <div class="card-bd">
+                <div style="position:relative;height:150px;margin-bottom:12px;"><canvas id="payModeChart"></canvas></div>
+                <div id="payModeBox">
+                  <div class="empty">
+                    <p>No data yet</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </div>
-      <div class="form-row">
-        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#059669;z-index:1;">₹</span><input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('income')"/></div></div>
-        <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
-      </div>
-      <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/></div>
-      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea></div>
-      <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong id="iPreviewVal">₹ 0.00</strong></div>
-    </div>
-    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button><button class="btn btn-income" onclick="saveTransaction('income')">💰 Save Income</button></div>
-    <input type="hidden" id="iEditId"/>
+    </main>
   </div>
-</div>
 
-<!-- EXPENSE MODAL -->
-<div class="modal-bg" id="expenseModal">
-  <div class="modal">
-    <div class="modal-hd" style="background: linear-gradient(135deg, rgba(254, 226, 226, 0.4) 0%, rgba(254, 202, 202, 0.4) 100%) !important;"><h3 id="expenseTitle">💸 Add Expense</h3><button class="modal-x" onclick="closeModal('expenseModal')">✕</button></div>
-    <div class="modal-bd">
-      <div class="form-row">
-        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="eDate"/></div>
-        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat"><option value="">Select</option><option>🧾 Electricity Bill</option><option>💧 Water Bill</option><option>📡 Internet Bill</option><option>📱 Mobile Bill</option><option>🏠 Rent</option><option>🛒 Grocery</option><option>🥦 Vegetables</option><option>🍞 Bread / Bakery</option><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>⛽ Fuel</option><option>👥 Salary</option><option>💊 Medical</option><option>📚 Education</option><option>🔨 Maintenance</option><option>📢 Marketing</option><option>📦 Supplies</option><option>🛡️ Insurance</option><option>📋 Tax</option><option>↩️ Refund Given</option><option>💸 Other Expense</option></select></div>
+  <!-- INCOME MODAL -->
+  <div class="modal-bg" id="incomeModal">
+    <div class="modal">
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(209, 250, 229, 0.4) 0%, rgba(167, 243, 208, 0.4) 100%) !important;">
+        <h3 id="incomeTitle">💰 Add Income</h3><button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
       </div>
-      <div class="form-row">
-        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#dc2626;z-index:1;">₹</span><input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" oninput="previewAmt('expense')"/></div></div>
-        <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
+      <div class="modal-bd">
+        <div class="form-row">
+          <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc"
+              id="iDate" /></div>
+          <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat">
+              <option value="">Select</option>
+              <option>💰 Cash Income</option>
+              <option>📱 Online Payment</option>
+              <option>🛒 Sales</option>
+              <option>🔧 Service</option>
+              <option>💻 Freelance</option>
+              <option>🏠 Rental</option>
+              <option>💼 Commission</option>
+              <option>↩️ Refund Received</option>
+              <option>📈 Investment Return</option>
+              <option>🎁 Gift / Bonus</option>
+              <option>📦 Other Income</option>
+            </select></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label>
+            <div style="position:relative;"><span
+                style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#059669;z-index:1;">₹</span><input
+                type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;"
+                oninput="previewAmt('income')" /></div>
+          </div>
+          <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode">
+              <option value="Cash">💵 Cash</option>
+              <option value="Online">📱 Online</option>
+              <option value="UPI">📲 UPI</option>
+              <option value="Bank Transfer">🏦 Bank Transfer</option>
+              <option value="Card">💳 Card</option>
+              <option value="Cheque">📄 Cheque</option>
+            </select></div>
+        </div>
+        <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom"
+            placeholder="Optional" autocomplete="off" /></div>
+        <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2"
+            placeholder="Optional..."></textarea></div>
+        <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong
+            id="iPreviewVal">₹ 0.00</strong></div>
       </div>
-      <div class="fg"><label class="fl">VENDOR</label><input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/></div>
-      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea></div>
-      <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong id="ePreviewVal">₹ 0.00</strong></div>
+      <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button><button
+          class="btn btn-income" onclick="saveTransaction('income')">💰 Save Income</button></div>
+      <input type="hidden" id="iEditId" />
     </div>
-    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button></div>
-    <input type="hidden" id="eEditId"/>
   </div>
-</div>
 
-<!-- GOAL SETTINGS MODAL -->
-<div class="modal-bg" id="goalSettingsModal">
-  <div class="modal" style="max-width: 480px;">
-    <div class="modal-hd" style="background: linear-gradient(135deg, rgba(224, 231, 255, 0.4) 0%, rgba(237, 233, 254, 0.4) 100%) !important;">
-      <h3>🎯 Configure Business Goals</h3>
-      <button class="modal-x" onclick="closeModal('goalSettingsModal')">✕</button>
-    </div>
-    <div class="modal-bd">
-      <div class="fg">
-        <label class="fl">MONTHLY REVENUE TARGET (₹) <span class="req">*</span></label>
-        <input type="number" class="fc" id="targetMonthlyRev" placeholder="150000" min="0" step="1000"/>
+  <!-- EXPENSE MODAL -->
+  <div class="modal-bg" id="expenseModal">
+    <div class="modal">
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(254, 226, 226, 0.4) 0%, rgba(254, 202, 202, 0.4) 100%) !important;">
+        <h3 id="expenseTitle">💸 Add Expense</h3><button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
       </div>
-      <div class="fg">
-        <label class="fl">MONTHLY EXPENSE CAP (₹) <span class="req">*</span></label>
-        <input type="number" class="fc" id="targetMonthlyExp" placeholder="60000" min="0" step="1000"/>
+      <div class="modal-bd">
+        <div class="form-row">
+          <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc"
+              id="eDate" /></div>
+          <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat">
+              <option value="">Select</option>
+              <option>🧾 Electricity Bill</option>
+              <option>💧 Water Bill</option>
+              <option>📡 Internet Bill</option>
+              <option>📱 Mobile Bill</option>
+              <option>🏠 Rent</option>
+              <option>🛒 Grocery</option>
+              <option>🥦 Vegetables</option>
+              <option>🍞 Bread / Bakery</option>
+              <option>🍔 Food & Dining</option>
+              <option>🚗 Transport</option>
+              <option>⛽ Fuel</option>
+              <option>👥 Salary</option>
+              <option>💊 Medical</option>
+              <option>📚 Education</option>
+              <option>🔨 Maintenance</option>
+              <option>📢 Marketing</option>
+              <option>📦 Supplies</option>
+              <option>🛡️ Insurance</option>
+              <option>📋 Tax</option>
+              <option>↩️ Refund Given</option>
+              <option>💸 Other Expense</option>
+            </select></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label>
+            <div style="position:relative;"><span
+                style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#dc2626;z-index:1;">₹</span><input
+                type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;"
+                oninput="previewAmt('expense')" /></div>
+          </div>
+          <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode">
+              <option value="Cash">💵 Cash</option>
+              <option value="Online">📱 Online</option>
+              <option value="UPI">📲 UPI</option>
+              <option value="Bank Transfer">🏦 Bank Transfer</option>
+              <option value="Card">💳 Card</option>
+              <option value="Cheque">📄 Cheque</option>
+            </select></div>
+        </div>
+        <div class="fg"><label class="fl">VENDOR</label><input type="text" class="fc" id="eVendor"
+            placeholder="Optional" autocomplete="off" /></div>
+        <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2"
+            placeholder="Optional..."></textarea></div>
+        <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong
+            id="ePreviewVal">₹ 0.00</strong></div>
       </div>
-      <div class="fg">
-        <label class="fl">ANNUAL NET PROFIT TARGET (₹) <span class="req">*</span></label>
-        <input type="number" class="fc" id="targetAnnualPrf" placeholder="1000000" min="0" step="5000"/>
-      </div>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-outline" onclick="closeModal('goalSettingsModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveVisionGoals()">🎯 Save Targets</button>
+      <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button
+          class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button></div>
+      <input type="hidden" id="eEditId" />
     </div>
   </div>
-</div>
 
-<div class="toast-box" id="toastBox"></div>
+  <!-- GOAL SETTINGS MODAL -->
+  <div class="modal-bg" id="goalSettingsModal">
+    <div class="modal" style="max-width: 480px;">
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(224, 231, 255, 0.4) 0%, rgba(237, 233, 254, 0.4) 100%) !important;">
+        <h3>🎯 Configure Business Goals</h3>
+        <button class="modal-x" onclick="closeModal('goalSettingsModal')">✕</button>
+      </div>
+      <div class="modal-bd">
+        <div class="fg">
+          <label class="fl">MONTHLY REVENUE TARGET (₹) <span class="req">*</span></label>
+          <input type="number" class="fc" id="targetMonthlyRev" placeholder="150000" min="0" step="1000" />
+        </div>
+        <div class="fg">
+          <label class="fl">MONTHLY EXPENSE CAP (₹) <span class="req">*</span></label>
+          <input type="number" class="fc" id="targetMonthlyExp" placeholder="60000" min="0" step="1000" />
+        </div>
+        <div class="fg">
+          <label class="fl">ANNUAL NET PROFIT TARGET (₹) <span class="req">*</span></label>
+          <input type="number" class="fc" id="targetAnnualPrf" placeholder="1000000" min="0" step="5000" />
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn btn-outline" onclick="closeModal('goalSettingsModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveVisionGoals()">🎯 Save Targets</button>
+      </div>
+    </div>
+  </div>
 
-<!-- JS Files - app.js MUST be before dashboard.js -->
-<script src="assets/js/app.js?v=1.0.0"></script>
-<script src="assets/js/dashboard.js?v=1.0.0"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('✅ ServiceWorker registered', reg))
-        .catch(err => console.error('❌ ServiceWorker registration failed', err));
-    });
-  }
-</script>
+  <div class="toast-box" id="toastBox"></div>
+
+  <!-- JS Files - app.js MUST be before dashboard.js -->
+  <script src="assets/js/app.js?v=1.0.0"></script>
+  <script src="assets/js/dashboard.js?v=1.0.0"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('✅ ServiceWorker registered', reg))
+          .catch(err => console.error('❌ ServiceWorker registration failed', err));
+      });
+    }
+  </script>
 </body>
+
 </html>
