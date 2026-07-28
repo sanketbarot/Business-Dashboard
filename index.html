@@ -93,17 +93,24 @@
         <div class="hd-right" style="display:flex; align-items:center; gap:16px;">
           <!-- Notification Bell -->
           <div class="notif-wrapper" style="position:relative;">
-            <button class="notif-btn" onclick="Dash.toggleNotifDropdown()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; position:relative; padding:4px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr);">
+            <button class="notif-btn" onclick="Dash.toggleNotifDropdown()"
+              style="background:none; border:none; font-size:1.3rem; cursor:pointer; position:relative; padding:4px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr);">
               🔔
-              <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-2px; right:-2px; background:var(--expense); color:white; font-size:0.65rem; font-weight:800; padding:2px 5px; border-radius:100px; line-height:1; border:1.5px solid var(--bg-card); box-shadow:0 0 6px rgba(239,68,68,0.4);">0</span>
+              <span class="notif-badge" id="notifBadge"
+                style="display:none; position:absolute; top:-2px; right:-2px; background:var(--expense); color:white; font-size:0.65rem; font-weight:800; padding:2px 5px; border-radius:100px; line-height:1; border:1.5px solid var(--bg-card); box-shadow:0 0 6px rgba(239,68,68,0.4);">0</span>
             </button>
-            <div class="notif-dropdown" id="notifDropdown" style="display:none; position:absolute; top:calc(100% + 12px); right:0; width:320px; background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--r-xl); box-shadow:var(--sh-lg); z-index:1001; overflow:hidden;">
-              <div class="notif-header" style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div class="notif-dropdown" id="notifDropdown"
+              style="display:none; position:absolute; top:calc(100% + 12px); right:0; width:320px; background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--r-xl); box-shadow:var(--sh-lg); z-index:1001; overflow:hidden;">
+              <div class="notif-header"
+                style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:800; font-size:0.9rem; color:var(--text-head);">🔔 Notifications</span>
-                <button onclick="Dash.clearNotifs()" style="background:none; border:none; font-size:0.72rem; font-weight:700; color:var(--brand); cursor:pointer; font-family:inherit;">Clear All</button>
+                <button onclick="Dash.clearNotifs()"
+                  style="background:none; border:none; font-size:0.72rem; font-weight:700; color:var(--brand); cursor:pointer; font-family:inherit;">Clear
+                  All</button>
               </div>
               <div class="notif-body" id="notifBody" style="max-height:280px; overflow-y:auto; padding:8px 0;">
-                <div style="padding:24px; text-align:center; color:var(--text-muted); font-size:0.8rem;">No new notifications</div>
+                <div style="padding:24px; text-align:center; color:var(--text-muted); font-size:0.8rem;">No new
+                  notifications</div>
               </div>
             </div>
           </div>
@@ -128,10 +135,10 @@
         <div class="period-wrap">
           <span class="period-title">📈 Financial Summary</span>
           <div class="period-bar">
-            <button class="pb-tab" data-p="today" onclick="switchPeriod('today',this)">Today</button>
+            <button class="pb-tab active" data-p="today" onclick="switchPeriod('today',this)">Today</button>
             <button class="pb-tab" data-p="yesterday" onclick="switchPeriod('yesterday',this)">Yesterday</button>
             <button class="pb-tab" data-p="week" onclick="switchPeriod('week',this)">Weekly</button>
-            <button class="pb-tab active" data-p="month" onclick="switchPeriod('month',this)">Monthly</button>
+            <button class="pb-tab" data-p="month" onclick="switchPeriod('month',this)">Monthly</button>
             <button class="pb-tab" data-p="year" onclick="switchPeriod('year',this)">Yearly</button>
             <button class="pb-tab" data-p="all" onclick="switchPeriod('all',this)">All Time</button>
           </div>
@@ -142,52 +149,60 @@
             <div class="sc-top">
               <div class="sc-icon">💰</div><span class="sc-trend" id="incomeTrend">→ 0%</span>
             </div>
-            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+            <div class="sc-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
               <div>
                 <div class="sc-label">Total Income</div>
                 <div class="sc-value" id="pIncome">₹ 0.00</div>
                 <div class="sc-sub" id="pIncomeCount">0 records</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineIncome"></canvas></div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineIncome"></canvas></div>
             </div>
           </div>
           <div class="sum-card">
             <div class="sc-top">
               <div class="sc-icon">💸</div><span class="sc-trend" id="expenseTrend">→ 0%</span>
             </div>
-            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+            <div class="sc-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
               <div>
                 <div class="sc-label">Total Expense</div>
                 <div class="sc-value" id="pExpense">₹ 0.00</div>
                 <div class="sc-sub" id="pExpenseCount">0 records</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineExpense"></canvas></div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineExpense"></canvas></div>
             </div>
           </div>
           <div class="sum-card">
             <div class="sc-top">
               <div class="sc-icon">📈</div><span class="sc-trend" id="profitTrend">→ 0%</span>
             </div>
-            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+            <div class="sc-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
               <div>
                 <div class="sc-label">Net Profit</div>
                 <div class="sc-value" id="pProfit">₹ 0.00</div>
                 <div class="sc-sub" id="pMargin">0% margin</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineProfit"></canvas></div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineProfit"></canvas></div>
             </div>
           </div>
           <div class="sum-card balance-glow">
             <div class="sc-top">
               <div class="sc-icon">🏦</div><span class="sc-trend">All Time</span>
             </div>
-            <div class="sc-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
+            <div class="sc-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
               <div>
                 <div class="sc-label">Total Balance</div>
                 <div class="sc-value" id="totalBal">₹ 0.00</div>
                 <div class="sc-sub" id="totalCount">0 records</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineBalance"></canvas></div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineBalance"></canvas></div>
             </div>
           </div>
         </section>
@@ -356,12 +371,14 @@
               <div class="ms-ic">📊</div>
               <div class="ms-title">Avg Income / Day</div>
             </div>
-            <div class="ms-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
               <div>
                 <div class="ms-value" id="msAvgIncome">₹ 0</div>
                 <div class="ms-sub" id="msIncomeDays">No data yet</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineAvgIncome"></canvas></div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineAvgIncome"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-income" id="msIncomeBar" style="width:0%"></div>
@@ -372,12 +389,14 @@
               <div class="ms-ic">💳</div>
               <div class="ms-title">Avg Expense / Day</div>
             </div>
-            <div class="ms-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
               <div>
                 <div class="ms-value" id="msAvgExpense">₹ 0</div>
                 <div class="ms-sub" id="msExpenseDays">No data yet</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineAvgExpense"></canvas></div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineAvgExpense"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-expense" id="msExpenseBar" style="width:0%"></div>
@@ -388,12 +407,14 @@
               <div class="ms-ic">🎯</div>
               <div class="ms-title">Savings Rate</div>
             </div>
-            <div class="ms-bottom-wrap" style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
               <div>
                 <div class="ms-value" id="msSavings">0%</div>
                 <div class="ms-sub" id="msSavingsSub">Start adding data</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas id="sparklineSavingsRate"></canvas></div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineSavingsRate"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-brand" id="msSavingsBar" style="width:0%"></div>
@@ -427,11 +448,16 @@
         </section>
 
         <section class="card chart-enhanced" style="margin-bottom:26px;">
-          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div class="card-hd"
+            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div style="display:flex; align-items:center; gap:16px;">
-              <button class="pb-tab active" id="chartTabLine" onclick="switchLineChartTab('historical', this)" style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-head); cursor:pointer; font-family:inherit;">📈 7-Day Cash Flow</button>
-              <button class="pb-tab" id="chartTabVelocity" onclick="switchLineChartTab('live', this)" style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-light); cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px;">
-                <span class="live-pulse" style="width:8px; height:8px; border-radius:50%; background:var(--expense); display:none; box-shadow: 0 0 6px var(--expense);"></span>
+              <button class="pb-tab active" id="chartTabLine" onclick="switchLineChartTab('historical', this)"
+                style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-head); cursor:pointer; font-family:inherit;">📈
+                7-Day Cash Flow</button>
+              <button class="pb-tab" id="chartTabVelocity" onclick="switchLineChartTab('live', this)"
+                style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-light); cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px;">
+                <span class="live-pulse"
+                  style="width:8px; height:8px; border-radius:50%; background:var(--expense); display:none; box-shadow: 0 0 6px var(--expense);"></span>
                 <span>⚡ Real-Time Sales (Live)</span>
               </button>
             </div>
@@ -448,8 +474,8 @@
                     id="lineExpenseTotal">₹ 0</strong></span>
               </div>
               <div class="chart-info-item" style="margin-left:auto;">
-                <div class="chart-info-dot" style="background:#ad67e6;"></div><span>Net Cash Flow: <strong id="lineNetTotal"
-                    style="color:#ad67e6;">₹ 0</strong></span>
+                <div class="chart-info-dot" style="background:#ad67e6;"></div><span>Net Cash Flow: <strong
+                    id="lineNetTotal" style="color:#ad67e6;">₹ 0</strong></span>
               </div>
             </div>
             <div style="position:relative;height:280px;"><canvas id="lineChart"></canvas></div>
@@ -464,24 +490,35 @@
               </div>
               <div class="card-bd" style="display:flex; flex-direction:column; gap:20px; padding:20px 24px;">
                 <!-- Health Score SVG circular gauge -->
-                <div class="insights-top-row" style="display:flex; gap:22px; align-items:center; border-bottom:1.5px solid var(--border); padding-bottom:18px; flex-wrap:wrap; width:100%;">
-                  <div class="health-score-gauge" style="position:relative; width:80px; height:80px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <div class="insights-top-row"
+                  style="display:flex; gap:22px; align-items:center; border-bottom:1.5px solid var(--border); padding-bottom:18px; flex-wrap:wrap; width:100%;">
+                  <div class="health-score-gauge"
+                    style="position:relative; width:80px; height:80px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                     <svg width="80" height="80" viewBox="0 0 80 80" style="transform: rotate(-90deg);">
                       <circle cx="40" cy="40" r="34" stroke="var(--border)" stroke-width="5" fill="transparent" />
-                      <circle id="healthScoreCircle" cx="40" cy="40" r="34" stroke="var(--brand)" stroke-width="5" fill="transparent" stroke-dasharray="213.63" stroke-dashoffset="213.63" style="transition: stroke-dashoffset 0.8s ease-in-out;" />
+                      <circle id="healthScoreCircle" cx="40" cy="40" r="34" stroke="var(--brand)" stroke-width="5"
+                        fill="transparent" stroke-dasharray="213.63" stroke-dashoffset="213.63"
+                        style="transition: stroke-dashoffset 0.8s ease-in-out;" />
                     </svg>
                     <div style="position:absolute; text-align:center;">
-                      <div id="healthScoreValue" style="font-size:1.1rem; font-weight:900; color:var(--text-head);">0%</div>
-                      <div style="font-size:0.55rem; color:var(--text-light); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Health</div>
+                      <div id="healthScoreValue" style="font-size:1.1rem; font-weight:900; color:var(--text-head);">0%
+                      </div>
+                      <div
+                        style="font-size:0.55rem; color:var(--text-light); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">
+                        Health</div>
                     </div>
                   </div>
                   <div style="flex:1; min-width:180px;">
-                    <div id="healthStatusText" style="font-size:0.85rem; font-weight:800; color:var(--text-head); margin-bottom:4px;">Calculating Health Score...</div>
-                    <div id="healthScoreDesc" style="font-size:0.75rem; color:var(--text-light); line-height:1.4;">Based on MTD savings rate, expense cap margin, and revenue goals velocity.</div>
+                    <div id="healthStatusText"
+                      style="font-size:0.85rem; font-weight:800; color:var(--text-head); margin-bottom:4px;">Calculating
+                      Health Score...</div>
+                    <div id="healthScoreDesc" style="font-size:0.75rem; color:var(--text-light); line-height:1.4;">Based
+                      on MTD savings rate, expense cap margin, and revenue goals velocity.</div>
                   </div>
                 </div>
                 <!-- Smart Insights recommendations -->
-                <div id="insightsBox" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; width:100%;">
+                <div id="insightsBox"
+                  style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; width:100%;">
                   <div class="insight-item info" style="grid-column: span 2;"><span class="insight-icon">💡</span>
                     <div class="insight-text">Add transactions to see insights</div>
                   </div>
@@ -489,10 +526,12 @@
               </div>
             </div>
             <div class="card">
-              <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div class="card-hd"
+                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <h4>🕐 Recent Activity</h4>
                 <div style="display:flex; gap:8px;">
-                  <button onclick="exportTransactionsCSV()" class="btn btn-outline btn-sm" style="padding: 6px 12px; font-size: 0.75rem;">📥 Export CSV</button>
+                  <button onclick="exportTransactionsCSV()" class="btn btn-outline btn-sm"
+                    style="padding: 6px 12px; font-size: 0.75rem;">📥 Export CSV</button>
                   <a href="transaction.html" class="btn btn-outline btn-sm">View All →</a>
                 </div>
               </div>
@@ -537,10 +576,74 @@
                     <div class="cb-val" id="cmpThis">₹ 0</div>
                   </div>
                 </div>
-                <div style="position:relative;height:120px;margin-bottom:10px;"><canvas id="compareChart"></canvas></div>
+                <div style="position:relative;height:120px;margin-bottom:10px;"><canvas id="compareChart"></canvas>
+                </div>
                 <div class="compare-arrow neutral" id="cmpArrow">→ No data</div>
               </div>
             </div>
+
+            <!-- QUICK GST ESTIMATOR WIDGET -->
+            <div class="card chart-enhanced" style="margin-top:16px;">
+              <div class="card-hd">
+                <h4>🧮 Quick GST Calculator</h4>
+              </div>
+              <div class="card-bd" style="padding:16px 20px;">
+                <div class="fg" style="margin-bottom:12px;">
+                  <label class="fl" style="font-size:0.75rem;">TRANSACTION AMOUNT (₹)</label>
+                  <input type="number" class="fc" id="gstAmount" value="1000" oninput="calculateGST()"
+                    style="padding:8px 12px; font-size:0.9rem;" />
+                </div>
+                <div
+                  style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                  <span style="font-size:0.72rem; color:var(--text-light); font-weight:700;">GST RATE:</span>
+                  <div style="display:flex; gap:4px; flex-grow:1; justify-content:flex-end;">
+                    <button class="btn btn-outline btn-xs active" id="gstRate5" onclick="setGSTRate(5, this)"
+                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">5%</button>
+                    <button class="btn btn-outline btn-xs" id="gstRate12" onclick="setGSTRate(12, this)"
+                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">12%</button>
+                    <button class="btn btn-outline btn-xs" id="gstRate18" onclick="setGSTRate(18, this)"
+                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">18%</button>
+                    <button class="btn btn-outline btn-xs" id="gstRate28" onclick="setGSTRate(28, this)"
+                      style="padding:4px 8px; font-size:0.7rem; font-weight:700;">28%</button>
+                  </div>
+                </div>
+                <div style="display:flex; gap:12px; margin-bottom:14px;">
+                  <label
+                    style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--text-light); cursor:pointer;">
+                    <input type="radio" name="gstType" value="exclusive" checked onchange="calculateGST()"
+                      style="accent-color:var(--brand);" />
+                    <span>Exclusive</span>
+                  </label>
+                  <label
+                    style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--text-light); cursor:pointer;">
+                    <input type="radio" name="gstType" value="inclusive" onchange="calculateGST()"
+                      style="accent-color:var(--brand);" />
+                    <span>Inclusive</span>
+                  </label>
+                </div>
+                <div
+                  style="background:rgba(99,102,241,0.02); border:1px dashed var(--border); border-radius:var(--r-md); padding:12px; font-size:0.75rem; display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; justify-content:space-between; color:var(--text-light);">
+                    <span>Base Value:</span>
+                    <span id="gstBaseVal">₹ 0.00</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; color:var(--text-light);">
+                    <span>CGST + SGST (Each):</span>
+                    <span id="gstSplitVal">₹ 0.00</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; color:var(--text-light); font-weight:700;">
+                    <span>Total GST Amount:</span>
+                    <span id="gstTotalTax" style="color:var(--brand);">₹ 0.00</span>
+                  </div>
+                  <div
+                    style="display:flex; justify-content:space-between; color:var(--text-head); font-weight:800; font-size:0.82rem; border-top:1px solid var(--border); padding-top:6px; margin-top:2px;">
+                    <span>Net Total:</span>
+                    <span id="gstNetTotal">₹ 0.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="card">
               <div class="card-hd">
                 <h4>🔥 Top Expenses</h4>
@@ -556,7 +659,8 @@
                 <h4>💳 Payment Modes</h4>
               </div>
               <div class="card-bd">
-                <div style="position:relative;height:150px;margin-bottom:12px;"><canvas id="payModeChart"></canvas></div>
+                <div style="position:relative;height:150px;margin-bottom:12px;"><canvas id="payModeChart"></canvas>
+                </div>
                 <div id="payModeBox">
                   <div class="empty">
                     <p>No data yet</p>

@@ -6,7 +6,7 @@
 
 const Dash = {
   charts: { bar: null, donut: null, line: null, compare: null, payMode: null, sparkIncome: null, sparkExpense: null, sparkProfit: null, sparkBalance: null, sparkAvgIncome: null, sparkAvgExpense: null, sparkSavings: null },
-  period: 'month',
+  period: 'today',
   isFirstLoad: true,
 
   init: function () {
@@ -17,6 +17,14 @@ const Dash = {
       this.lineChartTab = 'historical';
       this.simSessionStats = { income: 0, count: 0 };
       this.liveSalesData = [];
+      this.period = 'today';
+
+      // Enforce default visual tab highlight for Today
+      const todayBtn = document.querySelector('.pb-tab[data-p="today"]');
+      if (todayBtn) {
+        document.querySelectorAll('.pb-tab').forEach(t => t.classList.remove('active'));
+        todayBtn.classList.add('active');
+      }
 
       // SEED DATA UPGRADE FOR DEMO MODE
       if (localStorage.getItem('bd_mode') === 'demo') {
@@ -33,6 +41,7 @@ const Dash = {
       this.setupSearch();
       this.animateNumbers();
       this.loadNotifications();
+      if (typeof calculateGST === 'function') calculateGST();
 
       // Outside click closes notifications
       document.addEventListener('click', e => {
@@ -1845,7 +1854,7 @@ const PizzaCafeSimulator = {
 
       this.saveSimTxn(sale);
 
-      showToast(`🍕 Pizza Cafe Sale: ${sale.notes} for ₹${sale.amount}`, 'success');
+      toast(`🍕 Pizza Cafe Sale: ${sale.notes} for ₹${sale.amount}`, 'success');
 
       if (typeof Dash !== 'undefined' && typeof Dash.addNotification === 'function') {
         Dash.addNotification('success', '🍕 Pizza Cafe Sale', `${sale.notes} sold to ${sale.from} for ₹${sale.amount}`);
@@ -1877,7 +1886,7 @@ const PizzaCafeSimulator = {
 
       this.saveSimTxn(expense);
 
-      showToast(`🧀 Supplies Expense: Purchased ${expense.notes} for ₹${expense.amount}`, 'danger');
+      toast(`🧀 Supplies Expense: Purchased ${expense.notes} for ₹${expense.amount}`, 'danger');
 
       if (typeof Dash !== 'undefined' && typeof Dash.addNotification === 'function') {
         Dash.addNotification('danger', '🧀 Supplies Expense', `Purchased ${expense.notes} from ${expense.vendor} for ₹${expense.amount}`);
@@ -1901,8 +1910,54 @@ const PizzaCafeSimulator = {
   }
 };
 
+let currentGSTRate = 5;
+
+function setGSTRate(rate, btn) {
+  currentGSTRate = rate;
+  const parent = btn.parentElement;
+  if (parent) {
+    parent.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  }
+  btn.classList.add('active');
+  calculateGST();
+}
+
+function calculateGST() {
+  const amtEl = document.getElementById('gstAmount');
+  if (!amtEl) return;
+  const amt = parseFloat(amtEl.value) || 0;
+  
+  const typeRadio = document.querySelector('input[name="gstType"]:checked');
+  const type = typeRadio ? typeRadio.value : 'exclusive';
+
+  let base = 0;
+  let tax = 0;
+
+  if (type === 'inclusive') {
+    base = amt / (1 + currentGSTRate / 100);
+    tax = amt - base;
+  } else {
+    base = amt;
+    tax = amt * (currentGSTRate / 100);
+  }
+
+  const net = base + tax;
+  const split = tax / 2;
+
+  const baseEl = document.getElementById('gstBaseVal');
+  const splitEl = document.getElementById('gstSplitVal');
+  const taxEl = document.getElementById('gstTotalTax');
+  const netEl = document.getElementById('gstNetTotal');
+
+  if (baseEl) baseEl.textContent = inr(base);
+  if (splitEl) splitEl.textContent = `${inr(split)} (${(currentGSTRate / 2)}%)`;
+  if (taxEl) taxEl.textContent = inr(tax);
+  if (netEl) netEl.textContent = inr(net);
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => Dash.init());
 } else {
   Dash.init();
 }
+
