@@ -2638,3 +2638,68 @@ canvas:hover {
 .health-score-gauge svg {
   filter: drop-shadow(0 4px 10px rgba(99, 102, 241, 0.08));
 }
+
+/* ============================================
+   CHART CANVAS — RESPONSIVE & THEME POLISH
+   ============================================ */
+
+/* Ensure all chart canvases scale smoothly within their container */
+.card-bd canvas {
+  max-width: 100%;
+}
+
+/* Sparkline mini-charts inside summary/mini-stat cards */
+.sc-bottom-wrap canvas,
+.ms-bottom-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Chart wrapper divs (the inline position:relative;height:Xpx blocks) —
+   give them a class-based responsive height instead of relying only on inline px */
+.chart-wrap-lg   { position: relative; height: 300px; }
+.chart-wrap-md   { position: relative; height: 280px; }
+.chart-wrap-sm   { position: relative; height: 220px; }
+.chart-wrap-xs   { position: relative; height: 150px; }
+.chart-wrap-mini { position: relative; height: 120px; }
+
+/* Legend text readability on light theme */
+.donut-legend .leg-name,
+.donut-legend .leg-val {
+  color: var(--text-head);
+}
+
+/* Chart card body — a touch more breathing room around canvases */
+.chart-enhanced .card-bd {
+  padding: 20px 22px 24px;
+}
+
+/* ============================================
+   MOBILE — SHRINK CHART HEIGHTS SO THEY DON'T
+   FEEL CRAMPED OR OVERFLOW ON SMALL SCREENS
+   ============================================ */
+@media (max-width: 767px) {
+  .chart-wrap-lg   { height: 240px !important; }
+  .chart-wrap-md   { height: 220px !important; }
+  .chart-wrap-sm   { height: 200px !important; }
+  .chart-wrap-xs   { height: 130px !important; }
+  .chart-wrap-mini { height: 110px !important; }
+
+  /* Fallback: if inline px heights are still used instead of the classes above */
+  .card-bd > div[style*="height:300px"],
+  .card-bd > div[style*="height: 300px"] { height: 240px !important; }
+  .card-bd > div[style*="height:280px"],
+  .card-bd > div[style*="height: 280px"] { height: 220px !important; }
+  .card-bd > div[style*="height:220px"],
+  .card-bd > div[style*="height: 220px"] { height: 200px !important; }
+  .card-bd > div[style*="height:150px"],
+  .card-bd > div[style*="height: 150px"] { height: 130px !important; }
+  .card-bd > div[style*="height:120px"],
+  .card-bd > div[style*="height: 120px"] { height: 110px !important; }
+}
+
+@media (max-width: 480px) {
+  .chart-wrap-lg   { height: 210px !important; }
+  .chart-wrap-md   { height: 200px !important; }
+  .chart-wrap-sm   { height: 180px !important; }
+}

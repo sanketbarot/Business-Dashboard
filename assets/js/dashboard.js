@@ -729,8 +729,8 @@ const Dash = {
       if (subtextEl) subtextEl.textContent = 'Session live sales stream';
 
       const gLive = ctx.createLinearGradient(0, 0, 0, 280);
-      gLive.addColorStop(0, 'rgba(99, 102, 241, 0.45)');
-      gLive.addColorStop(1, 'rgba(99, 102, 241, 0)');
+      gLive.addColorStop(0, 'rgba(34, 199, 255, 0.35)');
+      gLive.addColorStop(1, 'rgba(34, 199, 255, 0)');
 
       this.charts.line = new Chart(canvas, {
         type: 'line',
@@ -739,12 +739,12 @@ const Dash = {
           datasets: [{
             label: 'Live Sales (₹)',
             data: sales,
-            borderColor: '#6366f1',
+            borderColor: '#22c7ff',
             backgroundColor: gLive,
             borderWidth: 3,
             pointRadius: 4,
             pointHoverRadius: 7,
-            pointBackgroundColor: '#6366f1',
+            pointBackgroundColor: '#0ea5e9',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
             fill: true,
@@ -825,8 +825,8 @@ const Dash = {
       g2.addColorStop(1, 'rgba(239, 68, 68, 0)');
 
       const g3 = ctx.createLinearGradient(0, 0, 0, 280);
-      g3.addColorStop(0, 'rgba(173, 103, 230, 0.35)');
-      g3.addColorStop(1, 'rgba(173, 103, 230, 0)');
+      g3.addColorStop(0, 'rgba(139, 92, 246, 0.35)');
+      g3.addColorStop(1, 'rgba(139, 92, 246, 0)');
 
       this.charts.line = new Chart(canvas, {
         type: 'line',
@@ -849,9 +849,9 @@ const Dash = {
             },
             {
               label: 'Net Cash Flow', data: net,
-              borderColor: '#ad67e6', backgroundColor: g3,
+              borderColor: '#8b5cf6', backgroundColor: g3,
               borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-              pointBackgroundColor: '#ad67e6', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+              pointBackgroundColor: '#8b5cf6', pointBorderColor: '#ffffff', pointBorderWidth: 3,
               fill: true, tension: 0.42
             }
           ]
@@ -922,16 +922,16 @@ const Dash = {
           {
             label: 'Last Month',
             data: [lastM.income, lastM.expense, lastM.profit],
-            backgroundColor: 'rgba(163, 150, 255, 0.45)',
-            borderColor: 'rgba(163, 150, 255, 0.85)',
+            backgroundColor: 'rgba(34, 199, 255, 0.2)',
+            borderColor: 'rgba(34, 199, 255, 0.5)',
             borderWidth: 1.5,
             borderRadius: 6
           },
           {
             label: 'This Month',
             data: [thisM.income, thisM.expense, thisM.profit],
-            backgroundColor: 'rgba(99, 102, 241, 0.85)',
-            borderColor: 'var(--brand)',
+            backgroundColor: '#0ea5e9',
+            borderColor: '#0ea5e9',
             borderWidth: 1.5,
             borderRadius: 6
           }
@@ -985,7 +985,7 @@ const Dash = {
 
     const labels = Object.keys(grouped);
     const values = Object.values(grouped);
-    const colors = ['#a396ff', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#f97316'];
+    const colors = ['#22c7ff', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#f97316'];
 
     if (this.charts.payMode) {
       this.charts.payMode.data.labels = labels.length ? labels : ['No Data'];
@@ -1129,10 +1129,10 @@ const Dash = {
       { id: 'sparklineIncome', data: incomeData, color: '#6366f1', label: 'Income', chartKey: 'sparkIncome' },
       { id: 'sparklineExpense', data: expenseData, color: '#10b981', label: 'Expense', chartKey: 'sparkExpense' },
       { id: 'sparklineProfit', data: profitData, color: '#f59e0b', label: 'Profit', chartKey: 'sparkProfit' },
-      { id: 'sparklineBalance', data: balanceData, color: '#a396ff', label: 'Balance', chartKey: 'sparkBalance' },
+      { id: 'sparklineBalance', data: balanceData, color: '#22c7ff', label: 'Balance', chartKey: 'sparkBalance' },
       { id: 'sparklineAvgIncome', data: incomeData, color: '#10b981', label: 'Avg Income', chartKey: 'sparkAvgIncome' },
       { id: 'sparklineAvgExpense', data: expenseData, color: '#ef4444', label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
-      { id: 'sparklineSavingsRate', data: savingsRateData, color: '#a396ff', label: 'Savings Rate', chartKey: 'sparkSavings' }
+      { id: 'sparklineSavingsRate', data: savingsRateData, color: '#8b5cf6', label: 'Savings Rate', chartKey: 'sparkSavings' }
     ];
 
     sparkConfigs.forEach(conf => {
@@ -1914,4 +1914,3 @@ if (document.readyState === 'loading') {
 } else {
   Dash.init();
 }
-

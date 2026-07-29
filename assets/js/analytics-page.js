@@ -408,7 +408,7 @@ const AnalyticsPage = {
     const labels = sortedCats.map(c => c.replace(/^[^\s]+\s+/, ''));
     const data = sortedCats.map(c => categoryMap[c]);
 
-    const palette = ['#22c7ff', '#10b981', '#ef4444', '#f59e0b', '#ad67e6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
+    const palette = ['#22c7ff', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
 
     const ctx = document.getElementById('categoryShareChart');
     if (!ctx) return;
@@ -661,7 +661,7 @@ const AnalyticsPage = {
     const palette = {
       'Cash': '#10b981',
       'Online': '#22c7ff',
-      'UPI': '#ad67e6',
+      'UPI': '#8b5cf6',
       'Bank Transfer': '#06b6d4',
       'Card': '#ec4899',
       'Cheque': '#f59e0b'
