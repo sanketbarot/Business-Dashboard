@@ -1284,8 +1284,8 @@ const Dash = {
   seedRealisticData: function () {
     const txns = [];
     const categories = {
-      income: ['💰 Cash Income', '📱 Online Payment', '🛒 Sales', '🔧 Service'],
-      expense: ['🧾 Electricity Bill', '💧 Water Bill', '🏠 Rent', '🛒 Grocery', '🍔 Food & Dining', '⛽ Fuel', '👥 Salary', '🔨 Maintenance', '📦 Supplies']
+      income: ['💰 Cash Income', '📱 Online Payment', '🛒 Sales', '↩️ Refund Received', '📈 Investment Return', '🎁 Gift / Bonus', '🛵 Swiggy', '🛵 Zomato', '📦 Other Income'],
+      expense: ['🧾 Electricity Bill', '📡 Internet Bill', '📱 Mobile Bill', '🏠 Rent', '🛒 Grocery', '🥦 Vegetables', '🍞 Bread / Bakery', '🍔 Food & Dining', '🚗 Transport', '⛽ Fuel', '👥 Salary', '🔨 Maintenance', '📢 Marketing', '📦 Supplies', '📋 Tax', '↩️ Refund Given', '💸 Other Expense']
     };
     const notes = {
       '🛒 Sales': ['🍕 Margherita Pizza', '🍕 Pepperoni Pizza', '🍕 Veggie Supreme Pizza', '🥤 Classic Cold Coffee', '🍟 Crispy French Fries', '🍧 Chilly Vanilla Ice Cream', '🍰 Sizzling Chocolate Brownie'],
