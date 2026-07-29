@@ -559,19 +559,21 @@ const Dash = {
 
     const ctx = canvas.getContext('2d');
     const gInc = ctx.createLinearGradient(0, 0, 0, 300);
-    gInc.addColorStop(0, '#22c7ff');
-    gInc.addColorStop(1, '#0ea5e9');
+    gInc.addColorStop(0, '#10b981'); // Vibrant Emerald Green
+    gInc.addColorStop(1, 'rgba(16, 185, 129, 0.15)'); // Glow fade
 
     const gExp = ctx.createLinearGradient(0, 0, 0, 300);
-    gExp.addColorStop(0, '#f43f5e');
-    gExp.addColorStop(1, '#e11d48');
+    gExp.addColorStop(0, '#f43f5e'); // Rose Coral
+    gExp.addColorStop(1, 'rgba(244, 63, 94, 0.15)'); // Glow fade
 
     if (this.charts.bar) {
       this.charts.bar.data.labels = months;
       this.charts.bar.data.datasets[0].data = income;
       this.charts.bar.data.datasets[0].backgroundColor = gInc;
+      this.charts.bar.data.datasets[0].borderRadius = { topLeft: 10, topRight: 10 };
       this.charts.bar.data.datasets[1].data = expense;
       this.charts.bar.data.datasets[1].backgroundColor = gExp;
+      this.charts.bar.data.datasets[1].borderRadius = { topLeft: 10, topRight: 10 };
       this.charts.bar.update();
       return;
     }
@@ -581,8 +583,8 @@ const Dash = {
       data: {
         labels: months,
         datasets: [
-          { label: 'Income', data: income, backgroundColor: gInc, borderRadius: { topLeft: 6, topRight: 6 }, maxBarThickness: 32 },
-          { label: 'Expense', data: expense, backgroundColor: gExp, borderRadius: { topLeft: 6, topRight: 6 }, maxBarThickness: 32 }
+          { label: 'Income', data: income, backgroundColor: gInc, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 },
+          { label: 'Expense', data: expense, backgroundColor: gExp, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 }
         ]
       },
       options: {
@@ -629,7 +631,7 @@ const Dash = {
     }
     const labels = Object.keys(grouped);
     const values = Object.values(grouped);
-    const colors = ['#22c7ff', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
+    const colors = ['#4f46e5', '#10b981', '#f59e0b', '#7c3aed', '#0ea5e9', '#db2777', '#f97316', '#14b8a6', '#84cc16', '#eab308', '#ec4899', '#6366f1'];
 
     const total = values.reduce((a, b) => a + b, 0);
 
@@ -729,8 +731,8 @@ const Dash = {
       if (subtextEl) subtextEl.textContent = 'Session live sales stream';
 
       const gLive = ctx.createLinearGradient(0, 0, 0, 280);
-      gLive.addColorStop(0, 'rgba(34, 199, 255, 0.35)');
-      gLive.addColorStop(1, 'rgba(34, 199, 255, 0)');
+      gLive.addColorStop(0, 'rgba(79, 70, 229, 0.3)');
+      gLive.addColorStop(1, 'rgba(79, 70, 229, 0)');
 
       this.charts.line = new Chart(canvas, {
         type: 'line',
@@ -739,12 +741,12 @@ const Dash = {
           datasets: [{
             label: 'Live Sales (₹)',
             data: sales,
-            borderColor: '#22c7ff',
+            borderColor: '#4f46e5',
             backgroundColor: gLive,
             borderWidth: 3,
             pointRadius: 4,
             pointHoverRadius: 7,
-            pointBackgroundColor: '#0ea5e9',
+            pointBackgroundColor: '#4f46e5',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
             fill: true,
@@ -922,18 +924,18 @@ const Dash = {
           {
             label: 'Last Month',
             data: [lastM.income, lastM.expense, lastM.profit],
-            backgroundColor: 'rgba(34, 199, 255, 0.2)',
-            borderColor: 'rgba(34, 199, 255, 0.5)',
+            backgroundColor: 'rgba(79, 70, 229, 0.15)',
+            borderColor: 'rgba(79, 70, 229, 0.4)',
             borderWidth: 1.5,
-            borderRadius: 6
+            borderRadius: 10
           },
           {
             label: 'This Month',
             data: [thisM.income, thisM.expense, thisM.profit],
-            backgroundColor: '#0ea5e9',
-            borderColor: '#0ea5e9',
+            backgroundColor: '#4f46e5',
+            borderColor: '#4f46e5',
             borderWidth: 1.5,
-            borderRadius: 6
+            borderRadius: 10
           }
         ]
       },
@@ -985,7 +987,7 @@ const Dash = {
 
     const labels = Object.keys(grouped);
     const values = Object.values(grouped);
-    const colors = ['#22c7ff', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#f97316'];
+    const colors = ['#4f46e5', '#10b981', '#f59e0b', '#7c3aed', '#0ea5e9', '#db2777'];
 
     if (this.charts.payMode) {
       this.charts.payMode.data.labels = labels.length ? labels : ['No Data'];

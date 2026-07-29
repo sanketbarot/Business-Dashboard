@@ -342,12 +342,12 @@ const AnalyticsPage = {
           {
             label: 'Net Profit',
             data: profits.length ? profits : [0],
-            borderColor: '#22c7ff',
-            backgroundColor: 'rgba(34, 199, 255, 0.08)',
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.08)',
             borderWidth: 3,
             fill: true,
             tension: 0.38,
-            pointBackgroundColor: '#22c7ff',
+            pointBackgroundColor: '#4f46e5',
             pointRadius: 3,
             pointHoverRadius: 7
           },
@@ -408,7 +408,7 @@ const AnalyticsPage = {
     const labels = sortedCats.map(c => c.replace(/^[^\s]+\s+/, ''));
     const data = sortedCats.map(c => categoryMap[c]);
 
-    const palette = ['#22c7ff', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#eab308', '#6366f1', '#a855f7'];
+    const palette = ['#4f46e5', '#10b981', '#f59e0b', '#7c3aed', '#0ea5e9', '#db2777', '#f97316', '#14b8a6', '#84cc16', '#eab308', '#ec4899', '#6366f1'];
 
     const ctx = document.getElementById('categoryShareChart');
     if (!ctx) return;
@@ -516,15 +516,15 @@ const AnalyticsPage = {
           {
             label: 'Records Count',
             data: countsData,
-            backgroundColor: 'rgba(34, 199, 255, 0.85)',
-            borderRadius: { topLeft: 6, topRight: 6 },
+            backgroundColor: 'rgba(79, 70, 229, 0.8)',
+            borderRadius: { topLeft: 10, topRight: 10 },
             yAxisID: 'y'
           },
           {
             label: 'Transaction Value (₹)',
             data: valuesData,
-            backgroundColor: 'rgba(16, 185, 129, 0.55)',
-            borderRadius: { topLeft: 6, topRight: 6 },
+            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            borderRadius: { topLeft: 10, topRight: 10 },
             yAxisID: 'y1'
           }
         ]
@@ -606,8 +606,8 @@ const AnalyticsPage = {
         datasets: [{
           label: 'Cumulative Capital (₹)',
           data: balances.length ? balances : [0],
-          borderColor: '#22c7ff',
-          backgroundColor: 'rgba(34, 199, 255, 0.08)',
+          borderColor: '#7c3aed',
+          backgroundColor: 'rgba(124, 58, 237, 0.08)',
           borderWidth: 3,
           fill: true,
           tension: 0.25,
@@ -660,10 +660,10 @@ const AnalyticsPage = {
 
     const palette = {
       'Cash': '#10b981',
-      'Online': '#22c7ff',
-      'UPI': '#8b5cf6',
-      'Bank Transfer': '#06b6d4',
-      'Card': '#ec4899',
+      'Online': '#4f46e5',
+      'UPI': '#7c3aed',
+      'Bank Transfer': '#0ea5e9',
+      'Card': '#db2777',
       'Cheque': '#f59e0b'
     };
 

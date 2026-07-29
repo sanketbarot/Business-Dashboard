@@ -1,545 +1,686 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Login — Crust & Chilly</title>
-<meta name="theme-color" content="#a396ff"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png"/>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
-<link rel="manifest" href="manifest.json"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Crust & Chilly</title>
+  <meta name="theme-color" content="#a396ff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AI Toolcor" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="manifest" href="manifest.json" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
 
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  min-height: 100vh;
-  display: flex;
-  background: radial-gradient(circle at 50% 50%, #1a1a24 0%, #13131a 100%);
-  color: #ffffff;
-  overflow-x: hidden;
-  position: relative;
-}
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background: radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%);
+      color: #334155;
+      overflow-x: hidden;
+      position: relative;
+    }
 
-body::before {
-  content: '';
-  position: fixed;
-  width: 45vw;
-  height: 45vw;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0) 70%);
-  top: -10vw;
-  left: 5vw;
-  filter: blur(60px);
-  z-index: 1;
-  pointer-events: none;
-}
+    body::before {
+      content: '';
+      position: fixed;
+      width: 45vw;
+      height: 45vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(79, 70, 229, 0.04) 0%, rgba(79, 70, 229, 0) 70%);
+      top: -10vw;
+      left: 5vw;
+      filter: blur(60px);
+      z-index: 1;
+      pointer-events: none;
+    }
 
-body::after {
-  content: '';
-  position: fixed;
-  width: 50vw;
-  height: 50vw;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.04) 0%, rgba(16, 185, 129, 0) 70%);
-  bottom: -15vw;
-  right: -5vw;
-  filter: blur(60px);
-  z-index: 1;
-  pointer-events: none;
-}
+    body::after {
+      content: '';
+      position: fixed;
+      width: 50vw;
+      height: 50vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.02) 0%, rgba(16, 185, 129, 0) 70%);
+      bottom: -15vw;
+      right: -5vw;
+      filter: blur(60px);
+      z-index: 1;
+      pointer-events: none;
+    }
 
-.left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px;
-  position: relative;
-  z-index: 2;
-}
+    .left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      position: relative;
+      z-index: 2;
+    }
 
-.brand { max-width: 460px; width: 100%; }
+    .brand {
+      max-width: 460px;
+      width: 100%;
+    }
 
-.brand-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 32px;
-}
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
 
-.brand-logo {
-  width: 56px; height: 56px;
-  background: transparent;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(44, 32, 92, 0.1);
-  overflow: hidden;
-  padding: 0;
-}
+    .brand-logo {
+      width: 56px;
+      height: 56px;
+      background: transparent;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+      overflow: hidden;
+      padding: 0;
+    }
 
-.brand-logo img { width: 100%; height: 100%; object-fit: contain; }
-.brand-logo-name { font-size: 1.15rem; font-weight: 800; color: #ffffff; }
-.brand-logo-tag { font-size: 0.7rem; color: #3b82f6; font-weight: 700; }
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
-.logo-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: 100px;
-  margin-bottom: 24px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #3b82f6;
-}
+    .brand-logo-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
 
-.brand h1 {
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 20px;
-  color: #ffffff;
-}
+    .brand-logo-tag {
+      font-size: 0.7rem;
+      color: #4f46e5;
+      font-weight: 700;
+    }
 
-.brand h1 .accent {
-  background: linear-gradient(135deg, #3b82f6 0%, #ad67e6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: rgba(79, 70, 229, 0.06);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(79, 70, 229, 0.15);
+      border-radius: 100px;
+      margin-bottom: 24px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #4f46e5;
+    }
 
-.brand > p {
-  font-size: 1rem;
-  color: #a0aec0;
-  line-height: 1.7;
-  margin-bottom: 36px;
-}
+    .brand h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      color: #0f172a;
+    }
 
-.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .brand h1 .accent {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-.stat-box {
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  text-align: center;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
+    .brand>p {
+      font-size: 1rem;
+      color: #64748b;
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
 
-.stat-box:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12); }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
 
-.stat-box .num { font-size: 1.5rem; font-weight: 800; color: #3b82f6; margin-bottom: 4px; }
-.stat-box .lbl { font-size: 0.72rem; color: #a0aec0; font-weight: 600; }
+    .stat-box {
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 16px;
+      text-align: center;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    }
 
-.right {
-  width: 480px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  position: relative;
-  z-index: 2;
-}
+    .stat-box:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(79, 70, 229, 0.08);
+    }
 
-.form-card {
-  width: 100%;
-  max-width: 400px;
-  background: rgba(30, 30, 46, 0.6);
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 32px;
-  padding: 44px 36px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.05);
-  animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
+    .stat-box .num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #4f46e5;
+      margin-bottom: 4px;
+    }
 
-@keyframes popIn {
-  0% { opacity: 0; transform: scale(0.95); }
-  70% { transform: scale(1.02); }
-  100% { opacity: 1; transform: scale(1); }
-}
+    .stat-box .lbl {
+      font-size: 0.72rem;
+      color: #64748b;
+      font-weight: 600;
+    }
 
-.mobile-logo {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 26px;
-  padding-bottom: 26px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
+    .right {
+      width: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      position: relative;
+      z-index: 2;
+    }
 
-.mobile-logo-icon {
-  width: 46px; height: 46px;
-  background: transparent;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
+    .form-card {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 24px;
+      padding: 44px 36px;
+      box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+      animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-.mobile-logo-icon img { width: 100%; height: 100%; object-fit: contain; }
-.mobile-logo-text { font-size: 1.15rem; font-weight: 800; color: #ffffff; }
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
 
-.cloud-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 100px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #10b981;
-  margin-bottom: 20px;
-}
+      70% {
+        transform: scale(1.02);
+      }
 
-.form-card h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; color: #ffffff; }
-.form-card > p { font-size: 0.88rem; color: #a0aec0; margin-bottom: 28px; }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
 
-.fg { margin-bottom: 18px; }
+    .mobile-logo {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 26px;
+      padding-bottom: 26px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
 
-.fl {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #3b82f6;
-  margin-bottom: 8px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
+    .mobile-logo-icon {
+      width: 46px;
+      height: 46px;
+      background: transparent;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
 
-.iw { position: relative; }
+    .mobile-logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
-.iw-ic {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1rem;
-  pointer-events: none;
-  z-index: 2;
-}
+    .mobile-logo-text {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
 
-.fi {
-  width: 100%;
-  padding: 14px 16px 14px 46px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50px;
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-family: inherit;
-  outline: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 50px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-}
+    .cloud-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #10b981;
+      margin-bottom: 20px;
+    }
 
-.fi:focus {
-  border-color: rgba(59, 130, 246, 0.85);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 8px 20px rgba(0, 0, 0, 0.25);
-  transform: translateY(-1px);
-}
+    .form-card h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
 
-.fi::placeholder { color: #718096; }
+    .form-card>p {
+      font-size: 0.88rem;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
 
-.pt {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 8px;
-  z-index: 2;
-}
+    .fg {
+      margin-bottom: 18px;
+    }
 
-.err {
-  display: none;
-  background: #fecaca;
-  border: 1px solid rgba(211, 60, 60, 0.2);
-  color: #d33c3c;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  margin-bottom: 16px;
-  font-weight: 500;
-}
+    .fl {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #4f46e5;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
 
-.err.shake {
-  animation: shake 0.4s ease-in-out;
-}
+    .iw {
+      position: relative;
+    }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-8px); }
-  75% { transform: translateX(8px); }
-}
+    .iw-ic {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 2;
+    }
 
-.lb {
-  display: block;
-  width: 100%;
-  padding: 15px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 50px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-top: 14px;
-  min-height: 52px;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-}
+    .fi {
+      width: 100%;
+      padding: 14px 16px 14px 46px;
+      background: #f8fafc;
+      border: 1.5px solid rgba(226, 232, 240, 0.8);
+      border-radius: 50px;
+      color: #0f172a;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      min-height: 50px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+    }
 
-.lb:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.5);
-}
+    .fi:focus {
+      border-color: #4f46e5;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12), 0 8px 20px rgba(0, 0, 0, 0.03);
+      transform: translateY(-1px);
+    }
 
-.lb:active:not(:disabled) {
-  transform: translateY(0);
-}
+    .fi::placeholder {
+      color: #94a3b8;
+    }
 
-.lb:disabled { opacity: 0.6; cursor: not-allowed; }
+    .pt {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 8px;
+      z-index: 2;
+    }
 
-.lb.demo-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
-}
+    .err {
+      display: none;
+      background: #fee2e2;
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      color: #f43f5e;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
 
-.lb.demo-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.5);
-}
+    .err.shake {
+      animation: shake 0.4s ease-in-out;
+    }
 
-.ft { text-align: center; margin-top: 26px; font-size: 0.75rem; color: #718096; }
-.dm { margin-top: 10px; text-align: center; font-size: 0.75rem; color: #3b82f6; font-weight: 700; }
+    @keyframes shake {
 
-.status-msg {
-  text-align: center;
-  font-size: 0.72rem;
-  color: #64748b;
-  margin-top: 16px;
-  min-height: 20px;
-}
+      0%,
+      100% {
+        transform: translateX(0);
+      }
 
-@media (max-width: 900px) {
-  .left { display: none; }
-  .right { width: 100%; padding: 24px 20px; min-height: 100vh; }
-  .mobile-logo { display: flex; }
-}
+      25% {
+        transform: translateX(-8px);
+      }
 
-@media (max-width: 600px) {
-  .right { padding: 20px 16px; }
-  .form-card { padding: 32px 24px; }
-  .form-card h2 { font-size: 1.4rem; }
-  .fi { font-size: 16px; }
-}
+      75% {
+        transform: translateX(8px);
+      }
+    }
 
-@media (max-width: 400px) {
-  .form-card { padding: 26px 20px; }
-  .form-card h2 { font-size: 1.2rem; }
-}
-</style>
+    .lb {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-top: 14px;
+      min-height: 52px;
+      box-shadow: 0 8px 24px rgba(79, 70, 229, 0.2);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .lb:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(79, 70, 229, 0.35);
+    }
+
+    .lb:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .lb:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .lb.demo-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+    }
+
+    .lb.demo-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      box-shadow: 0 12px 28px rgba(16, 185, 129, 0.3);
+    }
+
+    .ft {
+      text-align: center;
+      margin-top: 26px;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .dm {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #4f46e5;
+      font-weight: 700;
+    }
+
+    .status-msg {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 16px;
+      min-height: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .left {
+        display: none;
+      }
+
+      .right {
+        width: 100%;
+        padding: 24px 20px;
+        min-height: 100vh;
+      }
+
+      .mobile-logo {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .right {
+        padding: 20px 16px;
+      }
+
+      .form-card {
+        padding: 32px 24px;
+      }
+
+      .form-card h2 {
+        font-size: 1.4rem;
+      }
+
+      .fi {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .form-card {
+        padding: 26px 20px;
+      }
+
+      .form-card h2 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="left">
-  <div class="brand">
-    <div class="brand-header">
-      <div class="brand-logo">
-        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
-      </div>
-      <div>
-        <div class="brand-logo-name">Crust & Chilly</div>
-        <div class="brand-logo-tag">BUSINESS SUITE</div>
-      </div>
-    </div>
-
-    <div class="logo-badge">☁️ CLOUD SYNC ENABLED</div>
-    <h1>Manage business.<br/><span class="accent">Anywhere.</span></h1>
-    <p>Data syncs across all devices in real-time. Add on phone, view on laptop instantly!</p>
-
-    <div class="stats-row">
-      <div class="stat-box"><div class="num">☁️</div><div class="lbl">Cloud Sync</div></div>
-      <div class="stat-box"><div class="num">📱</div><div class="lbl">All Devices</div></div>
-      <div class="stat-box"><div class="num">⚡</div><div class="lbl">Real-time</div></div>
-    </div>
-  </div>
-</div>
-
-<div class="right">
-  <div class="form-card">
-    <div class="mobile-logo">
-      <div class="mobile-logo-icon">
-        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
-      </div>
-      <div class="mobile-logo-text">Crust & Chilly</div>
-    </div>
-
-    <div class="cloud-badge">☁️ Cloud Sync Active</div>
-    <h2>Welcome back 👋</h2>
-    <p>Sign in to access your dashboard</p>
-
-    <div class="err" id="errBox">❌ Error</div>
-
-    <form onsubmit="handleLogin(event)">
-      <div class="fg">
-        <label class="fl">Email Address</label>
-        <div class="iw">
-          <span class="iw-ic">📧</span>
-          <input type="email" class="fi" id="em" required autocomplete="email" placeholder="your@email.com"/>
+  <div class="left">
+    <div class="brand">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';" />
+        </div>
+        <div>
+          <div class="brand-logo-name">Crust & Chilly</div>
+          <div class="brand-logo-tag">BUSINESS SUITE</div>
         </div>
       </div>
 
-      <div class="fg">
-        <label class="fl">Password</label>
-        <div class="iw">
-          <span class="iw-ic">🔒</span>
-          <input type="password" class="fi" id="pw" required placeholder="••••••••" autocomplete="current-password"/>
-          <button type="button" class="pt" onclick="togP()">👁️</button>
+      <div class="logo-badge">☁️ CLOUD SYNC ENABLED</div>
+      <h1>Manage business.<br /><span class="accent">Anywhere.</span></h1>
+      <p>Data syncs across all devices in real-time. Add on phone, view on laptop instantly!</p>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="num">☁️</div>
+          <div class="lbl">Cloud Sync</div>
+        </div>
+        <div class="stat-box">
+          <div class="num">📱</div>
+          <div class="lbl">All Devices</div>
+        </div>
+        <div class="stat-box">
+          <div class="num">⚡</div>
+          <div class="lbl">Real-time</div>
         </div>
       </div>
-
-      <button type="submit" class="lb" id="lb">Sign in →</button>
-      <button type="button" class="lb demo-btn" onclick="loginDemo()">Try Demo Mode (Offline) →</button>
-    </form>
-
-    <div class="status-msg" id="statusMsg"></div>
-    <div class="ft">☁️ Data syncs securely via Firebase</div>
-    <div class="dm">business.aitoolcor.com</div>
+    </div>
   </div>
-</div>
 
-<script>
-// Check if already logged in via Firebase
-auth.onAuthStateChanged(function(user) {
-  if (user) {
-    localStorage.setItem('bd_auth', 'true');
-    localStorage.setItem('bd_user', user.email);
-    localStorage.setItem('bd_uid', user.uid);
-    window.location.href = 'index.html';
-  }
-});
+  <div class="right">
+    <div class="form-card">
+      <div class="mobile-logo">
+        <div class="mobile-logo-icon">
+          <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';" />
+        </div>
+        <div class="mobile-logo-text">Crust & Chilly</div>
+      </div>
 
-function loginDemo() {
-  localStorage.setItem('bd_mode', 'demo');
-  localStorage.setItem('bd_auth', 'true');
-  localStorage.setItem('bd_user', 'demo@aitoolcor.com');
-  localStorage.setItem('bd_uid', 'demo_user_id');
-  if (!localStorage.getItem('bd_transactions')) {
-    const demoTxns = [
-      { id: 't1', type: 'income', date: new Date().toISOString().split('T')[0], category: 'Sales', amount: 150000, mode: 'Online', from: 'Client A', vendor: '', notes: 'Monthly retainer' },
-      { id: 't2', type: 'expense', date: new Date().toISOString().split('T')[0], category: 'Rent', amount: 45000, mode: 'Bank Transfer', from: '', vendor: 'Landlord', notes: 'Office rent' },
-      { id: 't3', type: 'income', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], category: 'Consulting', amount: 75000, mode: 'Online', from: 'Client B', notes: '' },
-      { id: 't4', type: 'expense', date: new Date(Date.now() - 2*86400000).toISOString().split('T')[0], category: 'Marketing', amount: 25000, mode: 'Card', vendor: 'Google Ads', notes: '' },
-      { id: 't5', type: 'income', date: new Date(Date.now() - 3*86400000).toISOString().split('T')[0], category: 'Sales', amount: 120000, mode: 'Online', from: 'Client C', notes: '' },
-      { id: 't6', type: 'expense', date: new Date(Date.now() - 4*86400000).toISOString().split('T')[0], category: 'Software', amount: 15000, mode: 'Card', vendor: 'AWS', notes: '' },
-      { id: 't7', type: 'expense', date: new Date(Date.now() - 5*86400000).toISOString().split('T')[0], category: 'Salary', amount: 80000, mode: 'Bank Transfer', vendor: 'Team', notes: '' }
-    ];
-    localStorage.setItem('bd_transactions', JSON.stringify(demoTxns));
-  }
-  window.location.href = 'index.html';
-}
+      <div class="cloud-badge">☁️ Cloud Sync Active</div>
+      <h2>Welcome back 👋</h2>
+      <p>Sign in to access your dashboard</p>
 
-function handleLogin(e) {
-  e.preventDefault();
-  var em = document.getElementById('em').value.trim();
-  var pw = document.getElementById('pw').value;
-  var btn = document.getElementById('lb');
-  var err = document.getElementById('errBox');
-  var status = document.getElementById('statusMsg');
+      <div class="err" id="errBox">❌ Error</div>
 
-  err.style.display = 'none';
-  btn.textContent = '⏳ Signing in...';
-  btn.disabled = true;
-  if (status) status.textContent = 'Connecting to Firebase...';
+      <form onsubmit="handleLogin(event)">
+        <div class="fg">
+          <label class="fl">Email Address</label>
+          <div class="iw">
+            <span class="iw-ic">📧</span>
+            <input type="email" class="fi" id="em" required autocomplete="email" placeholder="your@email.com" />
+          </div>
+        </div>
 
-  auth.signInWithEmailAndPassword(em, pw)
-    .then(function(userCredential) {
-      var user = userCredential.user;
-      localStorage.setItem('bd_auth', 'true');
-      localStorage.setItem('bd_user', user.email);
-      localStorage.setItem('bd_uid', user.uid);
-      btn.textContent = '✅ Success!';
-      if (status) status.textContent = '☁️ Connected! Redirecting...';
-      setTimeout(function() {
+        <div class="fg">
+          <label class="fl">Password</label>
+          <div class="iw">
+            <span class="iw-ic">🔒</span>
+            <input type="password" class="fi" id="pw" required placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="pt" onclick="togP()">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="lb" id="lb">Sign in →</button>
+        <button type="button" class="lb demo-btn" onclick="loginDemo()">Try Demo Mode (Offline) →</button>
+      </form>
+
+      <div class="status-msg" id="statusMsg"></div>
+      <div class="ft">☁️ Data syncs securely via Firebase</div>
+      <div class="dm">business.aitoolcor.com</div>
+    </div>
+  </div>
+
+  <script>
+    // Check if already logged in via Firebase
+    auth.onAuthStateChanged(function (user) {
+      if (user) {
+        localStorage.setItem('bd_auth', 'true');
+        localStorage.setItem('bd_user', user.email);
+        localStorage.setItem('bd_uid', user.uid);
         window.location.href = 'index.html';
-      }, 500);
-    })
-    .catch(function(error) {
-      let msg = '❌ Invalid email or password';
-      if (error.code === 'auth/user-not-found') msg = '❌ User not found. Create user in Firebase Auth first.';
-      else if (error.code === 'auth/wrong-password') msg = '❌ Wrong password';
-      else if (error.code === 'auth/invalid-email') msg = '❌ Invalid email format';
-      else if (error.code === 'auth/too-many-requests') msg = '⚠️ Too many attempts. Try later.';
-      else if (error.code === 'auth/network-request-failed') msg = '⚠️ No internet connection';
-      else if (error.code === 'auth/invalid-credential') msg = '❌ Invalid credentials. Check email & password.';
-      else if (error.code === 'auth/unauthorized-domain') msg = '⚠️ Domain Unauthorized: Please add business.aitoolcor.com to Firebase Authorized Domains';
-      else if (error.message) msg = '❌ ' + error.message;
-
-      err.textContent = msg;
-      err.style.display = 'block';
-      btn.textContent = 'Sign in →';
-      btn.disabled = false;
-      if (status) status.textContent = '';
-      console.error('Login error:', error.code, error.message);
+      }
     });
-}
 
-function togP() {
-  var i = document.getElementById('pw');
-  i.type = i.type === 'password' ? 'text' : 'password';
-}
+    function loginDemo() {
+      localStorage.setItem('bd_mode', 'demo');
+      localStorage.setItem('bd_auth', 'true');
+      localStorage.setItem('bd_user', 'demo@aitoolcor.com');
+      localStorage.setItem('bd_uid', 'demo_user_id');
+      if (!localStorage.getItem('bd_transactions')) {
+        const demoTxns = [
+          { id: 't1', type: 'income', date: new Date().toISOString().split('T')[0], category: 'Sales', amount: 150000, mode: 'Online', from: 'Client A', vendor: '', notes: 'Monthly retainer' },
+          { id: 't2', type: 'expense', date: new Date().toISOString().split('T')[0], category: 'Rent', amount: 45000, mode: 'Bank Transfer', from: '', vendor: 'Landlord', notes: 'Office rent' },
+          { id: 't3', type: 'income', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], category: 'Consulting', amount: 75000, mode: 'Online', from: 'Client B', notes: '' },
+          { id: 't4', type: 'expense', date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], category: 'Marketing', amount: 25000, mode: 'Card', vendor: 'Google Ads', notes: '' },
+          { id: 't5', type: 'income', date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0], category: 'Sales', amount: 120000, mode: 'Online', from: 'Client C', notes: '' },
+          { id: 't6', type: 'expense', date: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0], category: 'Software', amount: 15000, mode: 'Card', vendor: 'AWS', notes: '' },
+          { id: 't7', type: 'expense', date: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0], category: 'Salary', amount: 80000, mode: 'Bank Transfer', vendor: 'Team', notes: '' }
+        ];
+        localStorage.setItem('bd_transactions', JSON.stringify(demoTxns));
+      }
+      window.location.href = 'index.html';
+    }
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('✅ ServiceWorker registered', reg))
-      .catch(err => console.error('❌ ServiceWorker registration failed', err));
-  });
-}
-</script>
+    function handleLogin(e) {
+      e.preventDefault();
+      var em = document.getElementById('em').value.trim();
+      var pw = document.getElementById('pw').value;
+      var btn = document.getElementById('lb');
+      var err = document.getElementById('errBox');
+      var status = document.getElementById('statusMsg');
+
+      err.style.display = 'none';
+      btn.textContent = '⏳ Signing in...';
+      btn.disabled = true;
+      if (status) status.textContent = 'Connecting to Firebase...';
+
+      auth.signInWithEmailAndPassword(em, pw)
+        .then(function (userCredential) {
+          var user = userCredential.user;
+          localStorage.setItem('bd_auth', 'true');
+          localStorage.setItem('bd_user', user.email);
+          localStorage.setItem('bd_uid', user.uid);
+          btn.textContent = '✅ Success!';
+          if (status) status.textContent = '☁️ Connected! Redirecting...';
+          setTimeout(function () {
+            window.location.href = 'index.html';
+          }, 500);
+        })
+        .catch(function (error) {
+          let msg = '❌ Invalid email or password';
+          if (error.code === 'auth/user-not-found') msg = '❌ User not found. Create user in Firebase Auth first.';
+          else if (error.code === 'auth/wrong-password') msg = '❌ Wrong password';
+          else if (error.code === 'auth/invalid-email') msg = '❌ Invalid email format';
+          else if (error.code === 'auth/too-many-requests') msg = '⚠️ Too many attempts. Try later.';
+          else if (error.code === 'auth/network-request-failed') msg = '⚠️ No internet connection';
+          else if (error.code === 'auth/invalid-credential') msg = '❌ Invalid credentials. Check email & password.';
+          else if (error.code === 'auth/unauthorized-domain') msg = '⚠️ Domain Unauthorized: Please add business.aitoolcor.com to Firebase Authorized Domains';
+          else if (error.message) msg = '❌ ' + error.message;
+
+          err.textContent = msg;
+          err.style.display = 'block';
+          btn.textContent = 'Sign in →';
+          btn.disabled = false;
+          if (status) status.textContent = '';
+          console.error('Login error:', error.code, error.message);
+        });
+    }
+
+    function togP() {
+      var i = document.getElementById('pw');
+      i.type = i.type === 'password' ? 'text' : 'password';
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('✅ ServiceWorker registered', reg))
+          .catch(err => console.error('❌ ServiceWorker registration failed', err));
+      });
+    }
+  </script>
 </body>
+
+</html>
+
 </html>
