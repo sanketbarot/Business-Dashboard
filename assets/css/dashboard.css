@@ -215,7 +215,7 @@
   padding: 24px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: var(--sh-3d-card);
-  transition: var(--tr);
+  transition: 0.35s !important;
   position: relative;
   overflow: hidden;
   min-width: 0;
@@ -226,58 +226,111 @@
   cursor: pointer;
 }
 
-/* Summary Card Hover States */
-.sum-card:nth-child(1):hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(16, 185, 129, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(16, 185, 129, 0.35);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.7) 100%);
+/* User Custom Card Styles */
+.balance-card {
+  background: var(--balance-gradient) !important;
+  color: #fff !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border: none !important;
+  box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25) !important;
 }
 
-.sum-card:nth-child(2):hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(244, 63, 94, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(244, 63, 94, 0.35);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.7) 100%);
+.balance-card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -30%;
+  width: 160%;
+  height: 80%;
+  background: rgba(255, 255, 255, 0.18);
+  transform: rotate(-20deg);
+  pointer-events: none;
 }
 
-.sum-card:nth-child(3):hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(245, 158, 11, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(245, 158, 11, 0.35);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.7) 100%);
+.income-card {
+  background: var(--income-gradient) !important;
+  color: #fff !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  border: none !important;
+  box-shadow: 0 15px 35px rgba(34, 197, 94, 0.22) !important;
 }
 
-.sum-card:nth-child(4):hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(79, 70, 229, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(79, 70, 229, 0.35);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.7) 100%);
+.expense-card {
+  background: var(--expense-gradient) !important;
+  color: #fff !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  border: none !important;
+  box-shadow: 0 15px 35px rgba(255, 90, 95, 0.22) !important;
 }
 
-/* Income Card */
-.sum-card:nth-child(1) {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.65) 100%);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+.profit-card {
+  background: var(--profit-gradient) !important;
+  color: #fff !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  border: none !important;
+  box-shadow: 0 15px 35px rgba(245, 158, 11, 0.22) !important;
 }
 
-/* Expense Card */
-.sum-card:nth-child(2) {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.65) 100%);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+/* Light text overrides inside gradient cards */
+.balance-card .sc-label,
+.income-card .sc-label,
+.expense-card .sc-label,
+.profit-card .sc-label {
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Profit Card */
-.sum-card:nth-child(3) {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.65) 100%);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+.balance-card .sc-value,
+.income-card .sc-value,
+.expense-card .sc-value,
+.profit-card .sc-value {
+  color: #ffffff !important;
 }
 
-/* Balance Card */
-.sum-card:nth-child(4),
-.balance-glow {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.65) 100%);
-  border: 1px solid rgba(15, 23, 42, 0.08);
+.balance-card .sc-sub,
+.income-card .sc-sub,
+.expense-card .sc-sub,
+.profit-card .sc-sub {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.balance-card .sc-trend,
+.income-card .sc-trend,
+.expense-card .sc-trend,
+.profit-card .sc-trend {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.balance-card .sc-icon,
+.income-card .sc-icon,
+.expense-card .sc-icon,
+.profit-card .sc-icon {
+  background: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* Sparklines inside gradient cards tweak */
+.balance-card canvas,
+.income-card canvas,
+.expense-card canvas,
+.profit-card canvas {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.85;
+}
+
+/* Premium Hover */
+.sum-card:hover,
+.card:hover {
+  transform: translateY(-6px) !important;
 }
 
 .sc-top {
