@@ -1,79 +1,68 @@
 /* ============================================
    CRUST & CHILLY — STYLE v2.0.0
-   LIGHT / CUTE WIDGET THEME
-   (Converted from Dark Purple v1.0.0)
-   Smooth Scrolling + Full Animation
+   PREMIUM MODERN SAAS THEME
    ============================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Brand color system: Slate & Royal Indigo/Violet */
-  --brand: #4f46e5;
-  /* Premium Indigo */
-  --brand-dark: #3730a3;
-  --brand-light: #e0e7ff;
-  --brand-soft: rgba(79, 70, 229, 0.06);
-  --brand-accent: #6366f1;
+  /* Central User-defined Color System */
+  --balance: #3B82F6;
+  --income: #22C55E;
+  --expense: #FF5A5F;
+  --background: #F8FAFC;
+  --card: #FFFFFF;
+  --text: #0F172A;
+  --text-light: #64748B;
+  --border: #E2E8F0;
 
-  --purple: #7c3aed;
-  /* Premium Violet */
-  --purple-light: #ede9fe;
-  --sky: #0ea5e9;
-  --pink: #db2777;
+  /* Brand color system: Royal Indigo/Violet & Mint */
+  --brand: var(--balance);
+  --brand-dark: #2563EB;
+  --brand-light: #DBEAFE;
+  --brand-soft: rgba(59, 130, 246, 0.05);
+  --brand-accent: var(--balance);
 
-  --pastel-blue: rgba(14, 165, 233, 0.08);
-  --pastel-purple: rgba(124, 58, 237, 0.08);
-  --pastel-green: rgba(16, 185, 129, 0.08);
-  --pastel-orange: rgba(245, 158, 11, 0.08);
-  --pastel-pink: rgba(219, 39, 119, 0.08);
-  --pastel-yellow: rgba(234, 179, 8, 0.08);
+  --purple: #8b5cf6;
+  --purple-light: #f3e8ff;
+  --sky: #3b82f6;
+  --pink: #ec4899;
 
-  --gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --gradient-soft: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  --gradient-page: radial-gradient(circle at 50% 0%, #f8fafc 0%, #f1f5f9 100%);
+  --gradient: linear-gradient(135deg, var(--balance) 0%, #8b5cf6 100%);
+  --gradient-soft: linear-gradient(135deg, var(--card) 0%, var(--background) 100%);
+  --gradient-page: var(--background);
 
   /* Soft Light Status Colors */
-  --income: #10b981;
-  /* Emerald Mint */
-  --income-bg: rgba(16, 185, 129, 0.08);
-  --income-soft: rgba(16, 185, 129, 0.04);
-  --income-border: rgba(16, 185, 129, 0.15);
-  --expense: #f43f5e;
-  /* Rose Coral */
-  --expense-bg: rgba(244, 63, 94, 0.08);
-  --expense-soft: rgba(244, 63, 94, 0.04);
-  --expense-border: rgba(244, 63, 94, 0.15);
+  --income-bg: rgba(34, 197, 94, 0.05);
+  --income-soft: rgba(34, 197, 94, 0.08);
+  --income-border: rgba(34, 197, 94, 0.2);
+  --expense-bg: rgba(255, 90, 95, 0.05);
+  --expense-soft: rgba(255, 90, 95, 0.08);
+  --expense-border: rgba(255, 90, 95, 0.2);
   --profit: #f59e0b;
-  /* Soft Amber */
   --profit-bg: rgba(245, 158, 11, 0.08);
   --profit-soft: rgba(245, 158, 11, 0.04);
 
   /* Surfaces & Backgrounds */
-  --bg-page: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-card-solid: #ffffff;
-  --bg-subtle: #ffffff;
+  --bg-page: var(--background);
+  --bg-card: var(--card);
+  --bg-card-solid: var(--card);
+  --bg-subtle: var(--card);
   --bg-hover: #f1f5f9;
 
   /* Premium Typography Colors */
-  --text-head: #0f172a;
-  /* Slate 900 */
+  --text-head: var(--text);
   --text-body: #334155;
-  /* Slate 700 */
-  --text-muted: #64748b;
-  /* Slate 500 */
+  --text-muted: var(--text-light);
   --text-light: #94a3b8;
-  /* Slate 400 */
 
   /* Borders & Spacing */
-  --border: rgba(15, 23, 42, 0.05);
-  --border-light: rgba(15, 23, 42, 0.02);
-  --border-glass: 1px solid rgba(255, 255, 255, 0.7);
+  --border-light: rgba(15, 23, 42, 0.03);
+  --border-glass: 1px solid var(--border);
 
   --sidebar-w: 260px;
-  --sidebar-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.4) 100%);
-  --header-h: 80px;
+  --sidebar-bg: #ffffff;
+  --header-h: 70px;
 
   --r-sm: 8px;
   --r-md: 12px;
@@ -83,18 +72,12 @@
   --r-3xl: 32px;
   --r-full: 9999px;
 
-  /* Shadows & Glassmorphic Highlights */
-  --sh-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
-  --sh-md: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-  --sh-lg: 0 24px 48px -6px rgba(15, 23, 42, 0.04), 0 8px 16px -8px rgba(15, 23, 42, 0.04);
+  /* Shadows & Modern Highlights */
+  --sh-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 1px 0 rgba(0, 0, 0, 0.02);
+  --sh-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  --sh-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
   --sh-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.02);
   
-  --sh-3d-card: 0 1px 2px rgba(15, 23, 42, 0.01), 0 8px 32px -4px rgba(15, 23, 42, 0.04), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.6), inset 0 -3px 6px rgba(15, 23, 42, 0.01);
-  --sh-3d-card-hover: 0 2px 4px rgba(15, 23, 42, 0.02), 0 16px 40px -6px rgba(79, 70, 229, 0.08), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(15, 23, 42, 0.01);
-  --sh-glass-glow: 0 1px 2px rgba(15, 23, 42, 0.01), 0 12px 32px -4px rgba(15, 23, 42, 0.03), 0 20px 48px -8px rgba(79, 70, 229, 0.06), inset 0 2px 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-  --sh-3d-btn: 0 4px 14px 0 rgba(79, 70, 229, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -3px 0 rgba(0, 0, 0, 0.18);
-  --sh-3d-btn-hover: 0 6px 18px 0 rgba(79, 70, 229, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.4), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
-  --sh-3d-btn-active: 0 2px 4px 0 rgba(79, 70, 229, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1.5px 0 rgba(0, 0, 0, 0.2);
   --sh-3d-inset: inset 0 2px 4px rgba(15, 23, 42, 0.04), inset 0 4px 12px rgba(15, 23, 42, 0.02), 0 1px 0 rgba(255, 255, 255, 0.9);
 
   --tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1720,4 +1703,69 @@ select option {
 .pb-tab.active::before,
 .ft.active::before {
   display: none !important;
+}
+
+/* ============================================
+   SOFT GREEN & SOFT RED THEME OVERRIDES
+   ============================================ */
+.text-income, [class*="text-income"], .income-amt, .hd-live {
+  color: var(--income) !important;
+}
+.text-expense, [class*="text-expense"], .expense-amt, .compare-arrow.down, .co-row-amt.text-expense {
+  color: var(--expense) !important;
+}
+.sum-card:nth-child(1) .sc-icon, .mini-stat:nth-child(1) .ms-ic, .pm-item:nth-child(1) .pm-ic, .co-row-icon.in {
+  background: var(--income) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25) !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
+}
+.sum-card:nth-child(2) .sc-icon, .mini-stat:nth-child(2) .ms-ic, .pm-item:nth-child(2) .pm-ic, .co-row-icon.out {
+  background: var(--expense) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(255, 90, 95, 0.25) !important;
+  border-color: rgba(255, 90, 95, 0.35) !important;
+}
+.pb-tab[data-p="today"].active {
+  color: var(--income) !important;
+}
+.pb-tab[data-p="yesterday"].active {
+  color: var(--expense) !important;
+}
+
+/* Lucide Line Icons style tweaks */
+.sb-icon svg,
+.sb-logout svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2px;
+  vertical-align: middle;
+}
+.sc-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2px;
+}
+.co-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2px;
+}
+.tx-stat-ic svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2px;
+}
+.an-card-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.2px;
+  vertical-align: middle;
+}
+.hero-actions svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.5px;
+  vertical-align: middle;
+  margin-right: 6px;
 }

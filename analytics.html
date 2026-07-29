@@ -30,6 +30,8 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
+<!-- Lucide Outline Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -48,19 +50,19 @@
 
     <nav class="sb-nav">
       <div class="sb-section">Overview</div>
-      <a href="index.html" class="sb-link"><span class="sb-icon">📊</span><span>Dashboard</span></a>
-      <a href="transaction.html" class="sb-link"><span class="sb-icon">💳</span><span>Transactions</span></a>
-      <a href="analytics.html" class="sb-link active"><span class="sb-icon">📈</span><span>Analytics</span></a>
+      <a href="index.html" class="sb-link"><span class="sb-icon"><i data-lucide="layout-dashboard"></i></span><span>Dashboard</span></a>
+      <a href="transaction.html" class="sb-link"><span class="sb-icon"><i data-lucide="arrow-left-right"></i></span><span>Transactions</span></a>
+      <a href="analytics.html" class="sb-link active"><span class="sb-icon"><i data-lucide="line-chart"></i></span><span>Analytics</span></a>
 
       <div class="sb-section">Quick Add</div>
-      <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
-      <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon">💸</span><span>New Expense</span></div>
+      <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon"><i data-lucide="plus-circle"></i></span><span>New Income</span></div>
+      <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon"><i data-lucide="minus-circle"></i></span><span>New Expense</span></div>
 
       <div class="sb-section">Reports</div>
-      <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
-      <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
-      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span><span>Backup Data</span></div>
-      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon">📲</span><span>Install App</span></div>
+      <div class="sb-link" onclick="exportExcel()"><span class="sb-icon"><i data-lucide="file-spreadsheet"></i></span><span>Excel Report</span></div>
+      <div class="sb-link" onclick="exportPDF()"><span class="sb-icon"><i data-lucide="file-text"></i></span><span>PDF Report</span></div>
+      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon"><i data-lucide="database"></i></span><span>Backup Data</span></div>
+      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon"><i data-lucide="smartphone"></i></span><span>Install App</span></div>
     </nav>
 
     <div class="sb-footer">
@@ -71,7 +73,7 @@
           <div class="sb-user-email">sanketbarot3901@gmail.com</div>
         </div>
       </div>
-      <button class="sb-logout" onclick="logout()">🚪 Sign Out</button>
+      <button class="sb-logout" onclick="logout()"><i data-lucide="log-out" style="width: 15px; height: 15px; margin-right: 8px; vertical-align: middle;"></i>Sign Out</button>
     </div>
   </aside>
 
@@ -100,7 +102,7 @@
       <!-- Hero Header Section -->
       <section class="an-hero">
         <div class="an-hero-text">
-          <h2>Business Intelligence & Analytics 📈</h2>
+          <h2>Business Intelligence & Analytics <i data-lucide="line-chart" style="width: 22px; height: 22px; vertical-align: middle; color: var(--brand);"></i></h2>
           <p>Real-time visual insights, health scorecard, and dynamic forecasting models</p>
         </div>
         <div class="an-filters">
@@ -145,7 +147,7 @@
         <div class="an-card">
           <div class="an-card-hd">
             <span class="an-card-title">BURN RATE</span>
-            <div class="an-card-icon" style="background:rgba(239,68,68,0.1); color:var(--expense);">🔥</div>
+            <div class="an-card-icon" style="background:rgba(255,90,95,0.1); color:var(--expense); display:flex; align-items:center; justify-content:center;"><i data-lucide="flame"></i></div>
           </div>
           <div class="an-card-val" id="burnRateVal">--%</div>
           <div class="an-card-sub" id="burnRateSub">Of income spent</div>
@@ -155,7 +157,7 @@
         <div class="an-card">
           <div class="an-card-hd">
             <span class="an-card-title">AVG TRANSACTION</span>
-            <div class="an-card-icon" style="background:rgba(16,185,129,0.1); color:var(--income);">📊</div>
+            <div class="an-card-icon" style="background:rgba(34,197,94,0.1); color:var(--income); display:flex; align-items:center; justify-content:center;"><i data-lucide="calculator"></i></div>
           </div>
           <div class="an-card-val" id="avgTxVal">₹ 0.00</div>
           <div class="an-card-sub" id="avgTxSub">Income avg vs Expense avg</div>
@@ -165,7 +167,7 @@
         <div class="an-card">
           <div class="an-card-hd">
             <span class="an-card-title">PEAK ACTIVITY DAY</span>
-            <div class="an-card-icon" style="background:rgba(245,158,11,0.1); color:#d97706;">⚡</div>
+            <div class="an-card-icon" style="background:rgba(245,158,11,0.1); color:#d97706; display:flex; align-items:center; justify-content:center;"><i data-lucide="zap"></i></div>
           </div>
           <div class="an-card-val" id="peakDayVal">--</div>
           <div class="an-card-sub" id="peakDaySub">Most transaction records</div>
@@ -176,7 +178,7 @@
       <section class="forecast-panel">
         <div class="forecast-hd">
           <div class="forecast-title">
-            <h3>🔮 Next Month Projections</h3>
+            <h3><i data-lucide="sparkles" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle; color: #8b5cf6;"></i>Next Month Projections</h3>
             <span class="forecast-badge" id="forecastModelType">Linear Trend Analysis</span>
           </div>
           <div style="font-size: 0.78rem; color: var(--text-light); font-weight: 600;">Based on last 3 months average</div>

@@ -342,19 +342,19 @@ const AnalyticsPage = {
           {
             label: 'Net Profit',
             data: profits.length ? profits : [0],
-            borderColor: '#4f46e5',
-            backgroundColor: 'rgba(79, 70, 229, 0.08)',
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
             borderWidth: 3,
             fill: true,
             tension: 0.38,
-            pointBackgroundColor: '#4f46e5',
+            pointBackgroundColor: '#3b82f6',
             pointRadius: 3,
             pointHoverRadius: 7
           },
           {
             label: 'Total Revenue',
             data: incomes.length ? incomes : [0],
-            borderColor: '#10b981',
+            borderColor: '#22C55E', // Soft Green (Income)
             borderWidth: 2,
             borderDash: [4, 4],
             fill: false,
@@ -384,10 +384,12 @@ const AnalyticsPage = {
         scales: {
           y: {
             grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            border: { display: false },
             ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
+            border: { display: false },
             ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" } }
           }
         }
@@ -408,7 +410,7 @@ const AnalyticsPage = {
     const labels = sortedCats.map(c => c.replace(/^[^\s]+\s+/, ''));
     const data = sortedCats.map(c => categoryMap[c]);
 
-    const palette = ['#4f46e5', '#10b981', '#f59e0b', '#7c3aed', '#0ea5e9', '#db2777', '#f97316', '#14b8a6', '#84cc16', '#eab308', '#ec4899', '#6366f1'];
+    const palette = ['#3b82f6', '#22C55E', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#0ea5e9'];
 
     const ctx = document.getElementById('categoryShareChart');
     if (!ctx) return;
@@ -437,10 +439,33 @@ const AnalyticsPage = {
       }
     }
 
+    if (!data.length) {
+      if (this.charts.categoryShare) {
+        this.charts.categoryShare.destroy();
+        this.charts.categoryShare = null;
+      }
+      return;
+    }
+
+    const total = data.reduce((a, b) => a + b, 0);
+    const datasets = [];
+    const ringsCount = Math.min(4, labels.length);
+    for (let i = 0; i < ringsCount; i++) {
+      datasets.push({
+        label: labels[i],
+        data: [data[i], total - data[i]],
+        backgroundColor: [palette[i % palette.length], 'rgba(15, 23, 42, 0.04)'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverBorderColor: '#ffffff',
+        borderRadius: 4,
+        weight: 0.8
+      });
+    }
+
     if (this.charts.categoryShare) {
-      this.charts.categoryShare.data.labels = labels.length ? labels : ['No Expenses'];
-      this.charts.categoryShare.data.datasets[0].data = data.length ? data : [1];
-      this.charts.categoryShare.data.datasets[0].backgroundColor = data.length ? palette.slice(0, data.length) : ['#e2e8f0'];
+      this.charts.categoryShare.data.labels = labels.slice(0, ringsCount);
+      this.charts.categoryShare.data.datasets = datasets;
       this.charts.categoryShare.update();
       return;
     }
@@ -448,30 +473,26 @@ const AnalyticsPage = {
     this.charts.categoryShare = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: labels.length ? labels : ['No Expenses'],
-        datasets: [{
-          data: data.length ? data : [1],
-          backgroundColor: data.length ? palette.slice(0, data.length) : ['#e2e8f0'],
-          borderWidth: 3, borderColor: '#ffffff', hoverBorderWidth: 4, hoverOffset: 8
-        }]
+        labels: labels.slice(0, ringsCount),
+        datasets: datasets
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 600, easing: 'easeOutQuart' },
+        cutout: '50%',
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(15, 23, 42, 0.94)',
-            titleColor: '#ffffff',
-            bodyColor: '#cbd5e1',
-            padding: 12,
-            cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1
+            callbacks: {
+              label: function (ctx) {
+                const datasetLabel = ctx.dataset.label || '';
+                const val = ctx.raw;
+                if (ctx.dataIndex === 1) return null;
+                return ' ' + datasetLabel + ': ' + inr(val);
+              }
+            }
           }
-        },
-        cutout: '72%'
+        }
       }
     });
   },
@@ -516,14 +537,14 @@ const AnalyticsPage = {
           {
             label: 'Records Count',
             data: countsData,
-            backgroundColor: 'rgba(79, 70, 229, 0.8)',
+            backgroundColor: '#3b82f6', // Blue
             borderRadius: { topLeft: 10, topRight: 10 },
             yAxisID: 'y'
           },
           {
             label: 'Transaction Value (₹)',
             data: valuesData,
-            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            backgroundColor: '#22C55E', // Soft Green
             borderRadius: { topLeft: 10, topRight: 10 },
             yAxisID: 'y1'
           }
@@ -550,16 +571,19 @@ const AnalyticsPage = {
             type: 'linear',
             position: 'left',
             grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            border: { display: false },
             ticks: { color: '#9aa3b2', stepSize: 1, font: { family: "'Plus Jakarta Sans', sans-serif" } }
           },
           y1: {
             type: 'linear',
             position: 'right',
             grid: { drawOnChartArea: false },
+            border: { display: false },
             ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
+            border: { display: false },
             ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" } }
           }
         }
@@ -606,8 +630,8 @@ const AnalyticsPage = {
         datasets: [{
           label: 'Cumulative Capital (₹)',
           data: balances.length ? balances : [0],
-          borderColor: '#7c3aed',
-          backgroundColor: 'rgba(124, 58, 237, 0.08)',
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.08)',
           borderWidth: 3,
           fill: true,
           tension: 0.25,
@@ -634,10 +658,12 @@ const AnalyticsPage = {
         scales: {
           y: {
             grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            border: { display: false },
             ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
+            border: { display: false },
             ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, maxTicksLimit: 8 }
           }
         }
@@ -659,12 +685,12 @@ const AnalyticsPage = {
     const data = activeModes.map(m => modeVolume[m]);
 
     const palette = {
-      'Cash': '#10b981',
-      'Online': '#4f46e5',
-      'UPI': '#7c3aed',
-      'Bank Transfer': '#0ea5e9',
-      'Card': '#db2777',
-      'Cheque': '#f59e0b'
+      'Cash': '#10b981',        // Green
+      'Online': '#3b82f6',      // Blue
+      'UPI': '#8b5cf6',         // Purple
+      'Bank Transfer': '#38bdf8', // Light Blue
+      'Card': '#ec4899',        // Pink
+      'Cheque': '#f59e0b'       // Amber
     };
 
     const colors = activeModes.map(m => palette[m] || '#64748b');
@@ -696,10 +722,33 @@ const AnalyticsPage = {
       }
     }
 
+    if (!data.length) {
+      if (this.charts.paymentMode) {
+        this.charts.paymentMode.destroy();
+        this.charts.paymentMode = null;
+      }
+      return;
+    }
+
+    const total = data.reduce((a, b) => a + b, 0);
+    const datasets = [];
+    const ringsCount = Math.min(4, activeModes.length);
+    for (let i = 0; i < ringsCount; i++) {
+      datasets.push({
+        label: activeModes[i],
+        data: [data[i], total - data[i]],
+        backgroundColor: [colors[i], 'rgba(15, 23, 42, 0.04)'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverBorderColor: '#ffffff',
+        borderRadius: 4,
+        weight: 0.8
+      });
+    }
+
     if (this.charts.paymentMode) {
-      this.charts.paymentMode.data.labels = activeModes.length ? activeModes : ['No capital flows'];
-      this.charts.paymentMode.data.datasets[0].data = data.length ? data : [1];
-      this.charts.paymentMode.data.datasets[0].backgroundColor = data.length ? colors : ['#e2e8f0'];
+      this.charts.paymentMode.data.labels = activeModes.slice(0, ringsCount);
+      this.charts.paymentMode.data.datasets = datasets;
       this.charts.paymentMode.update();
       return;
     }
@@ -707,30 +756,26 @@ const AnalyticsPage = {
     this.charts.paymentMode = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: activeModes.length ? activeModes : ['No capital flows'],
-        datasets: [{
-          data: data.length ? data : [1],
-          backgroundColor: data.length ? colors : ['#e2e8f0'],
-          borderWidth: 3, borderColor: '#ffffff', hoverBorderWidth: 4, hoverOffset: 8
-        }]
+        labels: activeModes.slice(0, ringsCount),
+        datasets: datasets
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 600, easing: 'easeOutQuart' },
+        cutout: '50%',
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(15, 23, 42, 0.94)',
-            titleColor: '#ffffff',
-            bodyColor: '#cbd5e1',
-            padding: 12,
-            cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1
+            callbacks: {
+              label: function (ctx) {
+                const datasetLabel = ctx.dataset.label || '';
+                const val = ctx.raw;
+                if (ctx.dataIndex === 1) return null;
+                return ' ' + datasetLabel + ': ' + inr(val);
+              }
+            }
           }
-        },
-        cutout: '72%'
+        }
       }
     });
   },

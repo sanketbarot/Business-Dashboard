@@ -323,8 +323,8 @@
 
 .sum-card:nth-child(4) .sc-icon,
 .balance-glow .sc-icon {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+  background: linear-gradient(135deg, var(--balance), #1d4ed8);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
 }
 
 .sc-trend {
@@ -360,7 +360,8 @@
 
 /* MATCH ANALYTICS an-card-sub = 0.78rem */
 .sc-sub {
-  font-size: 0.78rem !impo color: var(--text-muted) !important;
+  font-size: 0.78rem !important;
+  color: var(--text-muted) !important;
   font-weight: 500 !important;
 }
 
@@ -391,11 +392,7 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.7) 100%);
 }
 
-.cash-card {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.02) 0%, rgba(255, 255, 255, 0.6) 100%);
-  border-color: rgba(245, 158, 11, 0.22);
-}
-
+.cash-card,
 .online-card {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.02) 0%, rgba(255, 255, 255, 0.6) 100%);
   border-color: rgba(79, 70, 229, 0.22);
@@ -422,11 +419,7 @@
   color: #ffffff;
 }
 
-.cash-card .co-icon {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
-}
-
+.cash-card .co-icon,
 .online-card .co-icon {
   background: var(--gradient);
   box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
@@ -459,11 +452,7 @@
   color: #ffffff !important;
 }
 
-.cash-badge {
-  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.2) !important;
-}
-
+.cash-badge,
 .online-badge {
   background: var(--gradient) !important;
   box-shadow: 0 3px 8px rgba(79, 70, 229, 0.2) !important;
@@ -547,13 +536,13 @@
 .co-balance {
   margin-top: 14px;
   padding: 18px 22px;
-  background: var(--bg-hover);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.06) 0%, transparent 100%);
   border-radius: var(--r-lg);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(79, 70, 229, 0.15);
 }
 
 .co-balance-label {
@@ -568,17 +557,9 @@
   white-space: nowrap !important;
 }
 
-.cash-card .co-balance-amt {
-  color: #f59e0b !important;
-}
-
+.cash-card .co-balance-amt,
 .online-card .co-balance-amt {
-  color: var(--brand) !important;
-}
-
-.online-balance {
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.06) 0%, transparent 100%);
-  border-color: rgba(79, 70, 229, 0.15);
+  color: var(--balance) !important;
 }
 
 .co-balance-amt.negative {
@@ -1589,11 +1570,7 @@
     box-shadow: var(--sh-sm) !important;
   }
 
-  .cash-card {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.06) 0%, var(--bg-card) 100%) !important;
-    border-color: rgba(217, 119, 6, 0.25) !important;
-  }
-
+  .cash-card,
   .online-card {
     background: linear-gradient(135deg, rgba(163, 150, 255, 0.06) 0%, var(--bg-card) 100%) !important;
     border-color: rgba(163, 150, 255, 0.25) !important;
@@ -1673,8 +1650,8 @@
   .co-balance {
     padding: 16px 20px !important;
     margin-top: 14px !important;
-    background: var(--bg-subtle) !important;
-    border: 1.5px solid var(--border) !important;
+    background: linear-gradient(135deg, rgba(163, 150, 255, 0.08) 0%, rgba(20, 24, 31, 0.02) 100%) !important;
+    border: 1.5px solid rgba(163, 150, 255, 0.25) !important;
   }
 
   .co-balance-label {
@@ -1688,17 +1665,9 @@
     font-weight: 800 !important;
   }
 
-  .cash-card .co-balance-amt {
-    color: #fbbf24 !important;
-  }
-
+  .cash-card .co-balance-amt,
   .online-card .co-balance-amt {
-    color: #532be9 !important;
-  }
-
-  .online-balance {
-    background: linear-gradient(135deg, rgba(163, 150, 255, 0.08) 0%, rgba(20, 24, 31, 0.02) 100%) !important;
-    border-color: rgba(163, 150, 255, 0.25) !important;
+    color: var(--balance) !important;
   }
 
   /* GOAL CARDS */

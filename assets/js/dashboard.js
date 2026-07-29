@@ -559,20 +559,22 @@ const Dash = {
 
     const ctx = canvas.getContext('2d');
     const gInc = ctx.createLinearGradient(0, 0, 0, 300);
-    gInc.addColorStop(0, '#10b981'); // Vibrant Emerald Green
-    gInc.addColorStop(1, 'rgba(16, 185, 129, 0.15)'); // Glow fade
+    gInc.addColorStop(0, '#22C55E'); // Soft Green (Income)
+    gInc.addColorStop(1, 'rgba(34, 197, 94, 0.2)');
 
     const gExp = ctx.createLinearGradient(0, 0, 0, 300);
-    gExp.addColorStop(0, '#f43f5e'); // Rose Coral
-    gExp.addColorStop(1, 'rgba(244, 63, 94, 0.15)'); // Glow fade
+    gExp.addColorStop(0, '#FF5A5F'); // Soft Red (Expense)
+    gExp.addColorStop(1, 'rgba(255, 90, 95, 0.2)');
 
     if (this.charts.bar) {
       this.charts.bar.data.labels = months;
       this.charts.bar.data.datasets[0].data = income;
       this.charts.bar.data.datasets[0].backgroundColor = gInc;
+      this.charts.bar.data.datasets[0].borderColor = '#22C55E';
       this.charts.bar.data.datasets[0].borderRadius = { topLeft: 10, topRight: 10 };
       this.charts.bar.data.datasets[1].data = expense;
       this.charts.bar.data.datasets[1].backgroundColor = gExp;
+      this.charts.bar.data.datasets[1].borderColor = '#FF5A5F';
       this.charts.bar.data.datasets[1].borderRadius = { topLeft: 10, topRight: 10 };
       this.charts.bar.update();
       return;
@@ -583,8 +585,8 @@ const Dash = {
       data: {
         labels: months,
         datasets: [
-          { label: 'Income', data: income, backgroundColor: gInc, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 },
-          { label: 'Expense', data: expense, backgroundColor: gExp, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 }
+          { label: 'Income', data: income, backgroundColor: gInc, borderColor: '#22C55E', borderWidth: 1.5, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 },
+          { label: 'Expense', data: expense, backgroundColor: gExp, borderColor: '#FF5A5F', borderWidth: 1.5, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 }
         ]
       },
       options: {
@@ -629,10 +631,11 @@ const Dash = {
       const t = txns[i];
       grouped[t.category] = (grouped[t.category] || 0) + parseFloat(t.amount || 0);
     }
-    const labels = Object.keys(grouped);
-    const values = Object.values(grouped);
-    const colors = ['#4f46e5', '#10b981', '#f59e0b', '#7c3aed', '#0ea5e9', '#db2777', '#f97316', '#14b8a6', '#84cc16', '#eab308', '#ec4899', '#6366f1'];
 
+    const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+    const labels = sorted.map(x => x[0]);
+    const values = sorted.map(x => x[1]);
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#0ea5e9'];
     const total = values.reduce((a, b) => a + b, 0);
 
     const legend = document.getElementById('donutLegend');
@@ -646,56 +649,144 @@ const Dash = {
       }
     }
 
-    if (this.charts.donut) {
-      this.charts.donut.data.labels = labels.length ? labels : ['No Expenses'];
-      this.charts.donut.data.datasets[0].data = labels.length ? values : [1];
-      this.charts.donut.data.datasets[0].backgroundColor = labels.length ? colors.slice(0, labels.length) : ['#e2e8f0'];
-      this.charts.donut.update();
+    if (!labels.length) {
+      if (this.charts.donut) {
+        this.charts.donut.destroy();
+        this.charts.donut = null;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       return;
     }
 
-    if (!labels.length) {
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const datasets = [];
+    const ringsCount = Math.min(4, labels.length);
+    for (let i = 0; i < ringsCount; i++) {
+      datasets.push({
+        label: labels[i],
+        data: [values[i], total - values[i]],
+        backgroundColor: [colors[i % colors.length], 'rgba(15, 23, 42, 0.04)'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverBorderColor: '#ffffff',
+        borderRadius: 4,
+        weight: 0.8
+      });
+    }
+
+    if (this.charts.donut) {
+      this.charts.donut.data.labels = labels.slice(0, ringsCount);
+      this.charts.donut.data.datasets = datasets;
+      this.charts.donut.update();
       return;
     }
 
     this.charts.donut = new Chart(canvas, {
       type: 'doughnut',
       data: {
-        labels: labels,
-        datasets: [{
-          data: values,
-          backgroundColor: colors.slice(0, labels.length),
-          borderWidth: 2,
-          borderColor: 'var(--bg-card)',
-          hoverBorderColor: 'var(--bg-card)',
-          borderRadius: 4,
-          hoverOffset: 8
-        }]
+        labels: labels.slice(0, ringsCount),
+        datasets: datasets
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '76%',
-        animation: { duration: 600, easing: 'easeOutQuart' },
+        cutout: '50%',
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(15, 23, 42, 0.94)',
-            titleColor: '#ffffff',
-            bodyColor: '#cbd5e1',
-            padding: 12,
-            cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1,
-            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
-            bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: {
               label: function (ctx) {
-                const totalAmt = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                const pct = totalAmt > 0 ? Math.round((ctx.parsed / totalAmt) * 100) : 0;
-                return ' ' + inr(ctx.parsed) + ' (' + pct + '%)';
+                const datasetLabel = ctx.dataset.label || '';
+                const val = ctx.raw;
+                if (ctx.dataIndex === 1) return null;
+                return ' ' + datasetLabel + ': ' + inr(val);
+              }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  buildPayModeChart: function (all) {
+    const canvas = document.getElementById('payModeChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const grouped = {};
+    for (let i = 0; i < all.length; i++) {
+      const t = all[i];
+      const mode = t.mode || 'Cash';
+      grouped[mode] = (grouped[mode] || 0) + parseFloat(t.amount || 0);
+    }
+
+    const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+    const labels = sorted.map(x => x[0]);
+    const values = sorted.map(x => x[1]);
+    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#38bdf8', '#ec4899', '#f59e0b'];
+    const total = values.reduce((a, b) => a + b, 0);
+
+    const legend = document.getElementById('payModeBox');
+    if (legend) {
+      if (!labels.length) {
+        legend.innerHTML = '<div class="empty" style="padding:12px; text-align:center; color:var(--text-muted);"><p>No transaction data</p></div>';
+      } else {
+        legend.innerHTML = labels.map((l, i) =>
+          '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i % colors.length] + '"></div><span class="leg-name">' + escapeHtml(l) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
+        ).join('');
+      }
+    }
+
+    if (!labels.length) {
+      if (this.charts.payMode) {
+        this.charts.payMode.destroy();
+        this.charts.payMode = null;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
+
+    const datasets = [];
+    const ringsCount = Math.min(4, labels.length);
+    for (let i = 0; i < ringsCount; i++) {
+      datasets.push({
+        label: labels[i],
+        data: [values[i], total - values[i]],
+        backgroundColor: [colors[i % colors.length], 'rgba(15, 23, 42, 0.04)'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverBorderColor: '#ffffff',
+        borderRadius: 4,
+        weight: 0.8
+      });
+    }
+
+    if (this.charts.payMode) {
+      this.charts.payMode.data.labels = labels.slice(0, ringsCount);
+      this.charts.payMode.data.datasets = datasets;
+      this.charts.payMode.update();
+      return;
+    }
+
+    this.charts.payMode = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: labels.slice(0, ringsCount),
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '50%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                const datasetLabel = ctx.dataset.label || '';
+                const val = ctx.raw;
+                if (ctx.dataIndex === 1) return null;
+                return ' ' + datasetLabel + ': ' + inr(val);
               }
             }
           }
@@ -771,8 +862,8 @@ const Dash = {
             }
           },
           scales: {
-            x: { grid: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' } } },
-            y: { beginAtZero: true, grid: { color: 'rgba(20, 24, 31, 0.05)' }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' } } },
+            y: { beginAtZero: true, grid: { color: 'rgba(20, 24, 31, 0.05)' }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
           }
         }
       });
@@ -819,12 +910,12 @@ const Dash = {
       if (subtextEl) subtextEl.textContent = 'Last 7 days';
 
       const g1 = ctx.createLinearGradient(0, 0, 0, 280);
-      g1.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
-      g1.addColorStop(1, 'rgba(16, 185, 129, 0)');
+      g1.addColorStop(0, 'rgba(34, 197, 94, 0.35)'); // Soft Green (Income)
+      g1.addColorStop(1, 'rgba(34, 197, 94, 0)');
 
       const g2 = ctx.createLinearGradient(0, 0, 0, 280);
-      g2.addColorStop(0, 'rgba(239, 68, 68, 0.35)');
-      g2.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      g2.addColorStop(0, 'rgba(255, 90, 95, 0.35)'); // Soft Red (Expense)
+      g2.addColorStop(1, 'rgba(255, 90, 95, 0)');
 
       const g3 = ctx.createLinearGradient(0, 0, 0, 280);
       g3.addColorStop(0, 'rgba(139, 92, 246, 0.35)');
@@ -837,16 +928,16 @@ const Dash = {
           datasets: [
             {
               label: 'Income', data: income,
-              borderColor: '#10b981', backgroundColor: g1,
+              borderColor: '#22C55E', backgroundColor: g1,
               borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-              pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+              pointBackgroundColor: '#22C55E', pointBorderColor: '#ffffff', pointBorderWidth: 3,
               fill: true, tension: 0.42
             },
             {
               label: 'Expense', data: expense,
-              borderColor: '#ef4444', backgroundColor: g2,
+              borderColor: '#FF5A5F', backgroundColor: g2,
               borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-              pointBackgroundColor: '#ef4444', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+              pointBackgroundColor: '#FF5A5F', pointBorderColor: '#ffffff', pointBorderWidth: 3,
               fill: true, tension: 0.42
             },
             {
@@ -924,16 +1015,16 @@ const Dash = {
           {
             label: 'Last Month',
             data: [lastM.income, lastM.expense, lastM.profit],
-            backgroundColor: 'rgba(79, 70, 229, 0.15)',
-            borderColor: 'rgba(79, 70, 229, 0.4)',
+            backgroundColor: 'rgba(16, 185, 129, 0.15)', // Green
+            borderColor: 'rgba(16, 185, 129, 0.4)',
             borderWidth: 1.5,
             borderRadius: 10
           },
           {
             label: 'This Month',
             data: [thisM.income, thisM.expense, thisM.profit],
-            backgroundColor: '#4f46e5',
-            borderColor: '#4f46e5',
+            backgroundColor: '#3b82f6', // Blue
+            borderColor: '#2563eb',
             borderWidth: 1.5,
             borderRadius: 10
           }
@@ -967,7 +1058,7 @@ const Dash = {
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 9, family: "'Plus Jakarta Sans', sans-serif" }, color: '#9aa3b2' } },
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9, family: "'Plus Jakarta Sans', sans-serif" }, color: '#9aa3b2' } },
           y: { grid: { color: 'rgba(20, 24, 31, 0.05)', borderDash: [4, 4], drawTicks: false }, border: { display: false }, ticks: { font: { size: 8, family: "'Plus Jakarta Sans', sans-serif" }, color: '#9aa3b2', callback: v => inrShort(v) } }
         }
       }
@@ -987,7 +1078,7 @@ const Dash = {
 
     const labels = Object.keys(grouped);
     const values = Object.values(grouped);
-    const colors = ['#4f46e5', '#10b981', '#f59e0b', '#7c3aed', '#0ea5e9', '#db2777'];
+    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#38bdf8', '#ec4899', '#f59e0b'];
 
     if (this.charts.payMode) {
       this.charts.payMode.data.labels = labels.length ? labels : ['No Data'];
@@ -1011,8 +1102,8 @@ const Dash = {
           data: values,
           backgroundColor: colors.slice(0, labels.length),
           borderWidth: 2,
-          borderColor: 'var(--bg-card)',
-          hoverBorderColor: 'var(--bg-card)',
+          borderColor: '#ffffff',
+          hoverBorderColor: '#ffffff',
           borderRadius: 4,
           hoverOffset: 6
         }]
@@ -1128,12 +1219,12 @@ const Dash = {
     });
 
     const sparkConfigs = [
-      { id: 'sparklineIncome', data: incomeData, color: '#6366f1', label: 'Income', chartKey: 'sparkIncome' },
-      { id: 'sparklineExpense', data: expenseData, color: '#10b981', label: 'Expense', chartKey: 'sparkExpense' },
+      { id: 'sparklineIncome', data: incomeData, color: '#22C55E', label: 'Income', chartKey: 'sparkIncome' },
+      { id: 'sparklineExpense', data: expenseData, color: '#FF5A5F', label: 'Expense', chartKey: 'sparkExpense' },
       { id: 'sparklineProfit', data: profitData, color: '#f59e0b', label: 'Profit', chartKey: 'sparkProfit' },
-      { id: 'sparklineBalance', data: balanceData, color: '#22c7ff', label: 'Balance', chartKey: 'sparkBalance' },
-      { id: 'sparklineAvgIncome', data: incomeData, color: '#10b981', label: 'Avg Income', chartKey: 'sparkAvgIncome' },
-      { id: 'sparklineAvgExpense', data: expenseData, color: '#ef4444', label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
+      { id: 'sparklineBalance', data: balanceData, color: '#3B82F6', label: 'Balance', chartKey: 'sparkBalance' },
+      { id: 'sparklineAvgIncome', data: incomeData, color: '#22C55E', label: 'Avg Income', chartKey: 'sparkAvgIncome' },
+      { id: 'sparklineAvgExpense', data: expenseData, color: '#FF5A5F', label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
       { id: 'sparklineSavingsRate', data: savingsRateData, color: '#8b5cf6', label: 'Savings Rate', chartKey: 'sparkSavings' }
     ];
 

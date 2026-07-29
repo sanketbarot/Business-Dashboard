@@ -32,6 +32,8 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
+  <!-- Lucide Outline Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
@@ -51,20 +53,20 @@
 
       <nav class="sb-nav">
         <div class="sb-section">Overview</div>
-        <a href="index.html" class="sb-link active"><span class="sb-icon">📊</span><span>Dashboard</span></a>
-        <a href="transaction.html" class="sb-link"><span class="sb-icon">💳</span><span>Transactions</span></a>
-        <a href="analytics.html" class="sb-link"><span class="sb-icon">📈</span><span>Analytics</span></a>
+        <a href="index.html" class="sb-link active"><span class="sb-icon"><i data-lucide="layout-dashboard"></i></span><span>Dashboard</span></a>
+        <a href="transaction.html" class="sb-link"><span class="sb-icon"><i data-lucide="arrow-left-right"></i></span><span>Transactions</span></a>
+        <a href="analytics.html" class="sb-link"><span class="sb-icon"><i data-lucide="line-chart"></i></span><span>Analytics</span></a>
 
         <div class="sb-section">Quick Add</div>
-        <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
-        <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon">💸</span><span>New Expense</span></div>
+        <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon"><i data-lucide="plus-circle"></i></span><span>New Income</span></div>
+        <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon"><i data-lucide="minus-circle"></i></span><span>New Expense</span></div>
 
         <div class="sb-section">Reports</div>
-        <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
-        <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
-        <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span><span>Backup Data</span></div>
+        <div class="sb-link" onclick="exportExcel()"><span class="sb-icon"><i data-lucide="file-spreadsheet"></i></span><span>Excel Report</span></div>
+        <div class="sb-link" onclick="exportPDF()"><span class="sb-icon"><i data-lucide="file-text"></i></span><span>PDF Report</span></div>
+        <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon"><i data-lucide="database"></i></span><span>Backup Data</span></div>
         <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span
-            class="sb-icon">📲</span><span>Install App</span></div>
+            class="sb-icon"><i data-lucide="smartphone"></i></span><span>Install App</span></div>
       </nav>
 
       <div class="sb-footer">
@@ -75,7 +77,7 @@
             <div class="sb-user-email">sanketbarot3901@gmail.com</div>
           </div>
         </div>
-        <button class="sb-logout" onclick="logout()">🚪 Sign Out</button>
+        <button class="sb-logout" onclick="logout()"><i data-lucide="log-out" style="width: 15px; height: 15px; margin-right: 8px; vertical-align: middle;"></i>Sign Out</button>
       </div>
     </aside>
 
@@ -95,7 +97,7 @@
           <div class="notif-wrapper" style="position:relative;">
             <button class="notif-btn" onclick="Dash.toggleNotifDropdown()"
               style="background:none; border:none; font-size:1.3rem; cursor:pointer; position:relative; padding:4px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr);">
-              🔔
+              <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
               <span class="notif-badge" id="notifBadge"
                 style="display:none; position:absolute; top:-2px; right:-2px; background:var(--expense); color:white; font-size:0.65rem; font-weight:800; padding:2px 5px; border-radius:100px; line-height:1; border:1.5px solid var(--bg-card); box-shadow:0 0 6px rgba(239,68,68,0.4);">0</span>
             </button>
@@ -103,7 +105,7 @@
               style="display:none; position:absolute; top:calc(100% + 12px); right:0; width:320px; background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--r-xl); box-shadow:var(--sh-lg); z-index:1001; overflow:hidden;">
               <div class="notif-header"
                 style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:800; font-size:0.9rem; color:var(--text-head);">🔔 Notifications</span>
+                <span style="font-weight:800; font-size:0.9rem; color:var(--text-head); display:flex; align-items:center; gap:6px;"><i data-lucide="bell" style="width: 15px; height: 15px; color:var(--brand);"></i> Notifications</span>
                 <button onclick="Dash.clearNotifs()"
                   style="background:none; border:none; font-size:0.72rem; font-weight:700; color:var(--brand); cursor:pointer; font-family:inherit;">Clear
                   All</button>
@@ -126,14 +128,14 @@
             <p id="heroSubtext">Here's your business overview</p>
           </div>
           <div class="hero-actions">
-            <button class="btn btn-primary" onclick="openIncomeModal()">💰 Add Income</button>
-            <button class="btn btn-expense" onclick="openExpenseModal()">💸 Add Expense</button>
-            <button class="btn btn-outline" onclick="exportPDF()">📄 Report</button>
+            <button class="btn btn-primary" onclick="openIncomeModal()"><i data-lucide="plus-circle"></i>Add Income</button>
+            <button class="btn btn-expense" onclick="openExpenseModal()"><i data-lucide="minus-circle"></i>Add Expense</button>
+            <button class="btn btn-outline" onclick="exportPDF()"><i data-lucide="file-text"></i>Report</button>
           </div>
         </section>
 
         <div class="period-wrap">
-          <span class="period-title">📈 Financial Summary</span>
+          <span class="period-title"><i data-lucide="line-chart" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px; color: var(--brand);"></i>Financial Summary</span>
           <div class="period-bar">
             <button class="pb-tab active" data-p="today" onclick="switchPeriod('today',this)">Today</button>
             <button class="pb-tab" data-p="yesterday" onclick="switchPeriod('yesterday',this)">Yesterday</button>
@@ -147,7 +149,7 @@
         <section class="sum-grid">
           <div class="sum-card">
             <div class="sc-top">
-              <div class="sc-icon">💰</div><span class="sc-trend" id="incomeTrend">→ 0%</span>
+              <div class="sc-icon"><i data-lucide="trending-up"></i></div><span class="sc-trend" id="incomeTrend">→ 0%</span>
             </div>
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
@@ -162,7 +164,7 @@
           </div>
           <div class="sum-card">
             <div class="sc-top">
-              <div class="sc-icon">💸</div><span class="sc-trend" id="expenseTrend">→ 0%</span>
+              <div class="sc-icon"><i data-lucide="trending-down"></i></div><span class="sc-trend" id="expenseTrend">→ 0%</span>
             </div>
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
@@ -177,7 +179,7 @@
           </div>
           <div class="sum-card">
             <div class="sc-top">
-              <div class="sc-icon">📈</div><span class="sc-trend" id="profitTrend">→ 0%</span>
+              <div class="sc-icon"><i data-lucide="dollar-sign"></i></div><span class="sc-trend" id="profitTrend">→ 0%</span>
             </div>
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
@@ -192,7 +194,7 @@
           </div>
           <div class="sum-card balance-glow">
             <div class="sc-top">
-              <div class="sc-icon">🏦</div><span class="sc-trend">All Time</span>
+              <div class="sc-icon"><i data-lucide="landmark"></i></div><span class="sc-trend">All Time</span>
             </div>
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
@@ -210,7 +212,7 @@
         <section class="cash-online-grid">
           <div class="co-card cash-card">
             <div class="co-header">
-              <div class="co-icon">💵</div>
+              <div class="co-icon"><i data-lucide="banknote"></i></div>
               <div class="co-header-info">
                 <div class="co-title">Cash Balance</div>
                 <div class="co-subtitle">Physical Money</div>
@@ -235,14 +237,14 @@
                 <div class="co-row-amt text-expense" id="cashOut">₹ 0</div>
               </div>
               <div class="co-balance">
-                <div class="co-balance-label">💰 Net Cash in Hand</div>
+                <div class="co-balance-label"><i data-lucide="coins" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>Net Cash in Hand</div>
                 <div class="co-balance-amt" id="cashBalance">₹ 0</div>
               </div>
             </div>
           </div>
           <div class="co-card online-card">
             <div class="co-header">
-              <div class="co-icon">📱</div>
+              <div class="co-icon"><i data-lucide="smartphone"></i></div>
               <div class="co-header-info">
                 <div class="co-title">Online Balance</div>
                 <div class="co-subtitle">UPI + Bank + Card</div>
@@ -267,7 +269,7 @@
                 <div class="co-row-amt text-expense" id="onlineOut">₹ 0</div>
               </div>
               <div class="co-balance online-balance">
-                <div class="co-balance-label">📱 Net Online Balance</div>
+                <div class="co-balance-label"><i data-lucide="credit-card" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>Net Online Balance</div>
                 <div class="co-balance-amt" id="onlineBalance">₹ 0</div>
               </div>
             </div>

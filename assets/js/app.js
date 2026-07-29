@@ -913,6 +913,9 @@ function initializeCustomDropdowns() {
 // Bind load callbacks
 window.addEventListener('DOMContentLoaded', () => {
   initializeCustomDropdowns();
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
 });
 
 // Setup observer on document body to capture dynamically added selects

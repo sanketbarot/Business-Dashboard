@@ -28,6 +28,8 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
+<!-- Lucide Outline Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -46,17 +48,17 @@
 
     <nav class="sb-nav">
       <div class="sb-section">Overview</div>
-      <a href="index.html" class="sb-link"><span class="sb-icon">📊</span><span>Dashboard</span></a>
-      <a href="transaction.html" class="sb-link active"><span class="sb-icon">💳</span><span>Transactions</span></a>
-      <a href="analytics.html" class="sb-link"><span class="sb-icon">📈</span><span>Analytics</span></a>
+      <a href="index.html" class="sb-link"><span class="sb-icon"><i data-lucide="layout-dashboard"></i></span><span>Dashboard</span></a>
+      <a href="transaction.html" class="sb-link active"><span class="sb-icon"><i data-lucide="arrow-left-right"></i></span><span>Transactions</span></a>
+      <a href="analytics.html" class="sb-link"><span class="sb-icon"><i data-lucide="line-chart"></i></span><span>Analytics</span></a>
       <div class="sb-section">Quick Add</div>
-      <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon">💰</span><span>New Income</span></div>
-      <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon">💸</span><span>New Expense</span></div>
+      <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon"><i data-lucide="plus-circle"></i></span><span>New Income</span></div>
+      <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon"><i data-lucide="minus-circle"></i></span><span>New Expense</span></div>
       <div class="sb-section">Reports</div>
-      <div class="sb-link" onclick="exportExcel()"><span class="sb-icon">📊</span><span>Excel Report</span></div>
-      <div class="sb-link" onclick="exportPDF()"><span class="sb-icon">📄</span><span>PDF Report</span></div>
-      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon">💾</span><span>Backup Data</span></div>
-      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon">📲</span><span>Install App</span></div>
+      <div class="sb-link" onclick="exportExcel()"><span class="sb-icon"><i data-lucide="file-spreadsheet"></i></span><span>Excel Report</span></div>
+      <div class="sb-link" onclick="exportPDF()"><span class="sb-icon"><i data-lucide="file-text"></i></span><span>PDF Report</span></div>
+      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon"><i data-lucide="database"></i></span><span>Backup Data</span></div>
+      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon"><i data-lucide="smartphone"></i></span><span>Install App</span></div>
     </nav>
 
     <div class="sb-footer">
@@ -67,7 +69,7 @@
           <div class="sb-user-email">sanketbarot3901@gmail.com</div>
         </div>
       </div>
-      <button class="sb-logout" onclick="logout()">🚪 Sign Out</button>
+      <button class="sb-logout" onclick="logout()"><i data-lucide="log-out" style="width: 15px; height: 15px; margin-right: 8px; vertical-align: middle;"></i>Sign Out</button>
     </div>
   </aside>
 
@@ -87,19 +89,19 @@
 
       <section class="cmd-bar">
         <div class="cmd-inner">
-          <div class="cmd-title"><h2>💳 Manage Transactions</h2><p>View, filter, edit and manage all your records</p></div>
+          <div class="cmd-title"><h2><i data-lucide="arrow-left-right" style="width: 22px; height: 22px; vertical-align: middle; margin-right: 8px; color: var(--brand);"></i>Manage Transactions</h2><p>View, filter, edit and manage all your records</p></div>
           <div class="cmd-actions">
-            <button class="btn btn-income" onclick="openIncomeModal()">💰 Add Income</button>
-            <button class="btn btn-expense" onclick="openExpenseModal()">💸 Add Expense</button>
+            <button class="btn btn-income" onclick="openIncomeModal()"><i data-lucide="plus-circle"></i>Add Income</button>
+            <button class="btn btn-expense" onclick="openExpenseModal()"><i data-lucide="minus-circle"></i>Add Expense</button>
           </div>
         </div>
       </section>
 
       <section class="tx-analytics">
-        <div class="tx-stat in"><div class="tx-stat-ic">💰</div><div class="tx-stat-info"><div class="tx-stat-lbl">Total Income</div><div class="tx-stat-val text-income" id="tsIncome">₹ 0</div><div class="tx-stat-sub" id="tsIncomeCount">0 records</div></div></div>
-        <div class="tx-stat out"><div class="tx-stat-ic">💸</div><div class="tx-stat-info"><div class="tx-stat-lbl">Total Expense</div><div class="tx-stat-val text-expense" id="tsExpense">₹ 0</div><div class="tx-stat-sub" id="tsExpenseCount">0 records</div></div></div>
-        <div class="tx-stat prof"><div class="tx-stat-ic">📈</div><div class="tx-stat-info"><div class="tx-stat-lbl">Net Profit</div><div class="tx-stat-val text-profit" id="tsProfit">₹ 0</div><div class="tx-stat-sub" id="tsMargin">0% margin</div></div></div>
-        <div class="tx-stat count"><div class="tx-stat-ic">🔢</div><div class="tx-stat-info"><div class="tx-stat-lbl">Records</div><div class="tx-stat-val text-brand" id="tsCount">0</div><div class="tx-stat-sub">In current view</div></div></div>
+        <div class="tx-stat in"><div class="tx-stat-ic"><i data-lucide="trending-up"></i></div><div class="tx-stat-info"><div class="tx-stat-lbl">Total Income</div><div class="tx-stat-val text-income" id="tsIncome">₹ 0</div><div class="tx-stat-sub" id="tsIncomeCount">0 records</div></div></div>
+        <div class="tx-stat out"><div class="tx-stat-ic"><i data-lucide="trending-down"></i></div><div class="tx-stat-info"><div class="tx-stat-lbl">Total Expense</div><div class="tx-stat-val text-expense" id="tsExpense">₹ 0</div><div class="tx-stat-sub" id="tsExpenseCount">0 records</div></div></div>
+        <div class="tx-stat prof"><div class="tx-stat-ic"><i data-lucide="dollar-sign"></i></div><div class="tx-stat-info"><div class="tx-stat-lbl">Net Profit</div><div class="tx-stat-val text-profit" id="tsProfit">₹ 0</div><div class="tx-stat-sub" id="tsMargin">0% margin</div></div></div>
+        <div class="tx-stat count"><div class="tx-stat-ic"><i data-lucide="list"></i></div><div class="tx-stat-info"><div class="tx-stat-lbl">Records</div><div class="tx-stat-val text-brand" id="tsCount">0</div><div class="tx-stat-sub">In current view</div></div></div>
       </section>
 
       <section class="filter-panel">
