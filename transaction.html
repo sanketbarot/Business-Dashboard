@@ -129,15 +129,15 @@
           <select class="fc fsel" id="sortFilter" onchange="applyFilters()"><option value="date-desc">🕐 Latest First</option><option value="date-asc">📅 Oldest First</option><option value="amount-desc">💰 High to Low</option><option value="amount-asc">💰 Low to High</option></select>
           <div class="view-toggle"><button class="vt-btn active" id="vtTable" onclick="setView('table')">📋 Table</button><button class="vt-btn" id="vtCard" onclick="setView('card')">🎴 Cards</button></div>
           <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Reset</button>
-          <button class="btn btn-primary btn-sm" onclick="exportExcel()">📊 Export</button>
+          <button class="btn btn-primary btn-sm" onclick="exportExcel()"><i data-lucide="file-spreadsheet" style="width: 14px; height: 14px; margin-right: 4px;"></i>Export</button>
         </div>
       </section>
 
       <section class="card t-card">
         <div class="card-hd">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><h4>📋 Records</h4><span class="rec-tag" id="recTag">0 records</span></div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><h4><i data-lucide="list" style="width: 18px; height: 18px; color: var(--brand); vertical-align: middle; margin-right: 8px;"></i>Records</h4><span class="rec-tag" id="recTag">0 records</span></div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <div class="bulk-bar" id="bulkBar"><span class="bulk-txt" id="bulkTxt">0 selected</span><button class="btn btn-expense btn-sm" onclick="bulkDelete()">🗑️ Delete</button></div>
+            <div class="bulk-bar" id="bulkBar"><span class="bulk-txt" id="bulkTxt">0 selected</span><button class="btn btn-expense btn-sm" onclick="bulkDelete()"><i data-lucide="trash-2" style="width: 14px; height: 14px; margin-right: 4px;"></i>Delete</button></div>
             <label class="sel-all-lbl"><input type="checkbox" id="selAll" onchange="toggleSelectAll()"/><span>Select All</span></label>
           </div>
         </div>

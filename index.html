@@ -280,12 +280,12 @@
         <section class="card" style="margin-bottom:26px;">
           <div class="card-hd">
             <div style="display:flex; align-items:center; gap:10px;">
-              <h4>🎯 Business Targets & Vision Roadmap</h4>
+              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="target" style="width: 18px; height: 18px; color: var(--brand);"></i>Business Targets & Vision Roadmap</h4>
               <span
                 style="font-size:0.72rem; background:var(--brand-soft); color:var(--brand); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">VISION
                 METRICS</span>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="openGoalSettingsModal()">⚙️ Configure Goals</button>
+            <button class="btn btn-outline btn-sm" onclick="openGoalSettingsModal()"><i data-lucide="settings" style="width: 14px; height: 14px; margin-right: 6px;"></i>Configure Goals</button>
           </div>
           <div class="card-bd">
             <div class="goals-wrapper-grid"
@@ -295,8 +295,7 @@
               <div class="goal-item-card"
                 style="background:rgba(99,102,241,0.02); border:1px solid rgba(99,102,241,0.06); border-radius:var(--r-md); padding:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">📈 MTD REVENUE
-                    TARGET</span>
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i data-lucide="trending-up" style="width: 14px; height: 14px; color: var(--income);"></i>MTD REVENUE TARGET</span>
                   <span style="font-size:0.85rem; font-weight:800; color:var(--income);" id="goalRevPct">0%</span>
                 </div>
                 <div style="margin-bottom:12px;">
@@ -319,7 +318,7 @@
               <div class="goal-item-card"
                 style="background:rgba(239,68,68,0.02); border:1px solid rgba(239,68,68,0.06); border-radius:var(--r-md); padding:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">💸 MTD EXPENSE CAP</span>
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i data-lucide="trending-down" style="width: 14px; height: 14px; color: var(--expense);"></i>MTD EXPENSE CAP</span>
                   <span style="font-size:0.85rem; font-weight:800; color:var(--expense);" id="goalExpPct">0%</span>
                 </div>
                 <div style="margin-bottom:12px;">
@@ -342,8 +341,7 @@
               <div class="goal-item-card"
                 style="background:rgba(139,92,246,0.02); border:1px solid rgba(139,92,246,0.06); border-radius:var(--r-md); padding:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light);">🏆 YTD NET PROFIT
-                    MILESTONE</span>
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i data-lucide="trophy" style="width: 14px; height: 14px; color: var(--purple);"></i>YTD NET PROFIT MILESTONE</span>
                   <span style="font-size:0.85rem; font-weight:800; color:var(--purple);" id="goalPrfPct">0%</span>
                 </div>
                 <div style="margin-bottom:12px;">
@@ -370,7 +368,7 @@
         <section class="analytics-grid">
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic">📊</div>
+              <div class="ms-ic"><i data-lucide="bar-chart-2" style="width: 20px; height: 20px;"></i></div>
               <div class="ms-title">Avg Income / Day</div>
             </div>
             <div class="ms-bottom-wrap"
@@ -388,7 +386,7 @@
           </div>
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic">💳</div>
+              <div class="ms-ic"><i data-lucide="credit-card" style="width: 20px; height: 20px;"></i></div>
               <div class="ms-title">Avg Expense / Day</div>
             </div>
             <div class="ms-bottom-wrap"
@@ -406,7 +404,7 @@
           </div>
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic">🎯</div>
+              <div class="ms-ic"><i data-lucide="target" style="width: 20px; height: 20px;"></i></div>
               <div class="ms-title">Savings Rate</div>
             </div>
             <div class="ms-bottom-wrap"
@@ -427,7 +425,7 @@
         <section class="chart-grid">
           <div class="card chart-enhanced">
             <div class="card-hd">
-              <h4>📊 Income vs Expense</h4><select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
+              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="bar-chart-2" style="width: 18px; height: 18px; color: var(--brand);"></i>Income vs Expense</h4><select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
             </div>
             <div class="card-bd">
             <div class="chart-wrap-lg"><canvas id="barChart"></canvas></div>
@@ -435,7 +433,7 @@
           </div>
           <div class="card chart-enhanced">
             <div class="card-hd">
-              <h4>🍩 Expense Breakdown</h4>
+              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--brand);"></i>Expense Breakdown</h4>
               <select class="chart-sel" id="donutPeriod" onchange="buildDonutChart()">
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
@@ -454,13 +452,13 @@
             style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div style="display:flex; align-items:center; gap:16px;">
               <button class="pb-tab active" id="chartTabLine" onclick="switchLineChartTab('historical', this)"
-                style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-head); cursor:pointer; font-family:inherit;">📈
-                7-Day Cash Flow</button>
+                style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-head); cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:6px;"><i data-lucide="trending-up" style="width: 18px; height: 18px; color: var(--brand);"></i>7-Day Cash Flow</button>
               <button class="pb-tab" id="chartTabVelocity" onclick="switchLineChartTab('live', this)"
                 style="background:none; border:none; padding:4px 0; font-weight:700; font-size:1.05rem; color:var(--text-light); cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px;">
                 <span class="live-pulse"
                   style="width:8px; height:8px; border-radius:50%; background:var(--expense); display:none; box-shadow: 0 0 6px var(--expense);"></span>
-                <span>⚡ Real-Time Sales (Live)</span>
+                <i data-lucide="zap" style="width: 18px; height: 18px; color: #f59e0b;"></i>
+                <span>Real-Time Sales (Live)</span>
               </button>
             </div>
             <span style="font-size:0.75rem;color:var(--text-muted);" id="lineChartSubtext">Last 7 days</span>
@@ -734,7 +732,7 @@
     <div class="modal" style="max-width: 480px;">
       <div class="modal-hd"
         style="background: linear-gradient(135deg, rgba(224, 231, 255, 0.4) 0%, rgba(237, 233, 254, 0.4) 100%) !important;">
-        <h3>🎯 Configure Business Goals</h3>
+        <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="target" style="width: 18px; height: 18px; color: var(--brand);"></i>Configure Business Goals</h3>
         <button class="modal-x" onclick="closeModal('goalSettingsModal')">✕</button>
       </div>
       <div class="modal-bd">
@@ -753,7 +751,7 @@
       </div>
       <div class="modal-ft">
         <button class="btn btn-outline" onclick="closeModal('goalSettingsModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveVisionGoals()">🎯 Save Targets</button>
+        <button class="btn btn-primary" onclick="saveVisionGoals()"><i data-lucide="target" style="width: 16px; height: 16px; margin-right: 6px;"></i>Save Targets</button>
       </div>
     </div>
   </div>

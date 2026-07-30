@@ -227,18 +227,27 @@
 }
 
 /* User Custom Card Styles */
-.balance-card {
-  background: var(--balance-gradient) !important;
+.balance-card,
+.income-card,
+.expense-card,
+.profit-card {
   color: #fff !important;
   border-radius: 20px !important;
   padding: 24px !important;
   position: relative !important;
   overflow: hidden !important;
   border: none !important;
+}
+
+.balance-card {
+  background: var(--balance-gradient) !important;
   box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25) !important;
 }
 
-.balance-card::before {
+.balance-card::before,
+.income-card::before,
+.expense-card::before,
+.profit-card::before {
   content: "";
   position: absolute;
   top: -40%;
@@ -252,28 +261,16 @@
 
 .income-card {
   background: var(--income-gradient) !important;
-  color: #fff !important;
-  border-radius: 20px !important;
-  padding: 24px !important;
-  border: none !important;
   box-shadow: 0 15px 35px rgba(34, 197, 94, 0.22) !important;
 }
 
 .expense-card {
   background: var(--expense-gradient) !important;
-  color: #fff !important;
-  border-radius: 20px !important;
-  padding: 24px !important;
-  border: none !important;
   box-shadow: 0 15px 35px rgba(255, 90, 95, 0.22) !important;
 }
 
 .profit-card {
   background: var(--profit-gradient) !important;
-  color: #fff !important;
-  border-radius: 20px !important;
-  padding: 24px !important;
-  border: none !important;
   box-shadow: 0 15px 35px rgba(245, 158, 11, 0.22) !important;
 }
 
@@ -1470,13 +1467,13 @@
 
   .hero-text h2 {
     font-size: 1.5rem !important;
-    color: #ffffff !important;
+    color: var(--text-head) !important;
     font-weight: 800 !important;
   }
 
   .hero-text p {
     font-size: 0.88rem !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: var(--text-muted) !important;
   }
 
   .hero-actions {
@@ -1523,45 +1520,18 @@
   }
 
   /* ============================================
-     SUMMARY CARDS — FORCE LIGHT
+     SUMMARY CARDS — RESPONSIVE
      ============================================ */
   .sum-grid {
     gap: 12px;
     margin-bottom: 20px;
   }
 
-  /* Base card */
+  /* Base card layout overrides for mobile */
   .sum-card {
     padding: 20px !important;
     min-height: 145px !important;
-    background: var(--bg-card) !important;
-    border: 1.5px solid var(--border) !important;
     box-shadow: var(--sh-sm) !important;
-  }
-
-  /* Income Card */
-  .sum-card:nth-child(1) {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(129, 140, 248, 0.04) 100%) !important;
-    border-color: rgba(129, 140, 248, 0.25) !important;
-  }
-
-  /* Expense Card */
-  .sum-card:nth-child(2) {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.04) 100%) !important;
-    border-color: rgba(16, 185, 129, 0.25) !important;
-  }
-
-  /* Profit Card */
-  .sum-card:nth-child(3) {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, rgba(180, 83, 9, 0.04) 100%) !important;
-    border-color: rgba(217, 119, 6, 0.25) !important;
-  }
-
-  /* Balance Card */
-  .sum-card:nth-child(4),
-  .balance-glow {
-    background: linear-gradient(135deg, rgba(163, 150, 255, 0.15) 0%, rgba(173, 103, 230, 0.08) 100%) !important;
-    border-color: rgba(163, 150, 255, 0.35) !important;
   }
 
   .sc-top {
@@ -1577,17 +1547,12 @@
   .sc-trend {
     padding: 4px 10px !important;
     font-size: 0.68rem !important;
-    color: var(--text-head) !important;
-    background: rgba(20, 24, 31, 0.04) !important;
-    border: 1px solid var(--border) !important;
     font-weight: 700 !important;
   }
 
   /* Labels */
   .sc-label {
     font-size: 0.78rem !important;
-    color: var(--text-muted) !important;
-    font-weight: 700 !important;
     margin-bottom: 6px !important;
     text-transform: uppercase !important;
     letter-spacing: 0.03em !important;
@@ -1596,8 +1561,6 @@
   /* Values */
   .sc-value {
     font-size: 1.55rem !important;
-    color: var(--text-head) !important;
-    font-weight: 800 !important;
     line-height: 1.2 !important;
     margin-bottom: 6px !important;
   }
@@ -1605,8 +1568,6 @@
   /* Sub */
   .sc-sub {
     font-size: 0.74rem !important;
-    color: var(--text-muted) !important;
-    font-weight: 500 !important;
   }
 
   /* ============================================
