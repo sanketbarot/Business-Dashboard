@@ -273,13 +273,12 @@ const TxnPage = {
         ' style="accent-color:var(--brand);cursor:pointer;width:18px;height:18px;"' +
         ' onchange="TxnPage.select(\'' + t.id + '\', this)"/></td>' +
         '<td style="font-size:0.82rem;white-space:nowrap;font-weight:500;">' + fmtDate(t.date) + '</td>' +
-        '<td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' +
-        (isI ? '💰' : '💸') + ' ' + (isI ? 'Income' : 'Expense') + '</span></td>' +
-        '<td style="font-size:0.85rem;font-weight:600;">' + escapeHtml(t.category || '-') + '</td>' +
+        '<td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '" style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:12px; height:12px;"></i>' + (isI ? 'Income' : 'Expense') + '</span></td>' +
+        '<td style="font-size:0.85rem;font-weight:600;">' + window.getFormattedOptionHtml(t.category || '-', 13) + '</td>' +
         '<td class="' + (isI ? 'amt-in' : 'amt-out') + '" style="font-size:0.95rem;">' +
         (isI ? '+' : '-') + ' ' + inr(t.amount) + '</td>' +
         '<td style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">' +
-        (self.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</td>' +
+        window.getFormattedOptionHtml(t.mode || 'Cash', 13) + '</td>' +
         '<td style="font-size:0.8rem;color:var(--text-muted);">' + escapeHtml(customer) + '</td>' +
         '<td style="font-size:0.78rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(notes) + '">' +
         escapeHtml(truncNote) + '</td>' +
@@ -290,6 +289,9 @@ const TxnPage = {
         '</div></td>' +
         '</tr>';
     }).join('');
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   },
 
   renderMobileRows: function() {
@@ -317,22 +319,24 @@ const TxnPage = {
         ' onchange="TxnPage.select(\'' + t.id + '\', this)"/></div>' +
         '<div class="mobile-txn-body" onclick="TxnPage.view(\'' + t.id + '\')">' +
         '<div class="mobile-txn-line1">' +
-        '<div class="mobile-txn-cat">' + escapeHtml(t.category || '-') + '</div>' +
+        '<div class="mobile-txn-cat">' + window.getFormattedOptionHtml(t.category || '-', 13) + '</div>' +
         '<div class="mobile-txn-amt ' + (isI ? 'amt-in' : 'amt-out') + '">' +
         (isI ? '+' : '-') + ' ' + inrShort(t.amount) + '</div>' +
         '</div>' +
         '<div class="mobile-txn-line2">' +
         '<div class="mobile-txn-meta">' +
         '<span>' + fmtDate(t.date) + '</span>' +
-        '<span class="mobile-txn-badge ' + (isI ? 'badge-in' : 'badge-out') + '">' +
-        (isI ? '💰' : '💸') + '</span>' +
-        '<span>' + (self.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</span>' +
+        '<span class="mobile-txn-badge ' + (isI ? 'badge-in' : 'badge-out') + '" style="display:inline-flex; align-items:center; gap:2px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:10px; height:10px;"></i>' + (isI ? 'In' : 'Out') + '</span>' +
+        '<span>' + window.getFormattedOptionHtml(t.mode || 'Cash', 12) + '</span>' +
         '</div></div></div>' +
         '<div class="mobile-txn-actions">' +
         '<button class="act act-e" onclick="TxnPage.edit(\'' + t.id + '\')" title="Edit">✏️</button>' +
         '<button class="act act-d" onclick="TxnPage.del(\'' + t.id + '\')" title="Delete">🗑️</button>' +
         '</div></div></td></tr>';
     }).join('');
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   },
 
   renderCards: function() {
@@ -355,22 +359,24 @@ const TxnPage = {
       return '<div class="tx-card" style="' + style + '">' +
         '<div class="tx-card-top">' +
         '<div style="flex:1;min-width:0;cursor:pointer;" onclick="TxnPage.view(\'' + t.id + '\')">' +
-        '<div class="tx-card-cat">' + escapeHtml(t.category || '-') + '</div>' +
+        '<div class="tx-card-cat">' + window.getFormattedOptionHtml(t.category || '-', 13) + '</div>' +
         '<div class="tx-card-date">' + fmtDate(t.date) + '</div>' +
         '</div>' +
-        '<span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' +
-        (isI ? '💰' : '💸') + '</span>' +
+        '<span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '" style="display:inline-flex; align-items:center; gap:2px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:10px; height:10px;"></i>' + (isI ? 'In' : 'Out') + '</span>' +
         '</div>' +
         '<div class="tx-card-amt ' + (isI ? 'amt-in' : 'amt-out') + '" onclick="TxnPage.view(\'' + t.id + '\')" style="cursor:pointer;">' +
         (isI ? '+' : '-') + ' ' + inr(t.amount) + '</div>' +
         '<div class="tx-card-foot">' +
         '<span class="tx-card-mode">' +
-        (self.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</span>' +
+        window.getFormattedOptionHtml(t.mode || 'Cash', 12) + '</span>' +
         '<span style="display:flex;gap:4px;align-items:center;">' +
         '<button class="act act-e" onclick="event.stopPropagation();TxnPage.edit(\'' + t.id + '\')">✏️</button>' +
         '<button class="act act-d" onclick="event.stopPropagation();TxnPage.del(\'' + t.id + '\')">🗑️</button>' +
         '</span></div></div>';
     }).join('');
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   },
 
   getEmptyRow: function(colspan) {
@@ -505,10 +511,17 @@ const TxnPage = {
     if (!grid) return;
     if (hd) {
       hd.style.background = isI
-        ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.1) 100%)'
-        : 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.1) 100%)';
+        ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%)'
+        : 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%)';
+      hd.style.borderBottom = isI
+        ? '1px solid rgba(16, 185, 129, 0.15)'
+        : '1px solid rgba(239, 68, 68, 0.15)';
       const h3 = hd.querySelector('h3');
-      if (h3) h3.textContent = isI ? '💰 Income Details' : '💸 Expense Details';
+      if (h3) {
+        h3.innerHTML = isI 
+          ? '<i data-lucide="plus-circle" style="width: 20px; height: 20px; color: #10b981;"></i><span>Income Details</span>' 
+          : '<i data-lucide="minus-circle" style="width: 20px; height: 20px; color: #f43f5e;"></i><span>Expense Details</span>';
+      }
     }
     const customer = t.from || t.vendor;
     const customerLbl = isI ? 'Customer' : 'Vendor';
@@ -516,14 +529,18 @@ const TxnPage = {
     grid.innerHTML =
       '<div class="detail-item"><div class="detail-lbl">Date</div><div class="detail-val">' + fmtDate(t.date) + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">Day</div><div class="detail-val">' + dayName + '</div></div>' +
-      '<div class="detail-item"><div class="detail-lbl">Type</div><div class="detail-val ' + (isI ? 'text-income' : 'text-expense') + '">' + (isI ? '💰 Income' : '💸 Expense') + '</div></div>' +
-      '<div class="detail-item"><div class="detail-lbl">Category</div><div class="detail-val">' + escapeHtml(t.category || '-') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-lbl">Type</div><div class="detail-val ' + (isI ? 'text-income' : 'text-expense') + '" style="display:inline-flex; align-items:center; gap:6px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:14px; height:14px;"></i>' + (isI ? 'Income' : 'Expense') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-lbl">Category</div><div class="detail-val">' + window.getFormattedOptionHtml(t.category || '-', 13) + '</div></div>' +
       '<div class="detail-item full"><div class="detail-lbl">Amount</div><div class="detail-val ' + (isI ? 'text-income' : 'text-expense') + '" style="font-size:1.5rem;">' + inr(t.amount) + '</div></div>' +
-      '<div class="detail-item"><div class="detail-lbl">Mode</div><div class="detail-val">' + (this.icons.payment[t.mode] || '💰') + ' ' + escapeHtml(t.mode || 'Cash') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-lbl">Mode</div><div class="detail-val">' + window.getFormattedOptionHtml(t.mode || 'Cash', 13) + '</div></div>' +
       '<div class="detail-item"><div class="detail-lbl">' + customerLbl + '</div><div class="detail-val">' + escapeHtml(customer || '—') + '</div></div>' +
       (t.notes ? '<div class="detail-item full"><div class="detail-lbl">Notes</div><div class="detail-val" style="font-weight:500;">' + escapeHtml(t.notes) + '</div></div>' : '') +
       (t.savedAt ? '<div class="detail-item full"><div class="detail-lbl">Created</div><div class="detail-val" style="font-size:0.85rem;">' + new Date(t.savedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) + '</div></div>' : '') +
-      '<div class="detail-item full"><div class="detail-lbl">Sync Status</div><div class="detail-val" style="font-size:0.82rem;color:var(--income);">☁️ Synced to Cloud</div></div>';
+      '<div class="detail-item full"><div class="detail-lbl">Sync Status</div><div class="detail-val" style="font-size:0.82rem;color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="cloud-lightning" style="width:14px; height:14px;"></i>Synced to Cloud</div></div>';
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
 
     if (editBtn) {
       const self = this;
@@ -556,7 +573,14 @@ const TxnPage = {
     else setVal('eVendor', t.vendor);
     const titleId = isI ? 'incomeTitle' : 'expenseTitle';
     const title = document.getElementById(titleId);
-    if (title) title.textContent = isI ? '✏️ Edit Income' : '✏️ Edit Expense';
+    if (title) {
+      title.innerHTML = isI 
+        ? '<i data-lucide="edit-3" style="width: 20px; height: 20px;"></i><span>Edit Income</span>' 
+        : '<i data-lucide="edit-3" style="width: 20px; height: 20px;"></i><span>Edit Expense</span>';
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
     if (typeof previewAmt === 'function') previewAmt(t.type);
     openModal(isI ? 'incomeModal' : 'expenseModal');
   },
@@ -681,7 +705,14 @@ const TxnPage = {
     }
     const titleId = isI ? 'incomeTitle' : 'expenseTitle';
     const title = document.getElementById(titleId);
-    if (title) title.textContent = isI ? '💰 Add Income' : '💸 Add Expense';
+    if (title) {
+      title.innerHTML = isI 
+        ? '<i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span>' 
+        : '<i data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span>';
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
   },
 
   setupResize: function() {

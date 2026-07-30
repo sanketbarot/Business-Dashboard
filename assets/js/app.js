@@ -660,8 +660,8 @@ function logout() {
     modal.id = 'logoutConfirmModal';
     modal.innerHTML = `
       <div class="modal" style="max-width: 400px; text-align: center;">
-        <div class="modal-hd" style="justify-content: center; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
-          <h3 style="color: var(--expense);">🚪 Sign Out</h3>
+        <div class="modal-hd" style="justify-content: center; background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(244, 63, 94, 0.03) 100%); border-bottom: 1px solid rgba(244, 63, 94, 0.15);">
+          <h3 style="color: var(--expense); display: flex; align-items: center; gap: 8px;"><i data-lucide="log-out" style="width: 18px; height: 18px;"></i><span>Sign Out</span></h3>
         </div>
         <div class="modal-bd" style="padding: 30px 24px;">
           <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-head);">Are you sure you want to sign out?</p>
@@ -669,11 +669,14 @@ function logout() {
         </div>
         <div class="modal-ft" style="justify-content: center; gap: 14px;">
           <button class="btn btn-outline" onclick="closeModal('logoutConfirmModal')">Cancel</button>
-          <button class="btn btn-expense" onclick="confirmSignOut()">🚪 Sign Out</button>
+          <button class="btn btn-expense" onclick="confirmSignOut()" style="display: inline-flex; align-items: center; gap: 8px;"><i data-lucide="log-out" style="width: 16px; height: 16px;"></i>Sign Out</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
   openModal('logoutConfirmModal');
 }
@@ -823,9 +826,48 @@ window.addEventListener('appinstalled', (evt) => {
   }
 });
 
-// ============================================
-// CUSTOM DROPDOWNS INITIALIZATION ENGINE
-// ============================================
+// Global Helpers to map emojis/categories to Lucide line icons
+window.getLucideIconName = function(emojiOrText) {
+  if (!emojiOrText) return null;
+  const lower = emojiOrText.toLowerCase();
+  if (emojiOrText.includes('💰') || lower.includes('cash income') || lower.includes('income')) return 'banknote';
+  if (emojiOrText.includes('💵') || lower.includes('cash spent') || lower === 'cash') return 'coins';
+  if (emojiOrText.includes('📱') || lower.includes('online payment') || lower === 'online') return 'smartphone';
+  if (emojiOrText.includes('📲') || lower.includes('upi')) return 'phone-call';
+  if (emojiOrText.includes('🏦') || lower.includes('bank')) return 'landmark';
+  if (emojiOrText.includes('💳') || lower.includes('card')) return 'credit-card';
+  if (emojiOrText.includes('📄') || lower.includes('cheque')) return 'file-text';
+  if (emojiOrText.includes('🛒') || lower.includes('sales') || lower.includes('grocery')) return 'shopping-cart';
+  if (emojiOrText.includes('🧾') || lower.includes('electricity')) return 'zap';
+  if (emojiOrText.includes('📡') || lower.includes('internet')) return 'wifi';
+  if (emojiOrText.includes('🏠') || lower.includes('rent')) return 'home';
+  if (emojiOrText.includes('🥦') || lower.includes('vegetable')) return 'salad';
+  if (emojiOrText.includes('🍞') || lower.includes('bread') || lower.includes('bakery')) return 'cookie';
+  if (emojiOrText.includes('🍔') || lower.includes('food') || lower.includes('dining')) return 'pizza';
+  if (emojiOrText.includes('🚗') || lower.includes('transport') || lower.includes('fuel') || emojiOrText.includes('⛽')) return 'car';
+  if (emojiOrText.includes('👥') || lower.includes('salary') || lower.includes('wages')) return 'users';
+  if (emojiOrText.includes('🔨') || lower.includes('maintenance') || lower.includes('repair') || lower.includes('cleaning')) return 'wrench';
+  if (emojiOrText.includes('📢') || lower.includes('marketing') || lower.includes('ads')) return 'megaphone';
+  if (emojiOrText.includes('📦') || lower.includes('supplies') || lower.includes('other')) return 'package';
+  if (emojiOrText.includes('📋') || lower.includes('tax') || lower.includes('records')) return 'clipboard-list';
+  if (emojiOrText.includes('↩️') || lower.includes('refund')) return 'rotate-ccw';
+  if (emojiOrText.includes('📈') || lower.includes('investment') || lower.includes('revenue') || lower.includes('profit')) return 'trending-up';
+  if (emojiOrText.includes('📉') || lower.includes('expense')) return 'trending-down';
+  if (emojiOrText.includes('🎁') || lower.includes('gift') || lower.includes('bonus')) return 'gift';
+  if (emojiOrText.includes('🛵') || lower.includes('swiggy') || lower.includes('zomato')) return 'send';
+  return null;
+};
+
+// Formatter to strip emojis and wrap in dynamic Lucide HTML
+window.getFormattedOptionHtml = function(text, size = 14) {
+  if (!text) return '<span>Select</span>';
+  const iconName = window.getLucideIconName(text);
+  const cleanText = text.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+  if (iconName) {
+    return `<span style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="${iconName}" style="width: ${size}px; height: ${size}px; color: var(--brand);"></i><span>${cleanText}</span></span>`;
+  }
+  return `<span>${text}</span>`;
+};
 
 function initializeCustomDropdowns() {
   const selects = document.querySelectorAll('select');
@@ -863,7 +905,7 @@ function initializeCustomDropdowns() {
       options.forEach(opt => {
         const customOpt = document.createElement('div');
         customOpt.className = 'custom-option';
-        customOpt.textContent = opt.textContent;
+        customOpt.innerHTML = getFormattedOptionHtml(opt.textContent);
         customOpt.setAttribute('data-value', opt.value);
 
         if (opt.selected) {
@@ -877,17 +919,19 @@ function initializeCustomDropdowns() {
           customOpt.classList.add('selected');
 
           select.value = opt.value;
-          trigger.textContent = opt.textContent;
+          trigger.innerHTML = getFormattedOptionHtml(opt.textContent);
           wrapper.classList.remove('open');
 
           const event = new Event('change', { bubbles: true });
           select.dispatchEvent(event);
+          if (typeof lucide !== 'undefined') lucide.createIcons();
         });
 
         optionsList.appendChild(customOpt);
       });
 
-      trigger.textContent = selectedText || (options[0] ? options[0].textContent : 'Select');
+      trigger.innerHTML = getFormattedOptionHtml(selectedText || (options[0] ? options[0].textContent : 'Select'));
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     rebuildOptions();

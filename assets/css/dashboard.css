@@ -792,6 +792,8 @@
   height: 3.5px;
   background: linear-gradient(90deg, #10b981 0%, #7c3aed 50%, #4f46e5 100%);
   opacity: 0.85;
+  border-top-left-radius: var(--r-xl);
+  border-top-right-radius: var(--r-xl);
 }
 
 .chart-enhanced:hover {

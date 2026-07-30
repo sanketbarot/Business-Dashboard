@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="assets/css/style.css?v=1.0.0" />
+  <link rel="stylesheet" href="assets/css/animations.css?v=1.0.0" />
   <link rel="stylesheet" href="assets/css/dashboard.css?v=1.0.0" />
 
 
@@ -486,7 +487,7 @@
           <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
             <div class="card chart-enhanced">
               <div class="card-hd">
-                <h4>💡 Smart Insights & AI Copilot</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="sparkles" style="width: 18px; height: 18px; color: var(--brand);"></i>Smart Insights & AI Copilot</h4>
               </div>
               <div class="card-bd" style="display:flex; flex-direction:column; gap:20px; padding:20px 24px;">
                 <!-- Health Score SVG circular gauge -->
@@ -519,7 +520,7 @@
                 <!-- Smart Insights recommendations -->
                 <div id="insightsBox"
                   style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; width:100%;">
-                  <div class="insight-item info" style="grid-column: span 2;"><span class="insight-icon">💡</span>
+                  <div class="insight-item info" style="grid-column: span 2;"><span class="insight-icon" style="display:inline-flex; align-items:center; justify-content:center;"><i data-lucide="lightbulb" style="width: 14px; height: 14px;"></i></span>
                     <div class="insight-text">Add transactions to see insights</div>
                   </div>
                 </div>
@@ -528,7 +529,7 @@
             <div class="card">
               <div class="card-hd"
                 style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <h4>🕐 Recent Activity</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="history" style="width: 18px; height: 18px; color: var(--brand);"></i>Recent Activity</h4>
                 <div style="display:flex; gap:8px;">
                   <button onclick="exportTransactionsCSV()" class="btn btn-outline btn-sm"
                     style="padding: 6px 12px; font-size: 0.75rem;">📥 Export CSV</button>
@@ -550,7 +551,7 @@
                     <tr>
                       <td colspan="5">
                         <div class="empty">
-                          <div class="empty-icon">📋</div>
+                          <div class="empty-icon" style="display:flex; justify-content:center;"><i data-lucide="clipboard-list" style="width:32px; height:32px; color:var(--text-muted);"></i></div>
                           <h4>No transactions yet</h4>
                         </div>
                       </td>
@@ -563,7 +564,7 @@
           <div class="right-col">
             <div class="card chart-enhanced">
               <div class="card-hd">
-                <h4>📊 Month Comparison</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-compare" style="width: 18px; height: 18px; color: var(--brand);"></i>Month Comparison</h4>
               </div>
               <div class="card-bd">
                 <div class="compare-grid" style="margin-bottom:10px;">
@@ -584,7 +585,7 @@
 
             <div class="card">
               <div class="card-hd">
-                <h4>🔥 Top Expenses</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="width: 18px; height: 18px; color: var(--expense);"></i>Top Expenses</h4>
               </div>
               <div class="card-bd" id="topCatBox">
                 <div class="empty">
@@ -594,7 +595,7 @@
             </div>
             <div class="card chart-enhanced">
               <div class="card-hd">
-                <h4>💳 Payment Modes</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="credit-card" style="width: 18px; height: 18px; color: var(--brand);"></i>Payment Modes</h4>
               </div>
               <div class="card-bd">
                 <div style="position:relative;height:150px;margin-bottom:12px;"><canvas id="payModeChart"></canvas>
@@ -617,8 +618,9 @@
   <div class="modal-bg" id="incomeModal">
     <div class="modal">
       <div class="modal-hd"
-        style="background: linear-gradient(135deg, rgba(209, 250, 229, 0.4) 0%, rgba(167, 243, 208, 0.4) 100%) !important;">
-        <h3 id="incomeTitle">💰 Add Income</h3><button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
+        style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%) !important; border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;">
+        <h3 id="incomeTitle" style="display:flex; align-items:center; gap:8px; color:#10b981;"><i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span></h3>
+        <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
       </div>
       <div class="modal-bd">
         <div class="form-row">
@@ -660,8 +662,9 @@
         <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong
             id="iPreviewVal">₹ 0.00</strong></div>
       </div>
-      <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button><button
-          class="btn btn-income" onclick="saveTransaction('income')">💰 Save Income</button></div>
+      <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
+        <button class="btn btn-income" onclick="saveTransaction('income')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Income</button>
+      </div>
       <input type="hidden" id="iEditId" />
     </div>
   </div>
@@ -670,8 +673,9 @@
   <div class="modal-bg" id="expenseModal">
     <div class="modal">
       <div class="modal-hd"
-        style="background: linear-gradient(135deg, rgba(254, 226, 226, 0.4) 0%, rgba(254, 202, 202, 0.4) 100%) !important;">
-        <h3 id="expenseTitle">💸 Add Expense</h3><button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
+        style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(244, 63, 94, 0.03) 100%) !important; border-bottom: 1px solid rgba(244, 63, 94, 0.15) !important;">
+        <h3 id="expenseTitle" style="display:flex; align-items:center; gap:8px; color:#f43f5e;"><i data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span></h3>
+        <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
       </div>
       <div class="modal-bd">
         <div class="form-row">
@@ -721,8 +725,9 @@
         <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong
             id="ePreviewVal">₹ 0.00</strong></div>
       </div>
-      <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button
-          class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button></div>
+      <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
+        <button class="btn btn-expense" onclick="saveTransaction('expense')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Expense</button>
+      </div>
       <input type="hidden" id="eEditId" />
     </div>
   </div>

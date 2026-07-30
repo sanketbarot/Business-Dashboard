@@ -320,14 +320,14 @@ const Dash = {
 
     if (!all.length) {
       score = 0;
-      insights.push({ type: 'info', icon: '💡', text: 'Add your first transaction to get personalized insights!' });
+      insights.push({ type: 'info', icon: 'lightbulb', text: 'Add your first transaction to get personalized insights!' });
     } else {
       const tot = calcTotals(all);
 
       if (tot.profit > 0) {
-        insights.push({ type: 'success', icon: '💰', text: "You're in <strong>profit</strong> of " + inr(tot.profit) });
+        insights.push({ type: 'success', icon: 'banknote', text: "You're in <strong>profit</strong> of " + inr(tot.profit) });
       } else if (tot.profit < 0) {
-        insights.push({ type: 'danger', icon: '⚠️', text: "You're in <strong>loss</strong> by " + inr(Math.abs(tot.profit)) });
+        insights.push({ type: 'danger', icon: 'alert-triangle', text: "You're in <strong>loss</strong> by " + inr(Math.abs(tot.profit)) });
       }
 
       const savingsRate = monthT.income > 0 ? (monthT.profit / monthT.income) * 100 : 0;
@@ -347,7 +347,7 @@ const Dash = {
           score += 5;
         } else if (pace > 1.0) {
           score -= 20;
-          insights.push({ type: 'danger', icon: '🚨', text: 'Warning: Monthly <strong>Expense Cap exceeded</strong>!' });
+          insights.push({ type: 'danger', icon: 'alert-octagon', text: 'Warning: Monthly <strong>Expense Cap exceeded</strong>!' });
         }
       }
 
@@ -367,13 +367,13 @@ const Dash = {
         if (diff > 0) {
           insights.push({
             type: 'success',
-            icon: '📈',
+            icon: 'trending-up',
             text: 'Today is <strong>' + inr(diff) + ' better</strong> than yesterday!'
           });
         } else if (diff < 0) {
           insights.push({
             type: 'warn',
-            icon: '📉',
+            icon: 'trending-down',
             text: 'Today is <strong>' + inr(Math.abs(diff)) + ' less</strong> than yesterday'
           });
         }
@@ -383,9 +383,9 @@ const Dash = {
         const diff = monthT.expense - lastMonthT.expense;
         const pct = Math.abs(Math.round((diff / lastMonthT.expense) * 100));
         if (diff > 0 && pct >= 10) {
-          insights.push({ type: 'warn', icon: '📈', text: 'Expenses are <strong>' + pct + '% higher</strong> than last month' });
+          insights.push({ type: 'warn', icon: 'trending-up', text: 'Expenses are <strong>' + pct + '% higher</strong> than last month' });
         } else if (diff < 0 && pct >= 10) {
-          insights.push({ type: 'success', icon: '📉', text: 'Expenses are <strong>' + pct + '% lower</strong> than last month' });
+          insights.push({ type: 'success', icon: 'trending-down', text: 'Expenses are <strong>' + pct + '% lower</strong> than last month' });
         }
       }
 
@@ -398,14 +398,15 @@ const Dash = {
         }
         const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
         if (sorted.length) {
-          insights.push({ type: 'info', icon: '🎯', text: 'Biggest expense: <strong>' + escapeHtml(sorted[0][0]) + '</strong> (' + inr(sorted[0][1]) + ')' });
+          insights.push({ type: 'info', icon: 'target', text: 'Biggest expense: <strong>' + escapeHtml(sorted[0][0]) + '</strong> (' + inr(sorted[0][1]) + ')' });
         }
       }
     }
 
     box.innerHTML = insights.slice(0, 4).map(i =>
-      '<div class="insight-item ' + i.type + '"><span class="insight-icon">' + i.icon + '</span><div class="insight-text">' + i.text + '</div></div>'
+      '<div class="insight-item ' + i.type + '"><span class="insight-icon" style="display:inline-flex; align-items:center; justify-content:center;"><i data-lucide="' + i.icon + '" style="width: 14px; height: 14px;"></i></span><div class="insight-text">' + i.text + '</div></div>'
     ).join('');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // Update SVG Circular Gauge
     const circle = document.getElementById('healthScoreCircle');
@@ -474,8 +475,12 @@ const Dash = {
       const cat = item[0], amt = item[1];
       const width = (amt / max) * 100;
       const rankClass = i < 3 ? 'r' + (i + 1) : '';
-      return '<div class="tc-item"><div class="tc-rank ' + rankClass + '">' + (i + 1) + '</div><div class="tc-info"><div class="tc-name">' + escapeHtml(cat) + '</div><div class="tc-bar"><div class="tc-fill" style="width:0%"></div></div></div><div class="tc-amt">' + inrShort(amt) + '</div></div>';
+      return '<div class="tc-item"><div class="tc-rank ' + rankClass + '">' + (i + 1) + '</div><div class="tc-info"><div class="tc-name">' + window.getFormattedOptionHtml(cat, 13) + '</div><div class="tc-bar"><div class="tc-fill" style="width:0%"></div></div></div><div class="tc-amt">' + inrShort(amt) + '</div></div>';
     }).join('');
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
 
     setTimeout(() => {
       const fills = box.querySelectorAll('.tc-fill');
@@ -502,27 +507,30 @@ const Dash = {
     }
     const total = Object.values(grouped).reduce((s, x) => s + x.total, 0);
     const sorted = Object.entries(grouped).sort((a, b) => b[1].total - a[1].total);
-    const icons = { 'Cash': '💵', 'Online': '📱', 'UPI': '📲', 'Bank Transfer': '🏦', 'Card': '💳', 'Cheque': '📄' };
+    const icons = { 'Cash': 'coins', 'Online': 'smartphone', 'UPI': 'phone-call', 'Bank Transfer': 'landmark', 'Card': 'credit-card', 'Cheque': 'file-text' };
     box.innerHTML = sorted.map(item => {
       const mode = item[0], data = item[1];
       const pct = total > 0 ? Math.round((data.total / total) * 100) : 0;
-      const icon = icons[mode] || '💰';
-      return '<div class="pm-item"><div class="pm-ic">' + icon + '</div><div class="pm-info"><div class="pm-name">' + escapeHtml(mode) + '</div><div class="pm-sub">' + data.count + ' transactions</div></div><div><div class="pm-amt">' + inrShort(data.total) + '</div><div class="pm-pct">' + pct + '%</div></div></div>';
+      const icon = icons[mode] || 'banknote';
+      return '<div class="pm-item"><div class="pm-ic" style="display:flex; align-items:center; justify-content:center;"><i data-lucide="' + icon + '" style="width: 16px; height: 16px; color: var(--brand);"></i></div><div class="pm-info"><div class="pm-name">' + escapeHtml(mode) + '</div><div class="pm-sub">' + data.count + ' transactions</div></div><div><div class="pm-amt">' + inrShort(data.total) + '</div><div class="pm-pct">' + pct + '%</div></div></div>';
     }).join('');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   loadRecent: function (all) {
     const tbody = document.getElementById('recentBody');
     if (!tbody) return;
     if (!all.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><h4>No transactions yet</h4></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon" style="display:flex; justify-content:center;"><i data-lucide="clipboard-list" style="width: 32px; height: 32px;"></i></div><h4>No transactions yet</h4></div></td></tr>';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
       return;
     }
     const sorted = all.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
     tbody.innerHTML = sorted.map(t => {
       const isI = t.type === 'income';
-      return '<tr><td style="font-size:0.82rem;">' + fmtDate(t.date) + '</td><td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '">' + (isI ? '💰 In' : '💸 Out') + '</span></td><td style="font-size:0.82rem;font-weight:600;">' + escapeHtml(t.category || '-') + '</td><td class="' + (isI ? 'amt-in' : 'amt-out') + '">' + (isI ? '+' : '-') + inrShort(t.amount) + '</td><td style="font-size:0.78rem;color:var(--text-muted);">' + escapeHtml(t.mode || 'Cash') + '</td></tr>';
+      return '<tr><td style="font-size:0.82rem;">' + fmtDate(t.date) + '</td><td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '" style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:12px; height:12px;"></i>' + (isI ? 'In' : 'Out') + '</span></td><td style="font-size:0.82rem;font-weight:600;">' + window.getFormattedOptionHtml(t.category || '-', 13) + '</td><td class="' + (isI ? 'amt-in' : 'amt-out') + '">' + (isI ? '+' : '-') + inrShort(t.amount) + '</td><td style="font-size:0.78rem;color:var(--text-muted);">' + window.getFormattedOptionHtml(t.mode || 'Cash', 13) + '</td></tr>';
     }).join('');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   setupYearSelector: function () {
@@ -644,8 +652,11 @@ const Dash = {
         legend.innerHTML = '<div class="empty" style="padding:24px; text-align:center; color:var(--text-muted);"><p>No expense records</p></div>';
       } else {
         legend.innerHTML = labels.map((l, i) =>
-          '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i % colors.length] + '"></div><span class="leg-name">' + escapeHtml(l) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
+          '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i % colors.length] + '"></div><span class="leg-name">' + window.getFormattedOptionHtml(l, 13) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
         ).join('');
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
       }
     }
 
@@ -1750,7 +1761,12 @@ function resetForm(type) {
   // Reset modal title back to "Add"
   const titleEl = document.getElementById(isI ? 'incomeTitle' : 'expenseTitle');
   if (titleEl) {
-    titleEl.textContent = isI ? '💰 Add Income' : '💸 Add Expense';
+    titleEl.innerHTML = isI 
+      ? '<i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span>' 
+      : '<i data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span>';
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 
   // Sync custom dropdowns (very important!)

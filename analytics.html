@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="stylesheet" href="assets/css/style.css?v=1.0.0"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=1.0.0"/>
 <link rel="stylesheet" href="assets/css/analytics.css?v=1.0.0"/>
 
 <!-- Firebase SDKs - MUST BE BEFORE app.js -->
@@ -337,7 +338,10 @@
 <!-- INCOME MODAL -->
 <div class="modal-bg" id="incomeModal">
   <div class="modal">
-    <div class="modal-hd" style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);"><h3 id="incomeTitle">💰 Add Income</h3><button class="modal-x" onclick="closeModal('incomeModal')">✕</button></div>
+    <div class="modal-hd" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%) !important; border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;">
+      <h3 id="incomeTitle" style="display:flex; align-items:center; gap:8px; color:#10b981;"><i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span></h3>
+      <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
+    </div>
     <div class="modal-bd">
       <div class="form-row">
         <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="iDate"/></div>
@@ -351,7 +355,9 @@
       <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea></div>
       <div id="iPreview" class="preview preview-in" style="display:none;"><span>Income Amount</span><strong id="iPreviewVal">₹ 0.00</strong></div>
     </div>
-    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button><button class="btn btn-income" onclick="saveTransaction('income')">💰 Save Income</button></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
+      <button class="btn btn-income" onclick="saveTransaction('income')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Income</button>
+    </div>
     <input type="hidden" id="iEditId"/>
   </div>
 </div>
@@ -359,7 +365,10 @@
 <!-- EXPENSE MODAL -->
 <div class="modal-bg" id="expenseModal">
   <div class="modal">
-    <div class="modal-hd" style="background:linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);"><h3 id="expenseTitle">💸 Add Expense</h3><button class="modal-x" onclick="closeModal('expenseModal')">✕</button></div>
+    <div class="modal-hd" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(244, 63, 94, 0.03) 100%) !important; border-bottom: 1px solid rgba(244, 63, 94, 0.15) !important;">
+      <h3 id="expenseTitle" style="display:flex; align-items:center; gap:8px; color:#f43f5e;"><i data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span></h3>
+      <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
+    </div>
     <div class="modal-bd">
       <div class="form-row">
         <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="eDate"/></div>
@@ -373,7 +382,9 @@
       <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea></div>
       <div id="ePreview" class="preview preview-out" style="display:none;"><span>Expense Amount</span><strong id="ePreviewVal">₹ 0.00</strong></div>
     </div>
-    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button><button class="btn btn-expense" onclick="saveTransaction('expense')">💸 Save Expense</button></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
+      <button class="btn btn-expense" onclick="saveTransaction('expense')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Expense</button>
+    </div>
     <input type="hidden" id="eEditId"/>
   </div>
 </div>
