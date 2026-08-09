@@ -7,6 +7,8 @@
 const Dash = {
   charts: { bar: null, donut: null, line: null, compare: null, payMode: null, sparkIncome: null, sparkExpense: null, sparkProfit: null, sparkBalance: null, sparkAvgIncome: null, sparkAvgExpense: null, sparkSavings: null },
   period: 'today',
+  customStart: '',
+  customEnd: '',
   isFirstLoad: true,
 
   init: function () {
@@ -127,7 +129,7 @@ const Dash = {
   },
 
   loadSummary: function (all) {
-    const txns = filterByPeriod(all, this.period);
+    const txns = filterByPeriod(all, this.period, this.customStart, this.customEnd);
     const t = calcTotals(txns);
     const allT = calcTotals(all);
     this.setText('pIncome', inr(t.income));
@@ -162,7 +164,10 @@ const Dash = {
     };
     const subtitleEl = document.getElementById('heroSubtext');
     if (subtitleEl) {
-      const periodLabel = labels[this.period] || labels.month;
+      let periodLabel = labels[this.period] || labels.month;
+      if (this.period === 'custom') {
+        periodLabel = `📅 Custom: ${fmtDate(this.customStart)} to ${fmtDate(this.customEnd)}`;
+      }
       subtitleEl.textContent = periodLabel;
     }
   },
@@ -214,7 +219,7 @@ const Dash = {
       prevPeriod = null;
     }
 
-    const cur = calcTotals(filterByPeriod(all, period));
+    const cur = calcTotals(filterByPeriod(all, period, this.customStart, this.customEnd));
     let iTrend = 0, eTrend = 0, pTrend = 0;
 
     if (prevPeriod) {
@@ -566,26 +571,22 @@ const Dash = {
     }
 
     const ctx = canvas.getContext('2d');
+    const incomeColor = themeColors.getIncome();
+    const expenseColor = themeColors.getExpense();
+    const borderVal = themeColors.getBorder();
+    const textMutedVal = themeColors.getTextMuted();
+
     const gInc = ctx.createLinearGradient(0, 0, 0, 300);
-    gInc.addColorStop(0, '#22C55E'); // Soft Green (Income)
-    gInc.addColorStop(1, 'rgba(34, 197, 94, 0.2)');
+    gInc.addColorStop(0, incomeColor + 'D0'); // Soft Green
+    gInc.addColorStop(1, incomeColor + '1A');
 
     const gExp = ctx.createLinearGradient(0, 0, 0, 300);
-    gExp.addColorStop(0, '#FF5A5F'); // Soft Red (Expense)
-    gExp.addColorStop(1, 'rgba(255, 90, 95, 0.2)');
+    gExp.addColorStop(0, expenseColor + 'D0'); // Soft Red
+    gExp.addColorStop(1, expenseColor + '1A');
 
     if (this.charts.bar) {
-      this.charts.bar.data.labels = months;
-      this.charts.bar.data.datasets[0].data = income;
-      this.charts.bar.data.datasets[0].backgroundColor = gInc;
-      this.charts.bar.data.datasets[0].borderColor = '#22C55E';
-      this.charts.bar.data.datasets[0].borderRadius = { topLeft: 10, topRight: 10 };
-      this.charts.bar.data.datasets[1].data = expense;
-      this.charts.bar.data.datasets[1].backgroundColor = gExp;
-      this.charts.bar.data.datasets[1].borderColor = '#FF5A5F';
-      this.charts.bar.data.datasets[1].borderRadius = { topLeft: 10, topRight: 10 };
-      this.charts.bar.update();
-      return;
+      this.charts.bar.destroy();
+      this.charts.bar = null;
     }
 
     this.charts.bar = new Chart(canvas, {
@@ -593,8 +594,8 @@ const Dash = {
       data: {
         labels: months,
         datasets: [
-          { label: 'Income', data: income, backgroundColor: gInc, borderColor: '#22C55E', borderWidth: 1.5, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 },
-          { label: 'Expense', data: expense, backgroundColor: gExp, borderColor: '#FF5A5F', borderWidth: 1.5, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 }
+          { label: 'Income', data: income, backgroundColor: gInc, borderColor: incomeColor, borderWidth: 1.5, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 },
+          { label: 'Expense', data: expense, backgroundColor: gExp, borderColor: expenseColor, borderWidth: 1.5, borderRadius: { topLeft: 10, topRight: 10 }, maxBarThickness: 32 }
         ]
       },
       options: {
@@ -606,7 +607,7 @@ const Dash = {
           legend: {
             position: 'top',
             align: 'end',
-            labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' }, padding: 16, color: '#6b7280' }
+            labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' }, padding: 16, color: textMutedVal }
           },
           tooltip: {
             backgroundColor: 'rgba(15, 23, 42, 0.94)',
@@ -614,7 +615,7 @@ const Dash = {
             bodyColor: '#cbd5e1',
             padding: 12,
             cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: borderVal + '33',
             borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
@@ -622,8 +623,8 @@ const Dash = {
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } } },
-          y: { beginAtZero: true, grid: { color: 'rgba(20, 24, 31, 0.05)' }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } } },
+          y: { beginAtZero: true, grid: { color: themeColors.getGridColor() }, border: { display: false }, ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
         }
       }
     });
@@ -810,12 +811,18 @@ const Dash = {
     const canvas = document.getElementById('lineChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
-    const ctx = canvas.getContext('2d');
-
     if (this.charts.line) {
       this.charts.line.destroy();
       this.charts.line = null;
     }
+
+    const brandColor = themeColors.getBrand();
+    const incomeColor = themeColors.getIncome();
+    const expenseColor = themeColors.getExpense();
+    const textMutedVal = themeColors.getTextMuted();
+    const borderVal = themeColors.getBorder();
+
+    const ctx = canvas.getContext('2d');
 
     if (this.lineChartTab === 'live') {
       const dataPoints = this.liveSalesData && this.liveSalesData.length ? this.liveSalesData : [
@@ -833,8 +840,8 @@ const Dash = {
       if (subtextEl) subtextEl.textContent = 'Session live sales stream';
 
       const gLive = ctx.createLinearGradient(0, 0, 0, 280);
-      gLive.addColorStop(0, 'rgba(79, 70, 229, 0.3)');
-      gLive.addColorStop(1, 'rgba(79, 70, 229, 0)');
+      gLive.addColorStop(0, brandColor + '4D');
+      gLive.addColorStop(1, brandColor + '00');
 
       this.charts.line = new Chart(canvas, {
         type: 'line',
@@ -843,12 +850,12 @@ const Dash = {
           datasets: [{
             label: 'Live Sales (₹)',
             data: sales,
-            borderColor: '#4f46e5',
+            borderColor: brandColor,
             backgroundColor: gLive,
             borderWidth: 3,
             pointRadius: 4,
             pointHoverRadius: 7,
-            pointBackgroundColor: '#4f46e5',
+            pointBackgroundColor: brandColor,
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
             fill: true,
@@ -867,14 +874,14 @@ const Dash = {
               bodyColor: '#cbd5e1',
               padding: 12,
               cornerRadius: 12,
-              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: borderVal + '33',
               borderWidth: 1,
               callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
             }
           },
           scales: {
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' } } },
-            y: { beginAtZero: true, grid: { color: 'rgba(20, 24, 31, 0.05)' }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' } } },
+            y: { beginAtZero: true, grid: { color: themeColors.getGridColor() }, border: { display: false }, ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
           }
         }
       });
@@ -921,16 +928,16 @@ const Dash = {
       if (subtextEl) subtextEl.textContent = 'Last 7 days';
 
       const g1 = ctx.createLinearGradient(0, 0, 0, 280);
-      g1.addColorStop(0, 'rgba(34, 197, 94, 0.35)'); // Soft Green (Income)
-      g1.addColorStop(1, 'rgba(34, 197, 94, 0)');
+      g1.addColorStop(0, incomeColor + '59');
+      g1.addColorStop(1, incomeColor + '00');
 
       const g2 = ctx.createLinearGradient(0, 0, 0, 280);
-      g2.addColorStop(0, 'rgba(255, 90, 95, 0.35)'); // Soft Red (Expense)
-      g2.addColorStop(1, 'rgba(255, 90, 95, 0)');
+      g2.addColorStop(0, expenseColor + '59');
+      g2.addColorStop(1, expenseColor + '00');
 
       const g3 = ctx.createLinearGradient(0, 0, 0, 280);
-      g3.addColorStop(0, 'rgba(139, 92, 246, 0.35)');
-      g3.addColorStop(1, 'rgba(139, 92, 246, 0)');
+      g3.addColorStop(0, brandColor + '59');
+      g3.addColorStop(1, brandColor + '00');
 
       this.charts.line = new Chart(canvas, {
         type: 'line',
@@ -939,23 +946,23 @@ const Dash = {
           datasets: [
             {
               label: 'Income', data: income,
-              borderColor: '#22C55E', backgroundColor: g1,
+              borderColor: incomeColor, backgroundColor: g1,
               borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-              pointBackgroundColor: '#22C55E', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+              pointBackgroundColor: incomeColor, pointBorderColor: '#ffffff', pointBorderWidth: 3,
               fill: true, tension: 0.42
             },
             {
               label: 'Expense', data: expense,
-              borderColor: '#FF5A5F', backgroundColor: g2,
+              borderColor: expenseColor, backgroundColor: g2,
               borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-              pointBackgroundColor: '#FF5A5F', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+              pointBackgroundColor: expenseColor, pointBorderColor: '#ffffff', pointBorderWidth: 3,
               fill: true, tension: 0.42
             },
             {
               label: 'Net Cash Flow', data: net,
-              borderColor: '#8b5cf6', backgroundColor: g3,
+              borderColor: brandColor, backgroundColor: g3,
               borderWidth: 3, pointRadius: 0, pointHoverRadius: 7,
-              pointBackgroundColor: '#8b5cf6', pointBorderColor: '#ffffff', pointBorderWidth: 3,
+              pointBackgroundColor: brandColor, pointBorderColor: '#ffffff', pointBorderWidth: 3,
               fill: true, tension: 0.42
             }
           ]
@@ -977,7 +984,7 @@ const Dash = {
                 pointStyle: 'circle',
                 padding: 12,
                 font: { family: "'Plus Jakarta Sans', sans-serif", size: 9, weight: '700' },
-                color: '#9aa3b2'
+                color: textMutedVal
               }
             },
             tooltip: {
@@ -986,7 +993,7 @@ const Dash = {
               bodyColor: '#cbd5e1',
               padding: 12,
               cornerRadius: 12,
-              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderColor: borderVal + '33',
               borderWidth: 1,
               titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
               bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
@@ -994,8 +1001,8 @@ const Dash = {
             }
           },
           scales: {
-            x: { grid: { display: false }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' }, maxRotation: 0 } },
-            y: { beginAtZero: true, grid: { color: 'rgba(20, 24, 31, 0.05)' }, border: { display: false }, ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
+            x: { grid: { display: false }, border: { display: false }, ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: '600' }, maxRotation: 0 } },
+            y: { beginAtZero: true, grid: { color: themeColors.getGridColor() }, border: { display: false }, ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' }, callback: v => inrShort(v) } }
           }
         }
       });
@@ -1012,11 +1019,14 @@ const Dash = {
     const ctx = canvas.getContext('2d');
 
     if (this.charts.compare) {
-      this.charts.compare.data.datasets[0].data = [lastM.income, lastM.expense, lastM.profit];
-      this.charts.compare.data.datasets[1].data = [thisM.income, thisM.expense, thisM.profit];
-      this.charts.compare.update();
-      return;
+      this.charts.compare.destroy();
+      this.charts.compare = null;
     }
+
+    const brandColor = themeColors.getBrand();
+    const brandDarkColor = themeColors.getBrandDark();
+    const textMutedVal = themeColors.getTextMuted();
+    const borderVal = themeColors.getBorder();
 
     this.charts.compare = new Chart(canvas, {
       type: 'bar',
@@ -1026,16 +1036,16 @@ const Dash = {
           {
             label: 'Last Month',
             data: [lastM.income, lastM.expense, lastM.profit],
-            backgroundColor: 'rgba(16, 185, 129, 0.15)', // Green
-            borderColor: 'rgba(16, 185, 129, 0.4)',
+            backgroundColor: 'rgba(15, 23, 42, 0.08)', // Faint neutral
+            borderColor: textMutedVal,
             borderWidth: 1.5,
             borderRadius: 10
           },
           {
             label: 'This Month',
             data: [thisM.income, thisM.expense, thisM.profit],
-            backgroundColor: '#3b82f6', // Blue
-            borderColor: '#2563eb',
+            backgroundColor: brandColor + '40', // brand with 25% opacity
+            borderColor: brandDarkColor,
             borderWidth: 1.5,
             borderRadius: 10
           }
@@ -1051,7 +1061,7 @@ const Dash = {
             labels: {
               boxWidth: 12,
               font: { size: 9, family: "'Plus Jakarta Sans', sans-serif", weight: '600' },
-              color: '#9aa3b2',
+              color: textMutedVal,
               padding: 6
             }
           },
@@ -1061,7 +1071,7 @@ const Dash = {
             bodyColor: '#cbd5e1',
             padding: 12,
             cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: borderVal + '33',
             borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
@@ -1069,8 +1079,8 @@ const Dash = {
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9, family: "'Plus Jakarta Sans', sans-serif" }, color: '#9aa3b2' } },
-          y: { grid: { color: 'rgba(20, 24, 31, 0.05)', borderDash: [4, 4], drawTicks: false }, border: { display: false }, ticks: { font: { size: 8, family: "'Plus Jakarta Sans', sans-serif" }, color: '#9aa3b2', callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9, family: "'Plus Jakarta Sans', sans-serif" }, color: textMutedVal } },
+          y: { grid: { color: themeColors.getGridColor(), borderDash: [4, 4], drawTicks: false }, border: { display: false }, ticks: { font: { size: 8, family: "'Plus Jakarta Sans', sans-serif" }, color: textMutedVal, callback: v => inrShort(v) } }
         }
       }
     });
@@ -1230,13 +1240,13 @@ const Dash = {
     });
 
     const sparkConfigs = [
-      { id: 'sparklineIncome', data: incomeData, color: '#22C55E', label: 'Income', chartKey: 'sparkIncome' },
-      { id: 'sparklineExpense', data: expenseData, color: '#FF5A5F', label: 'Expense', chartKey: 'sparkExpense' },
-      { id: 'sparklineProfit', data: profitData, color: '#f59e0b', label: 'Profit', chartKey: 'sparkProfit' },
-      { id: 'sparklineBalance', data: balanceData, color: '#3B82F6', label: 'Balance', chartKey: 'sparkBalance' },
-      { id: 'sparklineAvgIncome', data: incomeData, color: '#22C55E', label: 'Avg Income', chartKey: 'sparkAvgIncome' },
-      { id: 'sparklineAvgExpense', data: expenseData, color: '#FF5A5F', label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
-      { id: 'sparklineSavingsRate', data: savingsRateData, color: '#8b5cf6', label: 'Savings Rate', chartKey: 'sparkSavings' }
+      { id: 'sparklineIncome', data: incomeData, color: themeColors.getIncome(), label: 'Income', chartKey: 'sparkIncome' },
+      { id: 'sparklineExpense', data: expenseData, color: themeColors.getExpense(), label: 'Expense', chartKey: 'sparkExpense' },
+      { id: 'sparklineProfit', data: profitData, color: themeColors.getProfit(), label: 'Profit', chartKey: 'sparkProfit' },
+      { id: 'sparklineBalance', data: balanceData, color: themeColors.getBrand(), label: 'Balance', chartKey: 'sparkBalance' },
+      { id: 'sparklineAvgIncome', data: incomeData, color: themeColors.getIncome(), label: 'Avg Income', chartKey: 'sparkAvgIncome' },
+      { id: 'sparklineAvgExpense', data: expenseData, color: themeColors.getExpense(), label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
+      { id: 'sparklineSavingsRate', data: savingsRateData, color: themeColors.getPurple(), label: 'Savings Rate', chartKey: 'sparkSavings' }
     ];
 
     sparkConfigs.forEach(conf => {
@@ -1247,9 +1257,8 @@ const Dash = {
       gradient.addColorStop(1, conf.color + '00');
 
       if (this.charts[conf.chartKey]) {
-        this.charts[conf.chartKey].data.datasets[0].data = conf.data;
-        this.charts[conf.chartKey].update();
-        return;
+        this.charts[conf.chartKey].destroy();
+        this.charts[conf.chartKey] = null;
       }
 
       this.charts[conf.chartKey] = new Chart(canvas, {
@@ -1621,8 +1630,62 @@ function switchPeriod(p, btn) {
   const tabs = document.querySelectorAll('.pb-tab');
   for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
   if (btn) btn.classList.add('active');
+
+  const wrap = document.getElementById('customDateRangeWrap');
+  if (wrap) wrap.style.display = 'none';
+
   Dash.loadSummary(getTxns());
   setTimeout(() => Dash.animateNumbers(), 100);
+}
+
+function toggleCustomPeriod(btn) {
+  const tabs = document.querySelectorAll('.pb-tab');
+  for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  if (btn) btn.classList.add('active');
+
+  const wrap = document.getElementById('customDateRangeWrap');
+  if (wrap) {
+    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  }
+
+  const startInput = document.getElementById('customStart');
+  const endInput = document.getElementById('customEnd');
+  if (startInput && !startInput.value) startInput.value = today();
+  if (endInput && !endInput.value) endInput.value = today();
+}
+
+function applyCustomDateRange() {
+  const startVal = document.getElementById('customStart').value;
+  const endVal = document.getElementById('customEnd').value;
+
+  if (!startVal || !endVal) {
+    toast('Please select both start and end dates', 'warning');
+    return;
+  }
+
+  if (startVal > endVal) {
+    toast('Start date cannot be after end date', 'warning');
+    return;
+  }
+
+  Dash.period = 'custom';
+  Dash.customStart = startVal;
+  Dash.customEnd = endVal;
+
+  Dash.loadSummary(getTxns());
+  setTimeout(() => Dash.animateNumbers(), 100);
+}
+
+function resetCustomDateRange() {
+  const startInput = document.getElementById('customStart');
+  const endInput = document.getElementById('customEnd');
+  if (startInput) startInput.value = today();
+  if (endInput) endInput.value = today();
+
+  const todayBtn = document.querySelector('.pb-tab[data-p="today"]');
+  if (todayBtn) {
+    switchPeriod('today', todayBtn);
+  }
 }
 
 function exportTransactionsCSV() {

@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Prevent theme/accent flash on page load
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('bd_theme') || 'light');
+    document.documentElement.setAttribute('data-accent', localStorage.getItem('bd_accent') || 'indigo');
+  </script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Transactions — Crust & Chilly</title>
@@ -83,7 +88,45 @@
         <div class="hd-title"><h4>Transactions</h4><p id="headerDate">Loading...</p></div>
       </div>
       <div class="hd-search"><span>🔍</span><input type="text" id="mainSearch" placeholder="Quick search..." oninput="applyFilters()" autocomplete="off"/></div>
-      <div class="hd-right"><div class="hd-live" id="liveTime">--:--</div></div>
+      <div class="hd-right" style="display:flex; align-items:center; gap:16px;">
+        <!-- Theme Picker Toggle Button -->
+        <div class="theme-picker-wrapper">
+          <button class="theme-picker-btn" onclick="APP_THEME.toggleMenu(event)"
+            style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr);"
+            title="Customize Interface">
+            <i data-lucide="palette" style="width: 20px; height: 20px;"></i>
+          </button>
+          <div class="theme-dropdown" id="themeDropdown">
+            
+            <!-- Dark / Light Mode -->
+            <div>
+              <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme</div>
+              <div style="display:flex; gap:8px;">
+                <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light">
+                  <i data-lucide="sun" style="width: 13px; height: 13px;"></i> Light
+                </button>
+                <button onclick="APP_THEME.setTheme('dark')" class="theme-mode-btn" id="theme-btn-dark">
+                  <i data-lucide="moon" style="width: 13px; height: 13px;"></i> Dark
+                </button>
+              </div>
+            </div>
+            
+            <!-- Accent Colors -->
+            <div>
+              <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="paintbrush" style="width: 14px; height: 14px;"></i> Brand Accent</div>
+              <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; justify-items:center;">
+                <button onclick="APP_THEME.setAccent('blue')" title="Blue" class="accent-dot-btn" id="accent-dot-blue" style="background:#3b82f6;"></button>
+                <button onclick="APP_THEME.setAccent('emerald')" title="Emerald" class="accent-dot-btn" id="accent-dot-emerald" style="background:#10b981;"></button>
+                <button onclick="APP_THEME.setAccent('indigo')" title="Indigo" class="accent-dot-btn" id="accent-dot-indigo" style="background:#6366f1;"></button>
+                <button onclick="APP_THEME.setAccent('rose')" title="Rose" class="accent-dot-btn" id="accent-dot-rose" style="background:#f43f5e;"></button>
+                <button onclick="APP_THEME.setAccent('amber')" title="Amber" class="accent-dot-btn" id="accent-dot-amber" style="background:#f59e0b;"></button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="hd-live" id="liveTime">--:--</div>
+      </div>
     </header>
 
     <div class="content">

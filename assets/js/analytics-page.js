@@ -327,12 +327,14 @@ const AnalyticsPage = {
     if (!ctx) return;
 
     if (this.charts.profitTrend) {
-      this.charts.profitTrend.data.labels = labels.length ? labels : ['No Data'];
-      this.charts.profitTrend.data.datasets[0].data = profits.length ? profits : [0];
-      this.charts.profitTrend.data.datasets[1].data = incomes.length ? incomes : [0];
-      this.charts.profitTrend.update();
-      return;
+      this.charts.profitTrend.destroy();
+      this.charts.profitTrend = null;
     }
+
+    const brandColor = themeColors.getBrand();
+    const incomeColor = themeColors.getIncome();
+    const textMutedVal = themeColors.getTextMuted();
+    const borderVal = themeColors.getBorder();
 
     this.charts.profitTrend = new Chart(ctx, {
       type: 'line',
@@ -342,19 +344,19 @@ const AnalyticsPage = {
           {
             label: 'Net Profit',
             data: profits.length ? profits : [0],
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+            borderColor: brandColor,
+            backgroundColor: brandColor + '14', // 10% opacity
             borderWidth: 3,
             fill: true,
             tension: 0.38,
-            pointBackgroundColor: '#3b82f6',
+            pointBackgroundColor: brandColor,
             pointRadius: 3,
             pointHoverRadius: 7
           },
           {
             label: 'Total Revenue',
             data: incomes.length ? incomes : [0],
-            borderColor: '#22C55E', // Soft Green (Income)
+            borderColor: incomeColor,
             borderWidth: 2,
             borderDash: [4, 4],
             fill: false,
@@ -368,14 +370,14 @@ const AnalyticsPage = {
         maintainAspectRatio: false,
         animation: { duration: 600, easing: 'easeOutQuart' },
         plugins: {
-          legend: { display: true, position: 'top', labels: { boxWidth: 12, color: '#6b7280', font: { family: "'Plus Jakarta Sans', sans-serif", weight: 700 } } },
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", weight: 700 } } },
           tooltip: {
             backgroundColor: 'rgba(15, 23, 42, 0.94)',
             titleColor: '#ffffff',
             bodyColor: '#cbd5e1',
             padding: 12,
             cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: borderVal + '33',
             borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
@@ -383,14 +385,14 @@ const AnalyticsPage = {
         },
         scales: {
           y: {
-            grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            grid: { color: themeColors.getGridColor() },
             border: { display: false },
-            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
+            ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
             border: { display: false },
-            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" } }
+            ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif" } }
           }
         }
       }
@@ -410,7 +412,7 @@ const AnalyticsPage = {
     const labels = sortedCats.map(c => c.replace(/^[^\s]+\s+/, ''));
     const data = sortedCats.map(c => categoryMap[c]);
 
-    const palette = ['#3b82f6', '#22C55E', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#0ea5e9'];
+    const palette = [themeColors.getBrand(), '#10B981', '#F59E0B', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#3B82F6'];
 
     const ctx = document.getElementById('categoryShareChart');
     if (!ctx) return;
@@ -464,10 +466,8 @@ const AnalyticsPage = {
     }
 
     if (this.charts.categoryShare) {
-      this.charts.categoryShare.data.labels = labels.slice(0, ringsCount);
-      this.charts.categoryShare.data.datasets = datasets;
-      this.charts.categoryShare.update();
-      return;
+      this.charts.categoryShare.destroy();
+      this.charts.categoryShare = null;
     }
 
     this.charts.categoryShare = new Chart(ctx, {
@@ -522,12 +522,14 @@ const AnalyticsPage = {
     if (!ctx) return;
 
     if (this.charts.weekdayActivity) {
-      this.charts.weekdayActivity.data.labels = labels;
-      this.charts.weekdayActivity.data.datasets[0].data = countsData;
-      this.charts.weekdayActivity.data.datasets[1].data = valuesData;
-      this.charts.weekdayActivity.update();
-      return;
+      this.charts.weekdayActivity.destroy();
+      this.charts.weekdayActivity = null;
     }
+
+    const brandColor = themeColors.getBrand();
+    const incomeColor = themeColors.getIncome();
+    const textMutedVal = themeColors.getTextMuted();
+    const borderVal = themeColors.getBorder();
 
     this.charts.weekdayActivity = new Chart(ctx, {
       type: 'bar',
@@ -537,14 +539,14 @@ const AnalyticsPage = {
           {
             label: 'Records Count',
             data: countsData,
-            backgroundColor: '#3b82f6', // Blue
+            backgroundColor: brandColor,
             borderRadius: { topLeft: 10, topRight: 10 },
             yAxisID: 'y'
           },
           {
             label: 'Transaction Value (₹)',
             data: valuesData,
-            backgroundColor: '#22C55E', // Soft Green
+            backgroundColor: incomeColor,
             borderRadius: { topLeft: 10, topRight: 10 },
             yAxisID: 'y1'
           }
@@ -555,14 +557,14 @@ const AnalyticsPage = {
         maintainAspectRatio: false,
         animation: { duration: 600, easing: 'easeOutQuart' },
         plugins: {
-          legend: { display: true, position: 'top', labels: { color: '#6b7280', font: { family: "'Plus Jakarta Sans', sans-serif", weight: 700 } } },
+          legend: { display: true, position: 'top', labels: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif", weight: 700 } } },
           tooltip: {
             backgroundColor: 'rgba(15, 23, 42, 0.94)',
             titleColor: '#ffffff',
             bodyColor: '#cbd5e1',
             padding: 12,
             cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: borderVal + '33',
             borderWidth: 1
           }
         },
@@ -570,21 +572,21 @@ const AnalyticsPage = {
           y: {
             type: 'linear',
             position: 'left',
-            grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            grid: { color: themeColors.getGridColor() },
             border: { display: false },
-            ticks: { color: '#9aa3b2', stepSize: 1, font: { family: "'Plus Jakarta Sans', sans-serif" } }
+            ticks: { color: textMutedVal, stepSize: 1, font: { family: "'Plus Jakarta Sans', sans-serif" } }
           },
           y1: {
             type: 'linear',
             position: 'right',
             grid: { drawOnChartArea: false },
             border: { display: false },
-            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
+            ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
             border: { display: false },
-            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" } }
+            ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif" } }
           }
         }
       }
@@ -617,11 +619,13 @@ const AnalyticsPage = {
     if (!ctx) return;
 
     if (this.charts.cumulativeBalance) {
-      this.charts.cumulativeBalance.data.labels = labels.length ? labels : ['No Data'];
-      this.charts.cumulativeBalance.data.datasets[0].data = balances.length ? balances : [0];
-      this.charts.cumulativeBalance.update();
-      return;
+      this.charts.cumulativeBalance.destroy();
+      this.charts.cumulativeBalance = null;
     }
+
+    const brandColor = themeColors.getBrand();
+    const textMutedVal = themeColors.getTextMuted();
+    const borderVal = themeColors.getBorder();
 
     this.charts.cumulativeBalance = new Chart(ctx, {
       type: 'line',
@@ -630,8 +634,8 @@ const AnalyticsPage = {
         datasets: [{
           label: 'Cumulative Capital (₹)',
           data: balances.length ? balances : [0],
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.08)',
+          borderColor: brandColor,
+          backgroundColor: brandColor + '14', // 10% opacity
           borderWidth: 3,
           fill: true,
           tension: 0.25,
@@ -651,20 +655,20 @@ const AnalyticsPage = {
             bodyColor: '#cbd5e1',
             padding: 12,
             cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: borderVal + '33',
             borderWidth: 1
           }
         },
         scales: {
           y: {
-            grid: { color: 'rgba(20, 24, 31, 0.05)' },
+            grid: { color: themeColors.getGridColor() },
             border: { display: false },
-            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
+            ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif" }, callback: value => inrShort(value) }
           },
           x: {
             grid: { display: false },
             border: { display: false },
-            ticks: { color: '#9aa3b2', font: { family: "'Plus Jakarta Sans', sans-serif" }, maxTicksLimit: 8 }
+            ticks: { color: textMutedVal, font: { family: "'Plus Jakarta Sans', sans-serif" }, maxTicksLimit: 8 }
           }
         }
       }
@@ -686,7 +690,7 @@ const AnalyticsPage = {
 
     const palette = {
       'Cash': '#10b981',        // Green
-      'Online': '#3b82f6',      // Blue
+      'Online': themeColors.getBrand(), // Dynamic Brand Accent
       'UPI': '#8b5cf6',         // Purple
       'Bank Transfer': '#38bdf8', // Light Blue
       'Card': '#ec4899',        // Pink
@@ -747,10 +751,8 @@ const AnalyticsPage = {
     }
 
     if (this.charts.paymentMode) {
-      this.charts.paymentMode.data.labels = activeModes.slice(0, ringsCount);
-      this.charts.paymentMode.data.datasets = datasets;
-      this.charts.paymentMode.update();
-      return;
+      this.charts.paymentMode.destroy();
+      this.charts.paymentMode = null;
     }
 
     this.charts.paymentMode = new Chart(ctx, {

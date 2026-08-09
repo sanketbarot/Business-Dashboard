@@ -974,3 +974,156 @@ document.addEventListener('click', () => {
     cs.classList.remove('open');
   });
 });
+
+// ==========================================================================
+// PREMIUM DYNAMIC THEME & ACCENT CONTROLLER
+// ==========================================================================
+
+const themeColors = {
+  getBrand: () => getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#6366F1',
+  getBrandDark: () => getComputedStyle(document.documentElement).getPropertyValue('--brand-dark').trim() || '#4F46E5',
+  getBrandLight: () => getComputedStyle(document.documentElement).getPropertyValue('--brand-light').trim() || '#EEF2F6',
+  getBorder: () => getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#E2E8F0',
+  getTextHead: () => getComputedStyle(document.documentElement).getPropertyValue('--text-head').trim() || '#0F172A',
+  getTextMuted: () => getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#64748B',
+  getIncome: () => getComputedStyle(document.documentElement).getPropertyValue('--income').trim() || '#10B981',
+  getExpense: () => getComputedStyle(document.documentElement).getPropertyValue('--expense').trim() || '#F43F5E',
+  getProfit: () => getComputedStyle(document.documentElement).getPropertyValue('--profit').trim() || '#F59E0B',
+  getPurple: () => getComputedStyle(document.documentElement).getPropertyValue('--purple').trim() || '#8b5cf6',
+  getGridColor: () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.04)'
+};
+
+const APP_THEME = {
+  theme: 'light',
+  accent: 'indigo',
+
+  init: function() {
+    this.theme = localStorage.getItem('bd_theme') || 'light';
+    this.accent = localStorage.getItem('bd_accent') || 'indigo';
+
+    document.documentElement.setAttribute('data-theme', this.theme);
+    document.documentElement.setAttribute('data-accent', this.accent);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      this.updateUI();
+      // Setup click handler to close theme dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('themeDropdown');
+        const wrapper = document.querySelector('.theme-picker-wrapper');
+        if (dropdown && wrapper && !wrapper.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    });
+  },
+
+  toggleMenu: function(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('themeDropdown');
+    if (dropdown) {
+      const isHidden = dropdown.style.display === 'none' || !dropdown.style.display;
+      dropdown.style.display = isHidden ? 'flex' : 'none';
+      if (isHidden) {
+        this.updateUI();
+      }
+    }
+  },
+
+  setTheme: function(theme) {
+    this.theme = theme;
+    localStorage.setItem('bd_theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    this.updateUI();
+    this.reloadCharts();
+  },
+
+  setAccent: function(accent) {
+    this.accent = accent;
+    localStorage.setItem('bd_accent', accent);
+    document.documentElement.setAttribute('data-accent', accent);
+    this.updateUI();
+    this.reloadCharts();
+  },
+
+  updateUI: function() {
+    // Mode Buttons Highlight
+    const btnLight = document.getElementById('theme-btn-light');
+    const btnDark = document.getElementById('theme-btn-dark');
+    
+    if (btnLight && btnDark) {
+      if (this.theme === 'light') {
+        btnLight.style.borderColor = 'var(--brand)';
+        btnLight.style.background = 'var(--brand-soft)';
+        btnLight.style.color = 'var(--brand)';
+        
+        btnDark.style.borderColor = 'var(--border)';
+        btnDark.style.background = 'var(--bg-page)';
+        btnDark.style.color = 'var(--text-head)';
+      } else {
+        btnDark.style.borderColor = 'var(--brand)';
+        btnDark.style.background = 'var(--brand-soft)';
+        btnDark.style.color = 'var(--brand)';
+        
+        btnLight.style.borderColor = 'var(--border)';
+        btnLight.style.background = 'var(--bg-page)';
+        btnLight.style.color = 'var(--text-head)';
+      }
+    }
+
+    // Accent Dots Highlight
+    const accents = ['blue', 'emerald', 'indigo', 'rose', 'amber'];
+    accents.forEach(acc => {
+      const btn = document.getElementById('accent-dot-' + acc);
+      if (btn) {
+        if (this.accent === acc) {
+          btn.style.borderColor = 'var(--text-head)';
+          btn.style.transform = 'scale(1.15)';
+          btn.style.boxShadow = '0 0 0 3px var(--bg-card), 0 0 0 5px var(--brand)';
+        } else {
+          btn.style.borderColor = 'transparent';
+          btn.style.transform = 'scale(1)';
+          btn.style.boxShadow = 'none';
+        }
+      }
+    });
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  },
+
+  reloadCharts: function() {
+    // Reload Dashboard Charts if they exist
+    if (typeof Dash !== 'undefined') {
+      if (Dash.charts) {
+        Object.keys(Dash.charts).forEach(key => {
+          if (Dash.charts[key]) {
+            if (typeof Dash.charts[key].destroy === 'function') {
+              Dash.charts[key].destroy();
+            }
+            Dash.charts[key] = null;
+          }
+        });
+      }
+      Dash.loadAll();
+    }
+
+    // Reload Analytics Page Charts if they exist
+    if (typeof AnalyticsPage !== 'undefined') {
+      if (AnalyticsPage.charts) {
+        Object.keys(AnalyticsPage.charts).forEach(key => {
+          if (AnalyticsPage.charts[key]) {
+            if (typeof AnalyticsPage.charts[key].destroy === 'function') {
+              AnalyticsPage.charts[key].destroy();
+            }
+            AnalyticsPage.charts[key] = null;
+          }
+        });
+      }
+      AnalyticsPage.loadAll();
+    }
+  }
+};
+
+// Start the theme controller immediately
+APP_THEME.init();

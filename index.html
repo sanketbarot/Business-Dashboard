@@ -2,6 +2,11 @@
 <html lang="en">
 
 <head>
+  <script>
+    // Prevent theme/accent flash on page load
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('bd_theme') || 'light');
+    document.documentElement.setAttribute('data-accent', localStorage.getItem('bd_accent') || 'indigo');
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Crust & Chilly</title>
@@ -94,6 +99,42 @@
           </div>
         </div>
         <div class="hd-right" style="display:flex; align-items:center; gap:16px;">
+          <!-- Theme Picker Toggle Button -->
+          <div class="theme-picker-wrapper">
+            <button class="theme-picker-btn" onclick="APP_THEME.toggleMenu(event)"
+              style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr);"
+              title="Customize Interface">
+              <i data-lucide="palette" style="width: 20px; height: 20px;"></i>
+            </button>
+            <div class="theme-dropdown" id="themeDropdown">
+              
+              <!-- Dark / Light Mode -->
+              <div>
+                <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme</div>
+                <div style="display:flex; gap:8px;">
+                  <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light">
+                    <i data-lucide="sun" style="width: 13px; height: 13px;"></i> Light
+                  </button>
+                  <button onclick="APP_THEME.setTheme('dark')" class="theme-mode-btn" id="theme-btn-dark">
+                    <i data-lucide="moon" style="width: 13px; height: 13px;"></i> Dark
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Accent Colors -->
+              <div>
+                <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="paintbrush" style="width: 14px; height: 14px;"></i> Brand Accent</div>
+                <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; justify-items:center;">
+                  <button onclick="APP_THEME.setAccent('blue')" title="Blue" class="accent-dot-btn" id="accent-dot-blue" style="background:#3b82f6;"></button>
+                  <button onclick="APP_THEME.setAccent('emerald')" title="Emerald" class="accent-dot-btn" id="accent-dot-emerald" style="background:#10b981;"></button>
+                  <button onclick="APP_THEME.setAccent('indigo')" title="Indigo" class="accent-dot-btn" id="accent-dot-indigo" style="background:#6366f1;"></button>
+                  <button onclick="APP_THEME.setAccent('rose')" title="Rose" class="accent-dot-btn" id="accent-dot-rose" style="background:#f43f5e;"></button>
+                  <button onclick="APP_THEME.setAccent('amber')" title="Amber" class="accent-dot-btn" id="accent-dot-amber" style="background:#f59e0b;"></button>
+                </div>
+              </div>
+
+            </div>
+          </div>
           <!-- Notification Bell -->
           <div class="notif-wrapper" style="position:relative;">
             <button class="notif-btn" onclick="Dash.toggleNotifDropdown()"
@@ -144,6 +185,30 @@
             <button class="pb-tab" data-p="month" onclick="switchPeriod('month',this)">Monthly</button>
             <button class="pb-tab" data-p="year" onclick="switchPeriod('year',this)">Yearly</button>
             <button class="pb-tab" data-p="all" onclick="switchPeriod('all',this)">All Time</button>
+            <button class="pb-tab" data-p="custom" onclick="toggleCustomPeriod(this)">Custom Range</button>
+          </div>
+        </div>
+
+        <div id="customDateRangeWrap" class="card" style="display:none; margin-top:-16px; margin-bottom:26px; padding:16px 24px; animation: themeDropdownSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+          <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+            <span style="font-size:0.8rem; font-weight:800; text-transform:uppercase; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;">
+              <i data-lucide="calendar" style="width:16px; height:16px; color:var(--brand);"></i>
+              Select Custom Period
+            </span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="customStart" style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">From:</label>
+              <input type="date" id="customStart" class="fc" style="padding:6px 12px; min-height:36px; width:150px; border-radius:var(--r-md); font-size:0.8rem;" onchange="applyCustomDateRange()"/>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="customEnd" style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">To:</label>
+              <input type="date" id="customEnd" class="fc" style="padding:6px 12px; min-height:36px; width:150px; border-radius:var(--r-md); font-size:0.8rem;" onchange="applyCustomDateRange()"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="applyCustomDateRange()" style="padding:6px 16px; min-height:36px; border-radius:var(--r-md); font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+              <i data-lucide="filter" style="width:14px; height:14px;"></i> Apply Filter
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="resetCustomDateRange()" style="padding:6px 12px; min-height:36px; border-radius:var(--r-md); font-weight:700; display:inline-flex; align-items:center; gap:6px; color:var(--expense);">
+              <i data-lucide="rotate-ccw" style="width:14px; height:14px;"></i> Reset
+            </button>
           </div>
         </div>
 
