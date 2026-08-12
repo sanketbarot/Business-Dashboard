@@ -25,17 +25,28 @@ const APP = {
 // ============================================
 
 let currentTxns = [];
+let currentBills = [];
 let firebaseReady = false;
 let firebaseListener = null;
+let firebaseBillsListener = null;
 
 // Get user's transactions collection
 function getUserTxnsRef() {
+  if (localStorage.getItem('bd_mode') === 'demo') return null;
   const uid = localStorage.getItem(APP.uidKey);
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('transactions');
 }
 
-// Setup real-time listener
+// Get user's bills collection
+function getUserBillsRef() {
+  if (localStorage.getItem('bd_mode') === 'demo') return null;
+  const uid = localStorage.getItem(APP.uidKey);
+  if (!uid) return null;
+  return db.collection('users').doc(uid).collection('bills');
+}
+
+// Setup real-time listener for transactions
 function setupFirebaseSync() {
   const ref = getUserTxnsRef();
   if (!ref) {
@@ -87,15 +98,52 @@ function setupFirebaseSync() {
   );
 }
 
+// Setup real-time listener for bills
+function setupFirebaseBillsSync() {
+  const ref = getUserBillsRef();
+  if (!ref) {
+    console.log('No user, using localStorage for bills');
+    return;
+  }
+
+  console.log('🔥 Setting up Firebase bills real-time sync...');
+
+  if (firebaseBillsListener) firebaseBillsListener();
+
+  firebaseBillsListener = ref.orderBy('dueDate', 'asc').onSnapshot(
+    (snapshot) => {
+      const bills = [];
+      snapshot.forEach(doc => {
+        bills.push({ ...doc.data(), id: doc.id });
+      });
+
+      currentBills = bills;
+      localStorage.setItem('bd_bills', JSON.stringify(bills));
+
+      // Trigger reload in Dash
+      if (typeof Dash !== 'undefined' && Dash.loadBills) {
+        Dash.loadBills();
+      }
+
+      console.log('✅ Synced ' + bills.length + ' bills from Firebase');
+    },
+    (error) => {
+      console.error('Firebase bills sync error:', error);
+    }
+  );
+}
+
 // Initialize Firebase sync on load
 if (typeof auth !== 'undefined') {
   auth.onAuthStateChanged((user) => {
     if (user) {
       localStorage.setItem(APP.uidKey, user.uid);
       setupFirebaseSync();
+      setupFirebaseBillsSync();
     } else {
       // If we are in local demo mode, do not clear and redirect
       if (localStorage.getItem('bd_mode') === 'demo') {
+        showSyncIndicator('demo');
         return;
       }
       // User signed out
@@ -116,6 +164,16 @@ function getTxns() {
   }
   try {
     return JSON.parse(localStorage.getItem(APP.storageKey) || '[]');
+  } catch (e) { return []; }
+}
+
+// GET BILLS (from Firebase cache or localStorage)
+function getBills() {
+  if (firebaseReady && currentBills.length >= 0) {
+    return currentBills;
+  }
+  try {
+    return JSON.parse(localStorage.getItem('bd_bills') || '[]');
   } catch (e) { return []; }
 }
 
@@ -169,6 +227,63 @@ async function saveTxnToFirebase(txn) {
   }
 }
 
+// SAVE BILL (to Firebase)
+async function saveBillToFirebase(bill) {
+  const ref = getUserBillsRef();
+  if (!ref) {
+    // Fallback to localStorage
+    const bills = getBills();
+    const index = bills.findIndex(b => b.id === bill.id);
+    if (index > -1) {
+      bills[index] = bill;
+    } else {
+      bills.push(bill);
+    }
+    localStorage.setItem('bd_bills', JSON.stringify(bills));
+    if (typeof Dash !== 'undefined' && Dash.loadBills) {
+      Dash.loadBills();
+    }
+    return true;
+  }
+
+  try {
+    showSyncIndicator('syncing');
+    if (bill.id && bill.id.startsWith('bill_')) {
+      // New bill - add to firestore
+      const docRef = await ref.add({
+        category: bill.category,
+        amount: bill.amount,
+        dueDate: bill.dueDate,
+        vendor: bill.vendor || '',
+        notes: bill.notes || '',
+        status: bill.status || 'pending',
+        paidDate: bill.paidDate || '',
+        savedAt: bill.savedAt || new Date().toISOString()
+      });
+      console.log('✅ Added bill to Firebase:', docRef.id);
+    } else {
+      // Update existing
+      await ref.doc(bill.id).set({
+        category: bill.category,
+        amount: bill.amount,
+        dueDate: bill.dueDate,
+        vendor: bill.vendor || '',
+        notes: bill.notes || '',
+        status: bill.status || 'pending',
+        paidDate: bill.paidDate || '',
+        savedAt: bill.savedAt || new Date().toISOString()
+      });
+      console.log('✅ Updated bill in Firebase:', bill.id);
+    }
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase bill save error:', err);
+    toast('Failed to sync bill. Saved locally.', 'warning');
+    return false;
+  }
+}
+
 // UPDATE TRANSACTION IN FIREBASE
 async function updateTxnInFirebase(id, data) {
   const ref = getUserTxnsRef();
@@ -200,6 +315,32 @@ async function deleteTxnFromFirebase(id) {
     return true;
   } catch (err) {
     console.error('Firebase delete error:', err);
+    return false;
+  }
+}
+
+// DELETE BILL FROM FIREBASE
+async function deleteBillFromFirebase(id) {
+  const ref = getUserBillsRef();
+  if (!ref) {
+    // Fallback to localStorage
+    let bills = getBills();
+    bills = bills.filter(b => b.id !== id);
+    localStorage.setItem('bd_bills', JSON.stringify(bills));
+    if (typeof Dash !== 'undefined' && Dash.loadBills) {
+      Dash.loadBills();
+    }
+    return true;
+  }
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(id).delete();
+    console.log('✅ Deleted bill from Firebase:', id);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase bill delete error:', err);
     return false;
   }
 }
@@ -265,7 +406,8 @@ function showSyncIndicator(status) {
     syncing: { bg: '#fef3c7', color: '#92400e', text: '⟳ Syncing...', border: '#fcd34d' },
     synced: { bg: '#d1fae5', color: '#059669', text: '☁️ Synced', border: '#6ee7b7' },
     error: { bg: '#fee2e2', color: '#dc2626', text: '⚠️ Offline', border: '#fca5a5' },
-    offline: { bg: '#f1f5f9', color: '#64748b', text: '📴 Offline', border: '#cbd5e1' }
+    offline: { bg: '#f1f5f9', color: '#64748b', text: '📴 Offline', border: '#cbd5e1' },
+    demo: { bg: '#e0e7ff', color: '#4338ca', text: '💻 Demo Mode', border: '#c7d2fe' }
   };
 
   const config = configs[status] || configs.synced;
@@ -288,12 +430,20 @@ function showSyncIndicator(status) {
 
 // Network status
 window.addEventListener('online', () => {
+  if (localStorage.getItem('bd_mode') === 'demo') {
+    showSyncIndicator('demo');
+    return;
+  }
   showSyncIndicator('syncing');
   setTimeout(() => showSyncIndicator('synced'), 1000);
   toast('Back online! Syncing...', 'success');
 });
 
 window.addEventListener('offline', () => {
+  if (localStorage.getItem('bd_mode') === 'demo') {
+    showSyncIndicator('demo');
+    return;
+  }
   showSyncIndicator('offline');
   toast('You are offline. Changes will sync when online.', 'warning');
 });

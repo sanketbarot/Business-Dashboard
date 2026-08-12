@@ -627,6 +627,25 @@
             </div>
           </div>
           <div class="right-col">
+            <!-- PENDING BILLS & REMINDERS -->
+            <div class="card bill-card" id="pendingBillsCard">
+              <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1.5px solid var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                <h4 style="display:flex; align-items:center; gap:8px; margin: 0;"><i data-lucide="receipt" style="width: 18px; height: 18px; color: var(--brand);"></i>Bills & Reminders</h4>
+                <div class="bill-tabs" style="display:flex; gap:6px;">
+                  <button class="bill-tab active" id="billTabPending" onclick="Dash.switchBillTab('pending')" style="background:none; border:none; padding:4px 8px; font-weight:800; font-size:0.75rem; color:var(--brand); cursor:pointer; font-family:inherit; transition: var(--tr); border-bottom: 2px solid var(--brand);">Pending</button>
+                  <button class="bill-tab" id="billTabPaid" onclick="Dash.switchBillTab('paid')" style="background:none; border:none; padding:4px 8px; font-weight:800; font-size:0.75rem; color:var(--text-light); cursor:pointer; font-family:inherit; transition: var(--tr); border-bottom: 2px solid transparent;">Paid</button>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="Dash.openBillModal()" style="padding:4px 8px; font-size:0.7rem; display:flex; align-items:center; gap:4px; height: 28px; border-radius: var(--r-sm);">
+                  <i data-lucide="plus" style="width:12px; height:12px;"></i> Add Bill
+                </button>
+              </div>
+              <div class="card-bd" style="padding: 0;">
+                <div id="pendingBillsList" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-bottom: 10px;">
+                  <!-- dynamically loaded bills list -->
+                </div>
+              </div>
+            </div>
+
             <div class="card chart-enhanced">
               <div class="card-hd">
                 <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-compare" style="width: 18px; height: 18px; color: var(--brand);"></i>Month Comparison</h4>
@@ -794,6 +813,48 @@
         <button class="btn btn-expense" onclick="saveTransaction('expense')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Expense</button>
       </div>
       <input type="hidden" id="eEditId" />
+      <input type="hidden" id="eBillId" />
+    </div>
+  </div>
+
+  <!-- ADD PENDING BILL MODAL -->
+  <div class="modal-bg" id="billModal">
+    <div class="modal" style="max-width: 460px;">
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.03) 100%) !important; border-bottom: 1px solid rgba(99, 102, 241, 0.15) !important;">
+        <h3 id="billTitle" style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="receipt" style="width: 20px; height: 20px;"></i><span>Add Pending Bill</span></h3>
+        <button class="modal-x" onclick="closeModal('billModal')">✕</button>
+      </div>
+      <div class="modal-bd">
+        <div class="form-row">
+          <div class="fg"><label class="fl">DUE DATE <span class="req">*</span></label><input type="date" class="fc" id="bDate" /></div>
+          <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="bCat">
+              <option value="">Select</option>
+              <option>🧾 Electricity Bill</option>
+              <option>🏠 Rent</option>
+              <option>📦 Supplies / Supplier</option>
+              <option>📡 Internet Bill</option>
+              <option>📱 Mobile Bill</option>
+              <option>👥 Salary</option>
+              <option>🔨 Maintenance</option>
+              <option>📋 Tax</option>
+              <option>💸 Other Bill</option>
+            </select></div>
+        </div>
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label>
+          <div style="position:relative;"><span
+              style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--brand);z-index:1;">₹</span><input
+              type="number" class="fc" id="bAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;" /></div>
+        </div>
+        <div class="fg"><label class="fl">SUPPLIER / PAYEE</label><input type="text" class="fc" id="bVendor"
+            placeholder="e.g. Mahadev Supplier, Landlord, GEB..." autocomplete="off" /></div>
+        <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="bNote" rows="2"
+            placeholder="Optional details..."></textarea></div>
+      </div>
+      <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('billModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="Dash.saveBill()" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Bill</button>
+      </div>
+      <input type="hidden" id="bEditId" />
     </div>
   </div>
 

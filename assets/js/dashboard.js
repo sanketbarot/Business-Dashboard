@@ -10,6 +10,7 @@ const Dash = {
   customStart: '',
   customEnd: '',
   isFirstLoad: true,
+  activeBillTab: 'pending',
 
   init: function () {
     try {
@@ -74,6 +75,7 @@ const Dash = {
     this.loadPaymentModes(all);
     this.loadRecent(all);
     this.loadGoals(all);
+    this.loadBills();
     if (typeof Chart !== 'undefined') {
       this.buildBarChart(all);
       this.buildDonutChart(all);
@@ -1457,7 +1459,7 @@ const Dash = {
     const adjustType = diff >= 0 ? 'income' : 'expense';
     const adjustAmt = Math.abs(diff);
 
-    const d = new Date(now);
+    const d = new Date();
     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
     txns.push({
@@ -1587,15 +1589,320 @@ const Dash = {
         prfStatusEl.textContent = '🏆 Milestone achieved!';
         prfStatusEl.style.color = 'var(--purple)';
       } else {
-        const remaining = prfTarget - ytdProfit;
-        if (remaining > 0) {
-          prfStatusEl.textContent = `₹ ${inrShort(remaining)} remaining to hit milestone`;
-          prfStatusEl.style.color = 'var(--text-light)';
+      }
+    }
+  },
+
+  loadBills: function () {
+    const listContainer = document.getElementById('pendingBillsList');
+    if (!listContainer) return;
+
+    this.activeBillTab = this.activeBillTab || 'pending';
+    const bills = getBills();
+    
+    // Separate bills
+    const pendingBills = bills.filter(b => b.status === 'pending');
+    const paidBills = bills.filter(b => b.status === 'paid');
+
+    // Run due reminders check
+    this.checkBillReminders(pendingBills);
+
+    // Sort bills
+    pendingBills.sort((a, b) => {
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate) - new Date(b.dueDate);
+    });
+
+    paidBills.sort((a, b) => {
+      const dateA = a.paidDate || a.savedAt || '';
+      const dateB = b.paidDate || b.savedAt || '';
+      return new Date(dateB) - new Date(dateA);
+    });
+
+    const activeList = this.activeBillTab === 'pending' ? pendingBills : paidBills;
+
+    if (activeList.length === 0) {
+      if (this.activeBillTab === 'pending') {
+        listContainer.innerHTML = `
+          <div style="padding:32px 16px; text-align:center; color:var(--text-muted);">
+            <div style="font-size:1.8rem; margin-bottom:8px;">🎉</div>
+            <div style="font-weight:700; font-size:0.82rem; color:var(--text-head); font-family:var(--font);">All Bills Paid!</div>
+            <div style="font-size:0.72rem; color:var(--text-light); margin-top:2px; font-family:var(--font);">No pending bills found.</div>
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = `
+          <div style="padding:32px 16px; text-align:center; color:var(--text-muted);">
+            <div style="font-size:1.8rem; margin-bottom:8px;">📋</div>
+            <div style="font-weight:700; font-size:0.82rem; color:var(--text-head); font-family:var(--font);">No Payment History</div>
+            <div style="font-size:0.72rem; color:var(--text-light); margin-top:2px; font-family:var(--font);">Paid bills will appear here.</div>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    const catEmojis = {
+      '🧾 Electricity Bill': '🧾',
+      '🏠 Rent': '🏠',
+      '📦 Supplies / Supplier': '📦',
+      '📡 Internet Bill': '📡',
+      '📱 Mobile Bill': '📱',
+      '👥 Salary': '👥',
+      '🔨 Maintenance': '🔨',
+      '📋 Tax': '📋',
+      '💸 Other Bill': '💸'
+    };
+
+    const todayStr = today();
+    const todayDate = new Date(todayStr + 'T00:00:00Z');
+
+    listContainer.innerHTML = activeList.map(b => {
+      // Find emoji
+      let emoji = '🧾';
+      Object.keys(catEmojis).forEach(k => {
+        if (b.category.includes(k) || k.includes(b.category)) {
+          emoji = catEmojis[k];
+        }
+      });
+
+      // Cleanup category name for display (strip emoji)
+      const cleanCatName = b.category.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+      const displayTitle = b.vendor ? b.vendor.trim() : cleanCatName;
+      const displaySub = b.vendor ? cleanCatName + (b.notes ? ` • ${b.notes}` : '') : (b.notes ? b.notes : '');
+
+      let badgeHtml = '';
+      if (b.status === 'paid') {
+        const pDate = b.paidDate ? fmtDate(b.paidDate) : fmtDate(b.savedAt);
+        badgeHtml = `<span class="bill-due-badge paid"><i data-lucide="check-circle-2" style="width: 10px; height: 10px;"></i> Paid ${pDate}</span>`;
+      } else {
+        const dueDate = new Date(b.dueDate + 'T00:00:00Z');
+        if (isNaN(dueDate.getTime())) {
+          badgeHtml = `<span class="bill-due-badge normal"><i data-lucide="calendar" style="width: 10px; height: 10px;"></i> Due: ${fmtDate(b.dueDate)}</span>`;
         } else {
-          prfStatusEl.textContent = `Goal reached (Current: ${inrShort(ytdProfit)})`;
-          prfStatusEl.style.color = 'var(--purple)';
+          const diffTime = dueDate.getTime() - todayDate.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          if (diffDays < 0) {
+            badgeHtml = `<span class="bill-due-badge overdue"><i data-lucide="alert-octagon" style="width: 10px; height: 10px;"></i> Overdue by ${Math.abs(diffDays)}d</span>`;
+          } else if (diffDays === 0) {
+            badgeHtml = `<span class="bill-due-badge due-today"><i data-lucide="alert-circle" style="width: 10px; height: 10px;"></i> Due Today 🚨</span>`;
+          } else if (diffDays <= 3) {
+            badgeHtml = `<span class="bill-due-badge upcoming"><i data-lucide="clock" style="width: 10px; height: 10px;"></i> Due in ${diffDays}d ⚠️</span>`;
+          } else {
+            badgeHtml = `<span class="bill-due-badge normal"><i data-lucide="calendar" style="width: 10px; height: 10px;"></i> Due in ${diffDays}d</span>`;
+          }
         }
       }
+
+      const payBtnHtml = b.status === 'pending' 
+        ? `<button class="btn-pay-bill" onclick="Dash.payBill('${b.id}')" title="Mark as Paid"><i data-lucide="check" style="width: 14px; height: 14px;"></i></button>`
+        : '';
+
+      return `
+        <div class="bill-item">
+          <div style="display: flex; gap: 12px; align-items: center; min-width: 0; flex: 1;">
+            <div class="bill-icon">${emoji}</div>
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-head); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${displayTitle}">
+                ${displayTitle}
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-light); margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${displaySub}">
+                ${displaySub}
+              </div>
+              <div>${badgeHtml}</div>
+            </div>
+          </div>
+          <div style="text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+            <div style="font-weight: 800; font-size: 0.92rem; color: var(--text-head);">${inr(b.amount)}</div>
+            <div class="bill-actions">
+              ${payBtnHtml}
+              <button class="btn-delete-bill" onclick="Dash.deleteBill('${b.id}')" title="Delete Bill"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  },
+
+  switchBillTab: function (tab) {
+    this.activeBillTab = tab;
+    
+    // Update active visual styles
+    const tabPending = document.getElementById('billTabPending');
+    const tabPaid = document.getElementById('billTabPaid');
+    
+    if (tabPending && tabPaid) {
+      if (tab === 'pending') {
+        tabPending.classList.add('active');
+        tabPending.style.color = 'var(--brand)';
+        tabPending.style.borderBottomColor = 'var(--brand)';
+        
+        tabPaid.classList.remove('active');
+        tabPaid.style.color = 'var(--text-light)';
+        tabPaid.style.borderBottomColor = 'transparent';
+      } else {
+        tabPaid.classList.add('active');
+        tabPaid.style.color = 'var(--brand)';
+        tabPaid.style.borderBottomColor = 'var(--brand)';
+        
+        tabPending.classList.remove('active');
+        tabPending.style.color = 'var(--text-light)';
+        tabPending.style.borderBottomColor = 'transparent';
+      }
+    }
+    
+    this.loadBills();
+  },
+
+  openBillModal: function () {
+    document.getElementById('bEditId').value = '';
+    document.getElementById('bDate').value = today();
+    document.getElementById('bCat').value = '';
+    document.getElementById('bAmt').value = '';
+    document.getElementById('bVendor').value = '';
+    document.getElementById('bNote').value = '';
+    
+    openModal('billModal');
+  },
+
+  saveBill: async function () {
+    const saveBtn = document.querySelector('#billModal .btn-primary');
+    if (saveBtn && saveBtn.classList.contains('loading')) return;
+
+    const date = document.getElementById('bDate').value.trim();
+    const cat = document.getElementById('bCat').value.trim();
+    const amt = document.getElementById('bAmt').value.trim();
+    const vendor = document.getElementById('bVendor').value.trim();
+    const notes = document.getElementById('bNote').value.trim();
+    const editId = document.getElementById('bEditId').value.trim();
+
+    if (!date) { toast('Please select a due date', 'error'); return; }
+    if (!cat) { toast('Please select a category', 'error'); return; }
+    const amount = parseFloat(amt);
+    if (!amount || amount <= 0 || isNaN(amount)) {
+      toast('Please enter a valid amount', 'error');
+      return;
+    }
+
+    if (saveBtn) saveBtn.classList.add('loading');
+
+    const bill = {
+      id: editId || 'bill_' + uid(),
+      category: cat,
+      amount: amount,
+      dueDate: date,
+      vendor: vendor,
+      notes: notes,
+      status: 'pending',
+      paidDate: '',
+      savedAt: new Date().toISOString()
+    };
+
+    try {
+      await saveBillToFirebase(bill);
+      closeModal('billModal');
+      toast('Bill saved successfully! 🧾', 'success');
+      this.loadBills();
+    } catch (err) {
+      console.error('Save bill error:', err);
+      toast('Failed to save bill', 'error');
+    } finally {
+      if (saveBtn) saveBtn.classList.remove('loading');
+    }
+  },
+
+  deleteBill: async function (id) {
+    if (!confirm('Are you sure you want to delete this bill?')) return;
+    
+    try {
+      await deleteBillFromFirebase(id);
+      toast('Bill deleted successfully 🗑️', 'success');
+      this.loadBills();
+    } catch (err) {
+      console.error('Delete bill error:', err);
+      toast('Failed to delete bill', 'error');
+    }
+  },
+
+  payBill: function (id) {
+    const bills = getBills();
+    const bill = bills.find(b => b.id === id);
+    if (!bill) return;
+
+    resetForm('expense');
+
+    document.getElementById('eDate').value = today();
+    document.getElementById('eCat').value = bill.category;
+    document.getElementById('eAmt').value = bill.amount;
+    document.getElementById('eMode').value = 'UPI'; // Default UPI
+    document.getElementById('eVendor').value = bill.vendor || '';
+    document.getElementById('eNote').value = `Paid Bill: ${bill.notes || ''}`.trim();
+    document.getElementById('eBillId').value = bill.id;
+
+    if (typeof previewAmt === 'function') {
+      previewAmt('expense');
+    }
+
+    openModal('expenseModal');
+  },
+
+  checkBillReminders: function (pendingBills) {
+    const todayStr = today();
+    const todayDate = new Date(todayStr + 'T00:00:00Z');
+    
+    let notified = {};
+    try {
+      notified = JSON.parse(localStorage.getItem('bd_notified_bills') || '{}');
+    } catch (e) {}
+
+    let updatedNotified = { ...notified };
+    let hasNewNotification = false;
+
+    pendingBills.forEach(bill => {
+      if (!bill.dueDate) return;
+
+      const dueDate = new Date(bill.dueDate + 'T00:00:00Z');
+      if (isNaN(dueDate.getTime())) return;
+      const diffTime = dueDate.getTime() - todayDate.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays <= 3) {
+        if (notified[bill.id] !== bill.dueDate) {
+          let msg = '';
+          let type = 'warn';
+          let title = 'Bill Reminder';
+
+          const cleanCatName = bill.category.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+
+          if (diffDays < 0) {
+            title = '🚨 Bill Overdue!';
+            msg = `${cleanCatName} of ${inr(bill.amount)} for ${bill.vendor || 'Supplier'} was due on ${fmtDate(bill.dueDate)} (Overdue by ${Math.abs(diffDays)} days).`;
+            type = 'danger';
+          } else if (diffDays === 0) {
+            title = '⏰ Bill Due Today!';
+            msg = `${cleanCatName} of ${inr(bill.amount)} for ${bill.vendor || 'Supplier'} is due TODAY.`;
+            type = 'danger';
+          } else {
+            title = '⏳ Upcoming Bill';
+            msg = `${cleanCatName} of ${inr(bill.amount)} for ${bill.vendor || 'Supplier'} is due in ${diffDays} days (on ${fmtDate(bill.dueDate)}).`;
+            type = 'warn';
+          }
+
+          this.addNotification(type, title, msg);
+          updatedNotified[bill.id] = bill.dueDate;
+          hasNewNotification = true;
+        }
+      }
+    });
+
+    if (hasNewNotification) {
+      localStorage.setItem('bd_notified_bills', JSON.stringify(updatedNotified));
     }
   }
 };
@@ -1745,6 +2052,7 @@ async function saveTransaction(type) {
   const vendor = !isI ? document.getElementById('eVendor').value.trim() : '';
   const notes = document.getElementById(isI ? 'iNote' : 'eNote').value.trim();
   const editId = document.getElementById(isI ? 'iEditId' : 'eEditId').value.trim();
+  const billId = !isI ? document.getElementById('eBillId').value.trim() : '';
 
   // Validation
   if (!date) { toast('Please select a date', 'error'); return; }
@@ -1770,6 +2078,18 @@ async function saveTransaction(type) {
       await updateTxnInFirebase(editId, entry);
     } else {
       await saveTxnToFirebase(entry);
+    }
+
+    // If linked to a pending bill, mark the bill as paid
+    if (!isI && billId) {
+      const bills = getBills();
+      const bill = bills.find(b => b.id === billId);
+      if (bill) {
+        bill.status = 'paid';
+        bill.paidDate = date;
+        await saveBillToFirebase(bill);
+        console.log('✅ Marked bill as paid:', billId);
+      }
     }
 
     // ✅ FULL RESET before closing (prevents data reappearing)
@@ -1806,6 +2126,9 @@ function resetForm(type) {
   setVal(isI ? 'iMode' : 'eMode', 'Cash');
   setVal(isI ? 'iNote' : 'eNote', '');
   setVal(isI ? 'iEditId' : 'eEditId', '');
+  if (!isI) {
+    setVal('eBillId', '');
+  }
 
   if (isI) {
     setVal('iFrom', '');
