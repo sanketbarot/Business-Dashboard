@@ -55,17 +55,17 @@
 }
 
 /* ==========================================
-   COMMAND BAR — Match Analytics an-hero
+   COMMAND BAR — Matte Finish Hero
    ========================================== */
 .cmd-bar {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
-  padding: 32px 36px;
-  margin-bottom: 26px;
+  padding: 30px 34px;
+  margin-bottom: 24px;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--sh-sm);
+  box-shadow: var(--sh-3d-card);
 }
 
 .cmd-bar::before {
@@ -75,7 +75,7 @@
   left: -20%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.04) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.04) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -116,56 +116,57 @@
   flex-wrap: wrap;
 }
 
-/* MATCH ANALYTICS BUTTONS — smaller size */
+/* MATCH ANALYTICS BUTTONS — Matte Finish */
 .cmd-actions .btn {
   padding: 11px 20px !important;
   font-size: 0.85rem !important;
   font-weight: 700 !important;
   min-height: 44px !important;
   border-radius: var(--r-full) !important;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .cmd-actions .btn-income {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%) !important;
+  background: var(--income-gradient) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25) !important;
 }
 
 .cmd-actions .btn-income:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.38) !important;
 }
 
 .cmd-actions .btn-expense {
-  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+  background: var(--expense-gradient) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25) !important;
 }
 
 .cmd-actions .btn-expense:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3) !important;
+  box-shadow: 0 6px 20px rgba(225, 29, 72, 0.38) !important;
 }
 
 .cmd-actions .btn-outline {
   background: #ffffff !important;
   color: var(--text-body) !important;
-  border: 1px solid var(--border) !important;
+  border: 1.5px solid var(--border) !important;
   box-shadow: var(--sh-sm) !important;
 }
 
 .cmd-actions .btn-outline:hover {
   background: var(--bg-hover) !important;
-  border-color: rgba(79, 70, 229, 0.3) !important;
+  border-color: var(--brand) !important;
   color: var(--brand) !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12) !important;
   transform: translateY(-2px) !important;
 }
 
 /* ==========================================
-   TX STATS — Match Analytics an-card sizes
+   TX STATS — Matte Finish Cards
    ========================================== */
 .tx-analytics {
   display: grid;
@@ -175,11 +176,9 @@
 }
 
 .tx-stat {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: #ffffff;
   border-radius: var(--r-xl);
-  padding: 24px;
+  padding: 22px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -187,45 +186,30 @@
   position: relative;
   overflow: hidden;
   min-width: 0;
-  border: var(--border-glass);
+  border: 1px solid var(--border);
   box-shadow: var(--sh-3d-card);
   cursor: pointer;
 }
 
+.tx-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3d-card-hover);
+}
+
 .tx-stat.in:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(16, 185, 129, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(16, 185, 129, 0.25);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%);
+  border-color: rgba(5, 150, 105, 0.3);
 }
 
 .tx-stat.out:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(244, 63, 94, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(244, 63, 94, 0.25);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%);
+  border-color: rgba(225, 29, 72, 0.3);
 }
 
 .tx-stat.prof:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(245, 158, 11, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(245, 158, 11, 0.25);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%);
+  border-color: rgba(217, 119, 6, 0.3);
 }
 
 .tx-stat.count:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(79, 70, 229, 0.12), inset 0 2px 0 0 #ffffff, inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  border-color: rgba(79, 70, 229, 0.25);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%);
-}
-
-.tx-stat.in,
-.tx-stat.out,
-.tx-stat.prof,
-.tx-stat.count {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.4) 100%);
-  border: var(--border-glass);
+  border-color: rgba(124, 58, 237, 0.3);
 }
 
 /* MATCH ANALYTICS ICON SIZE (36px like an-card-icon) */
@@ -262,8 +246,8 @@
 }
 
 .tx-stat.count .tx-stat-ic {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+  background: var(--balance-gradient);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
 }
 
 .tx-stat-info {
@@ -301,13 +285,13 @@
 }
 
 /* ==========================================
-   FILTER PANEL — Light
+   FILTER PANEL — Light UV Finishing
    ========================================== */
 .filter-panel {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.4) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 245, 255, 0.75) 100%);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: var(--border-glass);
+  border: 1px solid rgba(139, 92, 246, 0.14);
   border-radius: var(--r-xl);
   margin-bottom: 20px;
   box-shadow: var(--sh-3d-card);
@@ -318,8 +302,8 @@
 /* Filter Tabs */
 .filter-tabs {
   display: flex;
-  background: rgba(15, 23, 42, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(139, 92, 246, 0.04);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
   padding: 10px 14px;
   gap: 4px;
   overflow-x: auto;
@@ -346,16 +330,16 @@
 }
 
 .ft:hover:not(.active) {
-  background: rgba(79, 70, 229, 0.05) !important;
-  color: var(--text-head) !important;
+  background: rgba(139, 92, 246, 0.08) !important;
+  color: var(--brand) !important;
 }
 
 .ft.active {
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   color: var(--brand) !important;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04), inset 0 1px 0 #ffffff !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.18), inset 0 1px 0 #ffffff !important;
   font-weight: 700 !important;
-  border: 0.5px solid rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(139, 92, 246, 0.25) !important;
 }
 
 /* Filter Body */
@@ -377,8 +361,8 @@
 .filter-search input {
   width: 100% !important;
   padding: 11px 16px 11px 40px !important;
-  background: #f1f5f9 !important;
-  border: 1px solid var(--border) !important;
+  background: #f8f7ff !important;
+  border: 1px solid rgba(139, 92, 246, 0.18) !important;
   border-radius: var(--r-sm) !important;
   font-size: 0.88rem !important;
   font-family: inherit !important;
@@ -397,7 +381,7 @@
 .filter-search input:focus {
   border-color: var(--brand) !important;
   background: #ffffff !important;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), 0 4px 16px rgba(139, 92, 246, 0.1) !important;
 }
 
 .filter-search-ic {
@@ -418,23 +402,23 @@
   padding: 10px 14px !important;
   min-height: 44px !important;
   cursor: pointer !important;
-  border: 1px solid var(--border) !important;
+  border: 1px solid rgba(139, 92, 246, 0.18) !important;
   border-radius: var(--r-sm) !important;
-  background: #f1f5f9 !important;
+  background: #f8f7ff !important;
   color: var(--text-head) !important;
   font-weight: 700 !important;
   transition: var(--tr) !important;
 }
 
 .fsel:hover {
-  border-color: rgba(79, 70, 229, 0.25) !important;
+  border-color: var(--brand) !important;
   background: var(--bg-hover) !important;
 }
 
 .fsel:focus {
   border-color: var(--brand) !important;
   outline: none !important;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
 }
 
 .fsel option {
@@ -450,9 +434,9 @@
   min-width: 140px !important;
   padding: 10px 14px !important;
   min-height: 44px !important;
-  border: 1px solid var(--border) !important;
+  border: 1px solid rgba(139, 92, 246, 0.18) !important;
   border-radius: var(--r-sm) !important;
-  background: #f1f5f9 !important;
+  background: #f8f7ff !important;
   color: var(--text-head) !important;
   font-size: 0.82rem !important;
   font-weight: 700 !important;
@@ -466,7 +450,7 @@
 
 .filter-body .custom-select-trigger:hover,
 .filter-panel .custom-select-trigger:hover {
-  border-color: rgba(79, 70, 229, 0.25) !important;
+  border-color: var(--brand) !important;
   background: var(--bg-hover) !important;
 }
 
@@ -474,14 +458,14 @@
 .filter-panel .custom-select.open .custom-select-trigger {
   border-color: var(--brand) !important;
   background: #ffffff !important;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
 }
 
 .filter-body .custom-select-options,
 .filter-panel .custom-select-options {
   background: #ffffff !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: var(--sh-lg) !important;
+  border: 1px solid rgba(139, 92, 246, 0.18) !important;
+  box-shadow: var(--sh-lg), 0 8px 24px rgba(139, 92, 246, 0.12) !important;
   border-radius: 12px !important;
   padding: 6px !important;
   z-index: 1000 !important;

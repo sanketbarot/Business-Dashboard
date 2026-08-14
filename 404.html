@@ -14,7 +14,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0a0e27;
+  background: #0C0A15;
   color: #fff;
   overflow: hidden;
   position: relative;
@@ -25,7 +25,7 @@ body::before {
   content: '';
   position: absolute;
   width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 65%);
   top: -200px; left: -200px;
   border-radius: 50%;
 }
@@ -34,7 +34,7 @@ body::after {
   content: '';
   position: absolute;
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(109,40,217,0.08) 0%, transparent 65%);
   bottom: -150px; right: -150px;
   border-radius: 50%;
 }
@@ -51,11 +51,12 @@ body::after {
   font-size: 8rem;
   font-weight: 700;
   line-height: 1;
-  background: linear-gradient(135deg, #06b6d4 0%, #fbbf24 100%);
+  background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 50%, #6366f1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 16px;
+  filter: drop-shadow(0 0 25px rgba(139,92,246,0.35));
 }
 
 .title {
@@ -95,25 +96,25 @@ body::after {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #6d28d9 100%);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(6,182,212,0.3);
+  box-shadow: 0 8px 24px rgba(139,92,246,0.35);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(6,182,212,0.4);
+  box-shadow: 0 12px 32px rgba(139,92,246,0.5);
 }
 
 .btn-ghost {
   background: rgba(255,255,255,0.05);
   color: #cbd5e1;
-  border: 1.5px solid rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(168,85,247,0.25);
 }
 
 .btn-ghost:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.2);
+  background: rgba(139,92,246,0.12);
+  border-color: rgba(168,85,247,0.4);
 }
 
 .brand {
@@ -122,7 +123,7 @@ body::after {
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.75rem;
-  color: #06b6d4;
+  color: #a855f7;
   font-weight: 700;
   font-family: 'Space Grotesk', sans-serif;
   z-index: 2;
