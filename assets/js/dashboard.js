@@ -1673,13 +1673,19 @@ const Dash = {
     const parts = getISTDateParts();
     const currentMonthStr = `${parts.year}-${String(parts.month).padStart(2, '0')}`;
 
+    // Helper to strip emoji for robust fallback matching
+    const stripEmoji = (str) => (str || '').replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim().toLowerCase();
+
     // Calculate current month's spending per category
     const mtdCatSpend = {};
+    const mtdCatSpendClean = {};
     all.forEach(t => {
       if (t.type === 'expense' && t.date && t.date.substring(0, 7) === currentMonthStr) {
         const cat = (t.category || 'Other Expense').trim();
         const amt = parseFloat(t.amount) || 0;
         mtdCatSpend[cat] = (mtdCatSpend[cat] || 0) + amt;
+        const clean = stripEmoji(cat);
+        mtdCatSpendClean[clean] = (mtdCatSpendClean[clean] || 0) + amt;
       }
     });
 
@@ -1714,7 +1720,8 @@ const Dash = {
     const cardsHtml = budgets.map(bgt => {
       const cat = bgt.category;
       const limit = parseFloat(bgt.amount) || 0;
-      const spent = mtdCatSpend[cat] || 0;
+      const clean = stripEmoji(cat);
+      const spent = mtdCatSpend[cat] !== undefined ? mtdCatSpend[cat] : (mtdCatSpendClean[clean] || 0);
       totalAllocated += limit;
       totalSpentInBudgets += spent;
 
@@ -1747,6 +1754,7 @@ const Dash = {
 
       const iconName = window.getLucideIconName(cat) || 'package';
       const cleanName = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+      const safeCat = encodeURIComponent(cat);
 
       return `
         <div class="category-budget-card" style="background:var(--bg-card); border:1.5px solid ${cardBorder}; border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--sh-card); display:flex; flex-direction:column; justify-content:space-between; transition:var(--tr);">
@@ -1785,7 +1793,7 @@ const Dash = {
             <span style="color:${isOver ? 'var(--expense)' : 'var(--text-light)'}; font-weight:600;">
               ${isOver ? `🚨 Exceeded by ${inr(overspentAmt)}` : `✨ ${inr(remaining)} remaining`}
             </span>
-            <button onclick="editCategoryBudget('${escapeHtml(cat)}', ${limit})" style="background:none; border:none; color:var(--brand); font-weight:700; font-size:0.72rem; cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; gap:3px;">
+            <button onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${limit})" style="background:none; border:none; color:var(--brand); font-weight:700; font-size:0.72rem; cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; gap:3px;">
               <i data-lucide="edit-2" style="width:11px; height:11px;"></i> Edit
             </button>
           </div>
@@ -2561,6 +2569,7 @@ function populateBudgetModalList() {
   listEl.innerHTML = budgets.map(b => {
     const iconName = window.getLucideIconName(b.category) || 'package';
     const cleanName = b.category.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+    const safeCat = encodeURIComponent(b.category);
     return `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md);">
         <div style="display:flex; align-items:center; gap:8px;">
@@ -2569,10 +2578,10 @@ function populateBudgetModalList() {
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
           <strong style="font-size:0.88rem; color:var(--text-head);">${inr(b.amount)}</strong>
-          <button onclick="editCategoryBudget('${escapeHtml(b.category)}', ${b.amount})" title="Edit" style="background:none; border:none; cursor:pointer; color:var(--text-light); padding:4px;">
+          <button onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${b.amount})" title="Edit" style="background:none; border:none; cursor:pointer; color:var(--text-light); padding:4px;">
             <i data-lucide="edit-2" style="width:14px; height:14px;"></i>
           </button>
-          <button onclick="deleteCategoryBudget('${escapeHtml(b.category)}')" title="Delete" style="background:none; border:none; cursor:pointer; color:var(--expense); padding:4px;">
+          <button onclick="deleteCategoryBudget(decodeURIComponent('${safeCat}'))" title="Delete" style="background:none; border:none; cursor:pointer; color:var(--expense); padding:4px;">
             <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
           </button>
         </div>
@@ -2624,6 +2633,14 @@ async function saveCategoryBudgetFromModal() {
   toast(`Budget limit of ${inr(amt)} set for "${cat}"! 🎯`, 'success');
 
   amtEl.value = '';
+  catEl.value = '';
+  const wrapper = catEl.nextElementSibling;
+  if (wrapper && wrapper.classList.contains('custom-select')) {
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    if (trigger) trigger.innerHTML = getFormattedOptionHtml('Select Category');
+    const customOptions = wrapper.querySelectorAll('.custom-option');
+    customOptions.forEach(opt => opt.classList.remove('selected'));
+  }
   populateBudgetModalList();
   if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
     Dash.loadCategoryBudgets(getTxns());

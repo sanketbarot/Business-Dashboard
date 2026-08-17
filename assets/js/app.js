@@ -22,9 +22,18 @@ const APP = {
 
 // ============================================
 // FIREBASE STORAGE (Real-time Sync)
-let currentTxns = [];
-let currentBills = [];
-let currentBudgets = [];
+let currentTxns = (() => {
+  try { return JSON.parse(localStorage.getItem(APP.storageKey) || '[]'); } catch (e) { return []; }
+})();
+let currentBills = (() => {
+  try { return JSON.parse(localStorage.getItem('bd_bills') || '[]'); } catch (e) { return []; }
+})();
+let currentBudgets = (() => {
+  try { return JSON.parse(localStorage.getItem('bd_budgets') || '[]'); } catch (e) { return []; }
+})();
+let currentRecurring = (() => {
+  try { return JSON.parse(localStorage.getItem('bd_recurring') || '[]'); } catch (e) { return []; }
+})();
 let firebaseReady = false;
 let firebaseListener = null;
 let firebaseBillsListener = null;
@@ -160,15 +169,32 @@ function setupFirebaseBudgetsSync() {
         budgets.push({ ...doc.data(), id: doc.id });
       });
 
-      currentBudgets = budgets;
-      localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+      if (budgets.length > 0) {
+        currentBudgets = budgets;
+        localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+      } else {
+        const local = JSON.parse(localStorage.getItem('bd_budgets') || '[]');
+        if (local.length > 0) {
+          local.forEach(b => {
+            const bId = b.id || ('bgt_' + encodeURIComponent((b.category || '').toLowerCase().replace(/[^a-z0-9]/g, '_')));
+            ref.doc(bId).set(b).catch(console.error);
+          });
+          currentBudgets = local;
+        } else {
+          currentBudgets = [];
+          localStorage.setItem('bd_budgets', JSON.stringify([]));
+        }
+      }
 
-      // Trigger reload in Dash
+      // Trigger reload in Dash and modal
       if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
         Dash.loadCategoryBudgets(getTxns());
       }
+      if (typeof populateBudgetModalList === 'function') {
+        populateBudgetModalList();
+      }
 
-      console.log('✅ Synced ' + budgets.length + ' category budgets from Firebase');
+      console.log('✅ Synced ' + currentBudgets.length + ' category budgets from Firebase');
     },
     (error) => {
       console.error('Firebase budgets sync error:', error);
@@ -203,42 +229,62 @@ if (typeof auth !== 'undefined') {
 
 // GET TRANSACTIONS (from Firebase cache or localStorage)
 function getTxns() {
-  if (firebaseReady && currentTxns.length >= 0) {
+  if (currentTxns && currentTxns.length > 0) {
     return currentTxns;
   }
   try {
-    return JSON.parse(localStorage.getItem(APP.storageKey) || '[]');
-  } catch (e) { return []; }
+    const local = JSON.parse(localStorage.getItem(APP.storageKey) || '[]');
+    if (Array.isArray(local) && local.length > 0) {
+      currentTxns = local;
+      return local;
+    }
+  } catch (e) { }
+  return currentTxns || [];
 }
 
 // GET BILLS (from Firebase cache or localStorage)
 function getBills() {
-  if (firebaseReady && currentBills.length >= 0) {
+  if (currentBills && currentBills.length > 0) {
     return currentBills;
   }
   try {
-    return JSON.parse(localStorage.getItem('bd_bills') || '[]');
-  } catch (e) { return []; }
+    const local = JSON.parse(localStorage.getItem('bd_bills') || '[]');
+    if (Array.isArray(local) && local.length > 0) {
+      currentBills = local;
+      return local;
+    }
+  } catch (e) { }
+  return currentBills || [];
 }
 
 // GET CATEGORY BUDGETS (from Firebase cache or localStorage)
 function getBudgets() {
-  if (firebaseReady && currentBudgets.length >= 0) {
+  if (currentBudgets && currentBudgets.length > 0) {
     return currentBudgets;
   }
   try {
-    return JSON.parse(localStorage.getItem('bd_budgets') || '[]');
-  } catch (e) { return []; }
+    const local = JSON.parse(localStorage.getItem('bd_budgets') || '[]');
+    if (Array.isArray(local) && local.length > 0) {
+      currentBudgets = local;
+      return local;
+    }
+  } catch (e) { }
+  return currentBudgets || [];
 }
 
 // GET RECURRING RULES (from Firebase cache or localStorage)
 function getRecurringRules() {
-  if (firebaseReady && currentRecurring.length >= 0) {
+  if (currentRecurring && currentRecurring.length > 0) {
     return currentRecurring;
   }
   try {
-    return JSON.parse(localStorage.getItem('bd_recurring') || '[]');
-  } catch (e) { return []; }
+    const local = JSON.parse(localStorage.getItem('bd_recurring') || '[]');
+    if (Array.isArray(local) && local.length > 0) {
+      currentRecurring = local;
+      return local;
+    }
+  } catch (e) { }
+  return currentRecurring || [];
 }
 
 // SAVE TRANSACTION (to Firebase)
@@ -422,20 +468,27 @@ async function saveBudgetToFirebase(category, amount) {
     savedAt: new Date().toISOString()
   };
 
+  // Optimistically update in-memory cache and localStorage first
+  let budgets = getBudgets().slice();
+  const idx = budgets.findIndex(b => b.category === cleanCat || b.id === id);
+  if (idx > -1) {
+    budgets[idx] = budgetObj;
+  } else {
+    budgets.push(budgetObj);
+  }
+  currentBudgets = budgets;
+  localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+
+  // Immediate UI updates
+  if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
+    Dash.loadCategoryBudgets(getTxns());
+  }
+  if (typeof populateBudgetModalList === 'function') {
+    populateBudgetModalList();
+  }
+
   const ref = getUserBudgetsRef();
   if (!ref) {
-    // Fallback to localStorage
-    let budgets = getBudgets();
-    const idx = budgets.findIndex(b => b.category === cleanCat || b.id === id);
-    if (idx > -1) {
-      budgets[idx] = budgetObj;
-    } else {
-      budgets.push(budgetObj);
-    }
-    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
-    if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
-      Dash.loadCategoryBudgets(getTxns());
-    }
     return true;
   }
 
@@ -447,12 +500,6 @@ async function saveBudgetToFirebase(category, amount) {
     return true;
   } catch (err) {
     console.error('Firebase budget save error:', err);
-    // Local fallback
-    let budgets = getBudgets();
-    const idx = budgets.findIndex(b => b.category === cleanCat || b.id === id);
-    if (idx > -1) budgets[idx] = budgetObj;
-    else budgets.push(budgetObj);
-    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
     toast('Saved budget locally.', 'warning');
     return false;
   }
@@ -463,14 +510,20 @@ async function deleteBudgetFromFirebase(category) {
   const cleanCat = category.trim();
   const id = 'bgt_' + encodeURIComponent(cleanCat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
 
+  let budgets = getBudgets().slice();
+  budgets = budgets.filter(b => b.category !== cleanCat && b.id !== id);
+  currentBudgets = budgets;
+  localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+
+  if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
+    Dash.loadCategoryBudgets(getTxns());
+  }
+  if (typeof populateBudgetModalList === 'function') {
+    populateBudgetModalList();
+  }
+
   const ref = getUserBudgetsRef();
   if (!ref) {
-    let budgets = getBudgets();
-    budgets = budgets.filter(b => b.category !== cleanCat && b.id !== id);
-    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
-    if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
-      Dash.loadCategoryBudgets(getTxns());
-    }
     return true;
   }
 
@@ -482,9 +535,6 @@ async function deleteBudgetFromFirebase(category) {
     return true;
   } catch (err) {
     console.error('Firebase budget delete error:', err);
-    let budgets = getBudgets();
-    budgets = budgets.filter(b => b.category !== cleanCat && b.id !== id);
-    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
     return false;
   }
 }
