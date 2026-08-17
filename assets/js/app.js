@@ -34,10 +34,14 @@ let currentBudgets = (() => {
 let currentRecurring = (() => {
   try { return JSON.parse(localStorage.getItem('bd_recurring') || '[]'); } catch (e) { return []; }
 })();
+let currentVendors = (() => {
+  try { return JSON.parse(localStorage.getItem('bd_vendors') || '[]'); } catch (e) { return []; }
+})();
 let firebaseReady = false;
 let firebaseListener = null;
 let firebaseBillsListener = null;
 let firebaseBudgetsListener = null;
+let firebaseVendorsListener = null;
 
 // Get user's transactions collection
 function getUserTxnsRef() {
@@ -61,6 +65,14 @@ function getUserBudgetsRef() {
   const uid = localStorage.getItem(APP.uidKey);
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('budgets');
+}
+
+// Get user's vendors collection (Khata)
+function getUserVendorsRef() {
+  if (localStorage.getItem('bd_mode') === 'demo') return null;
+  const uid = localStorage.getItem(APP.uidKey);
+  if (!uid) return null;
+  return db.collection('users').doc(uid).collection('vendors');
 }
 
 // Setup real-time listener for transactions
@@ -202,6 +214,58 @@ function setupFirebaseBudgetsSync() {
   );
 }
 
+// Setup real-time listener for vendors (Khata)
+function setupFirebaseVendorsSync() {
+  const ref = getUserVendorsRef();
+  if (!ref) {
+    console.log('No user, using localStorage for vendors');
+    return;
+  }
+
+  console.log('🔥 Setting up Firebase vendors real-time sync...');
+
+  if (firebaseVendorsListener) firebaseVendorsListener();
+
+  firebaseVendorsListener = ref.onSnapshot(
+    (snapshot) => {
+      const vendors = [];
+      snapshot.forEach(doc => {
+        vendors.push({ ...doc.data(), id: doc.id });
+      });
+
+      // Sort by latest update
+      vendors.sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+
+      if (vendors.length > 0) {
+        currentVendors = vendors;
+        localStorage.setItem('bd_vendors', JSON.stringify(vendors));
+      } else {
+        const local = JSON.parse(localStorage.getItem('bd_vendors') || '[]');
+        if (local.length > 0) {
+          local.forEach(v => {
+            const vId = v.id || ('vnd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4));
+            ref.doc(vId).set(v).catch(console.error);
+          });
+          currentVendors = local;
+        } else {
+          currentVendors = [];
+          localStorage.setItem('bd_vendors', JSON.stringify([]));
+        }
+      }
+
+      // Trigger reload in Dash
+      if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+        Dash.loadVendors();
+      }
+
+      console.log('✅ Synced ' + currentVendors.length + ' vendors from Firebase');
+    },
+    (error) => {
+      console.error('Firebase vendors sync error:', error);
+    }
+  );
+}
+
 // Initialize Firebase sync on load
 if (typeof auth !== 'undefined') {
   auth.onAuthStateChanged((user) => {
@@ -210,6 +274,7 @@ if (typeof auth !== 'undefined') {
       setupFirebaseSync();
       setupFirebaseBillsSync();
       setupFirebaseBudgetsSync();
+      setupFirebaseVendorsSync();
     } else {
       // If we are in local demo mode, do not clear and redirect
       if (localStorage.getItem('bd_mode') === 'demo') {
@@ -285,6 +350,21 @@ function getRecurringRules() {
     }
   } catch (e) { }
   return currentRecurring || [];
+}
+
+// GET VENDORS (from Firebase cache or localStorage)
+function getVendors() {
+  if (currentVendors && currentVendors.length > 0) {
+    return currentVendors;
+  }
+  try {
+    const local = JSON.parse(localStorage.getItem('bd_vendors') || '[]');
+    if (Array.isArray(local) && local.length > 0) {
+      currentVendors = local;
+      return local;
+    }
+  } catch (e) { }
+  return currentVendors || [];
 }
 
 // SAVE TRANSACTION (to Firebase)
@@ -535,6 +615,217 @@ async function deleteBudgetFromFirebase(category) {
     return true;
   } catch (err) {
     console.error('Firebase budget delete error:', err);
+    return false;
+  }
+}
+
+// ============================================
+// VENDOR / SUPPLIER KHATA SYSTEM
+// ============================================
+
+// SAVE OR UPDATE VENDOR
+async function saveVendorToFirebase(vendorData) {
+  const id = vendorData.id || ('vnd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4));
+  const totalAmount = parseFloat(vendorData.totalAmount) || 0;
+  const paidAmount = parseFloat(vendorData.paidAmount) || 0;
+  const pendingAmount = Math.max(0, totalAmount - paidAmount);
+  const status = pendingAmount <= 0 ? 'settled' : (paidAmount > 0 ? 'partial' : 'pending');
+
+  const vendorObj = {
+    id: id,
+    name: (vendorData.name || '').trim(),
+    category: (vendorData.category || '🛒 Grocery').trim(),
+    phone: (vendorData.phone || '').trim(),
+    totalAmount: totalAmount,
+    paidAmount: paidAmount,
+    pendingAmount: pendingAmount,
+    status: status,
+    dueDate: vendorData.dueDate || '',
+    notes: (vendorData.notes || '').trim(),
+    history: vendorData.history || (totalAmount > 0 ? [{
+      id: 'h_' + Date.now(),
+      type: 'purchase',
+      amount: totalAmount,
+      date: vendorData.date || new Date().toISOString().substring(0, 10),
+      notes: vendorData.notes ? ('Opening Bill: ' + vendorData.notes) : 'Initial Purchase Bill',
+      savedAt: new Date().toISOString()
+    }] : []),
+    createdAt: vendorData.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  // Optimistically update memory and localStorage
+  let vendors = getVendors().slice();
+  const idx = vendors.findIndex(v => v.id === id);
+  if (idx > -1) {
+    vendors[idx] = vendorObj;
+  } else {
+    vendors.unshift(vendorObj);
+  }
+  currentVendors = vendors;
+  localStorage.setItem('bd_vendors', JSON.stringify(vendors));
+
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+
+  const ref = getUserVendorsRef();
+  if (!ref) return vendorObj;
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(id).set(vendorObj);
+    console.log('✅ Saved vendor to Firebase:', id);
+    showSyncIndicator('synced');
+    return vendorObj;
+  } catch (err) {
+    console.error('Firebase vendor save error:', err);
+    toast('Saved supplier locally.', 'warning');
+    return vendorObj;
+  }
+}
+
+// ADD NEW BILL / PURCHASE TO EXISTING VENDOR (નવો માલ ઉમેરો)
+async function addVendorBillToFirebase(vendorId, billAmount, date, notes) {
+  const amt = parseFloat(billAmount) || 0;
+  if (amt <= 0) return false;
+
+  let vendors = getVendors().slice();
+  const idx = vendors.findIndex(v => v.id === vendorId);
+  if (idx === -1) return false;
+
+  const vendor = { ...vendors[idx] };
+  const history = Array.isArray(vendor.history) ? [...vendor.history] : [];
+
+  history.push({
+    id: 'h_' + Date.now(),
+    type: 'purchase',
+    amount: amt,
+    date: date || new Date().toISOString().substring(0, 10),
+    notes: notes || 'New Goods / Supply Received',
+    savedAt: new Date().toISOString()
+  });
+
+  vendor.totalAmount = (parseFloat(vendor.totalAmount) || 0) + amt;
+  vendor.pendingAmount = Math.max(0, vendor.totalAmount - (parseFloat(vendor.paidAmount) || 0));
+  vendor.status = vendor.pendingAmount <= 0 ? 'settled' : ((vendor.paidAmount > 0) ? 'partial' : 'pending');
+  vendor.updatedAt = new Date().toISOString();
+  if (notes) vendor.notes = notes;
+  vendor.history = history;
+
+  vendors[idx] = vendor;
+  currentVendors = vendors;
+  localStorage.setItem('bd_vendors', JSON.stringify(vendors));
+
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+
+  const ref = getUserVendorsRef();
+  if (!ref) return true;
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(vendorId).set(vendor);
+    console.log('✅ Added purchase bill to vendor:', vendorId);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase vendor bill add error:', err);
+    return false;
+  }
+}
+
+// RECORD PAYMENT TO VENDOR (રકમ ચૂકવો & ઓપ્શનલ ખર્ચ એન્ટ્રી)
+async function recordVendorPaymentToFirebase(vendorId, payAmount, date, mode, notes, autoAddExpense = true) {
+  const amt = parseFloat(payAmount) || 0;
+  if (amt <= 0) return false;
+
+  let vendors = getVendors().slice();
+  const idx = vendors.findIndex(v => v.id === vendorId);
+  if (idx === -1) return false;
+
+  const vendor = { ...vendors[idx] };
+  const history = Array.isArray(vendor.history) ? [...vendor.history] : [];
+
+  history.push({
+    id: 'h_' + Date.now(),
+    type: 'payment',
+    amount: amt,
+    date: date || new Date().toISOString().substring(0, 10),
+    mode: mode || 'Cash',
+    notes: notes || 'Payment to Supplier',
+    savedAt: new Date().toISOString()
+  });
+
+  vendor.paidAmount = (parseFloat(vendor.paidAmount) || 0) + amt;
+  vendor.pendingAmount = Math.max(0, (parseFloat(vendor.totalAmount) || 0) - vendor.paidAmount);
+  vendor.status = vendor.pendingAmount <= 0 ? 'settled' : 'partial';
+  vendor.updatedAt = new Date().toISOString();
+  vendor.history = history;
+
+  vendors[idx] = vendor;
+  currentVendors = vendors;
+  localStorage.setItem('bd_vendors', JSON.stringify(vendors));
+
+  // Automatically record this payment in the Expense Ledger if enabled
+  if (autoAddExpense) {
+    const expenseTxn = {
+      id: 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      type: 'expense',
+      date: date || new Date().toISOString().substring(0, 10),
+      category: vendor.category || '💸 Other Expense',
+      amount: amt,
+      mode: mode || 'Cash',
+      vendor: vendor.name || '',
+      notes: notes ? (`Paid to ${vendor.name}: ${notes}`) : (`Paid to Supplier: ${vendor.name}`),
+      savedAt: new Date().toISOString()
+    };
+    saveTxnToFirebase(expenseTxn).catch(console.error);
+  }
+
+  if (typeof Dash !== 'undefined') {
+    if (Dash.loadVendors) Dash.loadVendors();
+    if (Dash.loadAll) Dash.loadAll();
+  }
+
+  const ref = getUserVendorsRef();
+  if (!ref) return true;
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(vendorId).set(vendor);
+    console.log('✅ Recorded payment to vendor:', vendorId);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase vendor payment record error:', err);
+    return false;
+  }
+}
+
+// DELETE VENDOR
+async function deleteVendorFromFirebase(vendorId) {
+  let vendors = getVendors().slice();
+  vendors = vendors.filter(v => v.id !== vendorId);
+  currentVendors = vendors;
+  localStorage.setItem('bd_vendors', JSON.stringify(vendors));
+
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+
+  const ref = getUserVendorsRef();
+  if (!ref) return true;
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(vendorId).delete();
+    console.log('✅ Deleted vendor from Firebase:', vendorId);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase vendor delete error:', err);
     return false;
   }
 }

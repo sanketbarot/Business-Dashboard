@@ -3106,3 +3106,91 @@ canvas:hover {
   background: rgba(255, 255, 255, 0.03) !important;
   border-color: rgba(255, 255, 255, 0.07) !important;
 }
+
+/* ==========================================
+   VENDOR OUTSTANDINGS & SUPPLIER KHATA STYLES
+   ========================================== */
+.vendor-khata-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.vendor-card {
+  position: relative;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s ease;
+  background: var(--bg-card);
+}
+
+.vendor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .vendor-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+}
+
+.vendor-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--r-md);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--tr);
+  border: none;
+}
+
+.vendor-action-btn.pay {
+  background: var(--income);
+  color: #fff;
+}
+
+.vendor-action-btn.pay:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.vendor-action-btn.bill {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.vendor-action-btn.bill:hover {
+  background: var(--brand);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.vendor-action-btn.history {
+  background: var(--bg-app);
+  color: var(--text-head);
+  border: 1px solid var(--border);
+}
+
+.vendor-action-btn.history:hover {
+  border-color: var(--text-muted);
+}
+
+.vendor-timeline-item {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 16px;
+  border-left: 2px solid var(--border);
+}
+
+.vendor-timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.vendor-timeline-dot {
+  position: absolute;
+  left: -7px;
+  top: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+}

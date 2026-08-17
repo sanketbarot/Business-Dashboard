@@ -76,6 +76,7 @@ const Dash = {
     this.loadRecent(all);
     this.loadGoals(all);
     this.loadCategoryBudgets(all);
+    this.loadVendors();
     this.loadBills();
     if (typeof Chart !== 'undefined') {
       this.buildBarChart(all);
@@ -1826,6 +1827,156 @@ const Dash = {
     this.checkBudgetReminders(budgets, mtdCatSpend, currentMonthStr);
   },
 
+  loadVendors: function () {
+    const grid = document.getElementById('vendorGrid');
+    if (!grid) return;
+
+    const vendors = getVendors();
+
+    let totalPending = 0;
+    let totalBilled = 0;
+    let totalPaid = 0;
+    let pendingCount = 0;
+
+    vendors.forEach(v => {
+      const billed = parseFloat(v.totalAmount) || 0;
+      const paid = parseFloat(v.paidAmount) || 0;
+      const pending = Math.max(0, billed - paid);
+      totalBilled += billed;
+      totalPaid += paid;
+      totalPending += pending;
+      if (pending > 0) pendingCount++;
+    });
+
+    const badgeEl = document.getElementById('vendorPendingBadge');
+    if (badgeEl) {
+      badgeEl.textContent = `${pendingCount} Due`;
+      badgeEl.style.background = pendingCount > 0 ? 'rgba(244,63,94,0.12)' : 'rgba(16,185,129,0.12)';
+      badgeEl.style.color = pendingCount > 0 ? 'var(--expense)' : 'var(--income)';
+    }
+
+    this.setText('totalVendorPending', inr(totalPending));
+    this.setText('totalVendorBilled', inr(totalBilled));
+    this.setText('totalVendorPaid', inr(totalPaid));
+    this.setText('totalVendorCount', `${vendors.length} Active`);
+
+    if (!vendors || vendors.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 36px 20px; text-align: center; background: var(--bg-app); border: 1.5px dashed var(--border); border-radius: var(--r-lg);">
+          <div style="display:flex; justify-content:center; margin-bottom:10px;"><i data-lucide="truck" style="width:36px; height:36px; color:var(--brand);"></i></div>
+          <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-head); margin-bottom:4px;">No Supplier Outstandings Recorded</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted); max-width:420px; margin:0 auto 16px;">Track dairy, vegetables, bakery, and packaging suppliers you owe money to, log new inventory received, and record partial/full payments.</p>
+          <button class="btn btn-primary btn-sm" onclick="openVendorModal()" style="display:inline-flex; align-items:center; gap:6px;">
+            <i data-lucide="plus-circle" style="width:15px; height:15px;"></i>Add First Supplier / Vendor
+          </button>
+        </div>
+      `;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      return;
+    }
+
+    const cardsHtml = vendors.map(v => {
+      const billed = parseFloat(v.totalAmount) || 0;
+      const paid = parseFloat(v.paidAmount) || 0;
+      const pending = Math.max(0, billed - paid);
+      const isSettled = pending <= 0;
+      const isPartial = !isSettled && paid > 0;
+      const pctPaid = billed > 0 ? Math.min(100, Math.round((paid / billed) * 100)) : 100;
+
+      let statusBadge = '';
+      let cardBorder = 'var(--border)';
+      if (isSettled) {
+        statusBadge = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(16, 185, 129, 0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Settled</span>`;
+      } else if (isPartial) {
+        statusBadge = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(245, 158, 11, 0.12); color:#d97706; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="clock" style="width:12px; height:12px;"></i> ${pctPaid}% Paid</span>`;
+        cardBorder = 'rgba(245, 158, 11, 0.35)';
+      } else {
+        statusBadge = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(244, 63, 94, 0.12); color:var(--expense); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Unpaid</span>`;
+        cardBorder = 'rgba(244, 63, 94, 0.35)';
+      }
+
+      const iconName = window.getLucideIconName(v.category) || 'package';
+      const safeId = encodeURIComponent(v.id);
+
+      return `
+        <div class="vendor-card" style="background:var(--bg-card); border:1.5px solid ${cardBorder}; border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--sh-card); display:flex; flex-direction:column; justify-content:space-between; transition:var(--tr);">
+          <div>
+            <!-- Top Header -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:34px; height:34px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand); flex-shrink:0;">
+                  <i data-lucide="${iconName}" style="width:17px; height:17px;"></i>
+                </div>
+                <div>
+                  <div style="font-size:0.9rem; font-weight:800; color:var(--text-head); line-height:1.2;">${escapeHtml(v.name)}</div>
+                  <div style="font-size:0.7rem; color:var(--text-light); font-weight:600; margin-top:2px;">
+                    ${escapeHtml(v.category)} ${v.phone ? '• 📞 ' + escapeHtml(v.phone) : ''}
+                  </div>
+                </div>
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+
+            <!-- Amount Figures -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px; margin-bottom:12px;">
+              <div>
+                <span style="font-size:0.68rem; color:var(--text-light); font-weight:700; text-transform:uppercase;">Pending Due</span>
+                <div style="font-size:1.15rem; font-weight:900; color:${isSettled ? 'var(--income)' : 'var(--expense)'}; margin-top:1px;">
+                  ${inr(pending)}
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:0.68rem; color:var(--text-light); font-weight:700; text-transform:uppercase;">Total Bill / Paid</span>
+                <div style="font-size:0.82rem; font-weight:700; color:var(--text-head); margin-top:3px;">
+                  ${inr(billed)} <span style="color:var(--text-muted); font-size:0.75rem;">(${inr(paid)} paid)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="height:6px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden; margin-bottom:8px;">
+              <div style="height:100%; width:${pctPaid}%; background:${isSettled ? 'var(--income)' : (isPartial ? '#f59e0b' : 'var(--expense)')}; border-radius:var(--r-full); transition:width 0.4s ease;"></div>
+            </div>
+
+            ${v.dueDate ? `
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:4px;">
+                <i data-lucide="calendar" style="width:12px; height:12px;"></i> Due: <strong>${fmtDate(v.dueDate)}</strong>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Bottom Action Toolbar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px dashed var(--border); margin-top:6px; flex-wrap:wrap; gap:6px;">
+            <div style="display:flex; gap:6px;">
+              ${!isSettled ? `
+                <button class="vendor-action-btn pay" onclick="openVendorPayModal(decodeURIComponent('${safeId}'))" title="Record Payment">
+                  <i data-lucide="dollar-sign" style="width:13px; height:13px;"></i> Pay Now
+                </button>
+              ` : ''}
+              <button class="vendor-action-btn bill" onclick="openVendorBillModal(decodeURIComponent('${safeId}'))" title="Add New Goods / Bill">
+                <i data-lucide="plus-circle" style="width:13px; height:13px;"></i> + Add Bill
+              </button>
+              <button class="vendor-action-btn history" onclick="openVendorHistoryModal(decodeURIComponent('${safeId}'))" title="View Full Ledger History">
+                <i data-lucide="file-text" style="width:13px; height:13px;"></i> Ledger
+              </button>
+            </div>
+            <div style="display:flex; gap:4px;">
+              <button onclick="editVendor(decodeURIComponent('${safeId}'))" title="Edit Vendor Details" style="background:none; border:none; color:var(--text-light); cursor:pointer; padding:4px;">
+                <i data-lucide="edit-2" style="width:13px; height:13px;"></i>
+              </button>
+              <button onclick="deleteVendor(decodeURIComponent('${safeId}'))" title="Delete Vendor" style="background:none; border:none; color:var(--expense); cursor:pointer; padding:4px;">
+                <i data-lucide="trash-2" style="width:13px; height:13px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    grid.innerHTML = cardsHtml;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
   checkBudgetReminders: function (budgets, mtdCatSpend, currentMonthStr) {
     let notified = {};
     try {
@@ -2654,6 +2805,301 @@ async function deleteCategoryBudget(cat) {
   populateBudgetModalList();
   if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
     Dash.loadCategoryBudgets(getTxns());
+  }
+}
+
+// ============================================
+// VENDOR MODALS & CONTROLLER FUNCTIONS
+// ============================================
+
+function openVendorModal(vendorId) {
+  const titleEl = document.getElementById('vendorModalTitle');
+  const nameEl = document.getElementById('vndName');
+  const catEl = document.getElementById('vndCategory');
+  const phoneEl = document.getElementById('vndPhone');
+  const amtEl = document.getElementById('vndAmount');
+  const dueEl = document.getElementById('vndDueDate');
+  const notesEl = document.getElementById('vndNotes');
+  const editIdEl = document.getElementById('vndEditId');
+
+  if (vendorId) {
+    const vendors = getVendors();
+    const v = vendors.find(item => item.id === vendorId);
+    if (v) {
+      if (titleEl) titleEl.innerHTML = '<i data-lucide="edit-2" style="width:20px;height:20px;"></i><span>Edit Supplier Details</span>';
+      if (nameEl) nameEl.value = v.name || '';
+      if (catEl) {
+        catEl.value = v.category || '🛒 Grocery';
+        updateCustomSelectVisual(catEl);
+      }
+      if (phoneEl) phoneEl.value = v.phone || '';
+      if (amtEl) {
+        amtEl.value = v.totalAmount || '';
+        amtEl.disabled = true;
+      }
+      if (dueEl) dueEl.value = v.dueDate || '';
+      if (notesEl) notesEl.value = v.notes || '';
+      if (editIdEl) editIdEl.value = v.id;
+    }
+  } else {
+    if (titleEl) titleEl.innerHTML = '<i data-lucide="truck" style="width:20px;height:20px;"></i><span>Add Supplier / Vendor</span>';
+    if (nameEl) nameEl.value = '';
+    if (catEl) {
+      catEl.value = '🛒 Grocery';
+      updateCustomSelectVisual(catEl);
+    }
+    if (phoneEl) phoneEl.value = '';
+    if (amtEl) {
+      amtEl.value = '';
+      amtEl.disabled = false;
+    }
+    if (dueEl) dueEl.value = '';
+    if (notesEl) notesEl.value = '';
+    if (editIdEl) editIdEl.value = '';
+  }
+
+  openModal('vendorModal');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function saveVendorFromModal() {
+  const nameEl = document.getElementById('vndName');
+  const catEl = document.getElementById('vndCategory');
+  const phoneEl = document.getElementById('vndPhone');
+  const amtEl = document.getElementById('vndAmount');
+  const dueEl = document.getElementById('vndDueDate');
+  const notesEl = document.getElementById('vndNotes');
+  const editIdEl = document.getElementById('vndEditId');
+
+  if (!nameEl) return;
+  const name = nameEl.value.trim();
+  if (!name) {
+    toast('Please enter the Supplier / Vendor name', 'warning');
+    return;
+  }
+
+  const editId = editIdEl ? editIdEl.value : '';
+  const initialAmt = parseFloat(amtEl ? amtEl.value : 0) || 0;
+
+  if (editId) {
+    const vendors = getVendors();
+    const existing = vendors.find(v => v.id === editId);
+    if (existing) {
+      existing.name = name;
+      existing.category = catEl ? catEl.value : existing.category;
+      existing.phone = phoneEl ? phoneEl.value.trim() : '';
+      existing.dueDate = dueEl ? dueEl.value : '';
+      existing.notes = notesEl ? notesEl.value.trim() : '';
+      await saveVendorToFirebase(existing);
+      toast(`Supplier "${name}" updated! ✨`, 'success');
+    }
+  } else {
+    const vendorObj = {
+      name: name,
+      category: catEl ? catEl.value : '🛒 Grocery',
+      phone: phoneEl ? phoneEl.value.trim() : '',
+      totalAmount: initialAmt,
+      paidAmount: 0,
+      dueDate: dueEl ? dueEl.value : '',
+      notes: notesEl ? notesEl.value.trim() : '',
+      date: new Date().toISOString().substring(0, 10)
+    };
+    await saveVendorToFirebase(vendorObj);
+    toast(`Supplier "${name}" added to Khata! 🤝`, 'success');
+  }
+
+  closeModal('vendorModal');
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+}
+
+function editVendor(vendorId) {
+  openVendorModal(vendorId);
+}
+
+async function deleteVendor(vendorId) {
+  const vendors = getVendors();
+  const v = vendors.find(item => item.id === vendorId);
+  const name = v ? v.name : 'this supplier';
+  if (!confirm(`Are you sure you want to remove "${name}" from Vendor Khata?`)) return;
+  await deleteVendorFromFirebase(vendorId);
+  toast(`Removed "${name}" from Khata`, 'success');
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+}
+
+function openVendorBillModal(vendorId) {
+  const vendors = getVendors();
+  const v = vendors.find(item => item.id === vendorId);
+  if (!v) return;
+
+  const targetEl = document.getElementById('vndBillTargetId');
+  const nameEl = document.getElementById('vndBillSupplierName');
+  const pendingEl = document.getElementById('vndBillCurrentPending');
+  const amtEl = document.getElementById('vndBillAmt');
+  const dateEl = document.getElementById('vndBillDate');
+  const notesEl = document.getElementById('vndBillNotes');
+
+  if (targetEl) targetEl.value = v.id;
+  if (nameEl) nameEl.textContent = v.name;
+  if (pendingEl) pendingEl.textContent = inr(v.pendingAmount || 0);
+  if (amtEl) amtEl.value = '';
+  if (dateEl) dateEl.value = new Date().toISOString().substring(0, 10);
+  if (notesEl) notesEl.value = '';
+
+  openModal('vendorBillModal');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function submitVendorBillModal() {
+  const targetEl = document.getElementById('vndBillTargetId');
+  const amtEl = document.getElementById('vndBillAmt');
+  const dateEl = document.getElementById('vndBillDate');
+  const notesEl = document.getElementById('vndBillNotes');
+
+  const vendorId = targetEl ? targetEl.value : '';
+  const amt = parseFloat(amtEl ? amtEl.value : 0) || 0;
+  const date = dateEl ? dateEl.value : new Date().toISOString().substring(0, 10);
+  const notes = notesEl ? notesEl.value.trim() : '';
+
+  if (!vendorId) return;
+  if (amt <= 0) {
+    toast('Please enter a valid bill amount (> ₹0)', 'warning');
+    return;
+  }
+
+  await addVendorBillToFirebase(vendorId, amt, date, notes);
+  toast(`Added new purchase of ${inr(amt)} to supplier bill! 📦`, 'success');
+  closeModal('vendorBillModal');
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+}
+
+function openVendorPayModal(vendorId) {
+  const vendors = getVendors();
+  const v = vendors.find(item => item.id === vendorId);
+  if (!v) return;
+
+  const targetEl = document.getElementById('vndPayTargetId');
+  const nameEl = document.getElementById('vndPaySupplierName');
+  const dueEl = document.getElementById('vndPayOutstandingAmt');
+  const amtEl = document.getElementById('vndPayAmt');
+  const dateEl = document.getElementById('vndPayDate');
+  const modeEl = document.getElementById('vndPayMode');
+  const notesEl = document.getElementById('vndPayNotes');
+
+  if (targetEl) targetEl.value = v.id;
+  if (nameEl) nameEl.textContent = v.name;
+  if (dueEl) dueEl.textContent = inr(v.pendingAmount || 0);
+  if (amtEl) {
+    amtEl.value = v.pendingAmount || '';
+    amtEl.max = v.pendingAmount || '';
+  }
+  if (dateEl) dateEl.value = new Date().toISOString().substring(0, 10);
+  if (modeEl) {
+    modeEl.value = 'UPI';
+    updateCustomSelectVisual(modeEl);
+  }
+  if (notesEl) notesEl.value = '';
+
+  openModal('vendorPayModal');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function submitVendorPayModal() {
+  const targetEl = document.getElementById('vndPayTargetId');
+  const amtEl = document.getElementById('vndPayAmt');
+  const dateEl = document.getElementById('vndPayDate');
+  const modeEl = document.getElementById('vndPayMode');
+  const notesEl = document.getElementById('vndPayNotes');
+  const autoExpenseEl = document.getElementById('vndPayAutoExpense');
+
+  const vendorId = targetEl ? targetEl.value : '';
+  const amt = parseFloat(amtEl ? amtEl.value : 0) || 0;
+  const date = dateEl ? dateEl.value : new Date().toISOString().substring(0, 10);
+  const mode = modeEl ? modeEl.value : 'UPI';
+  const notes = notesEl ? notesEl.value.trim() : '';
+  const autoExpense = autoExpenseEl ? autoExpenseEl.checked : true;
+
+  if (!vendorId) return;
+  if (amt <= 0) {
+    toast('Please enter a valid payment amount (> ₹0)', 'warning');
+    return;
+  }
+
+  await recordVendorPaymentToFirebase(vendorId, amt, date, mode, notes, autoExpense);
+  toast(`Recorded payment of ${inr(amt)} to supplier! 💰`, 'success');
+  closeModal('vendorPayModal');
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+}
+
+function openVendorHistoryModal(vendorId) {
+  const vendors = getVendors();
+  const v = vendors.find(item => item.id === vendorId);
+  if (!v) return;
+
+  const titleEl = document.getElementById('vndHistoryTitle');
+  const billedEl = document.getElementById('vndHistBilled');
+  const paidEl = document.getElementById('vndHistPaid');
+  const pendingEl = document.getElementById('vndHistPending');
+  const timelineEl = document.getElementById('vndHistoryTimeline');
+
+  if (titleEl) titleEl.textContent = `${v.name} — Ledger History`;
+  if (billedEl) billedEl.textContent = inr(v.totalAmount || 0);
+  if (paidEl) paidEl.textContent = inr(v.paidAmount || 0);
+  if (pendingEl) pendingEl.textContent = inr(v.pendingAmount || 0);
+
+  const history = Array.isArray(v.history) ? v.history : [];
+
+  if (history.length === 0) {
+    timelineEl.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.82rem;">No transaction history recorded yet for this supplier.</div>`;
+  } else {
+    const sorted = [...history].sort((a, b) => new Date(b.date || b.savedAt) - new Date(a.date || a.savedAt));
+    timelineEl.innerHTML = sorted.map(item => {
+      const isPurchase = item.type === 'purchase';
+      const dotColor = isPurchase ? 'var(--expense)' : 'var(--income)';
+      const title = isPurchase ? '📦 Goods / Supply Bill' : '💰 Payment Made';
+      const badge = isPurchase
+        ? `<span style="font-size:0.75rem; font-weight:800; color:var(--expense);">+${inr(item.amount)} Bill</span>`
+        : `<span style="font-size:0.75rem; font-weight:800; color:var(--income);">-${inr(item.amount)} Paid (${escapeHtml(item.mode || 'Cash')})</span>`;
+
+      return `
+        <div class="vendor-timeline-item">
+          <div class="vendor-timeline-dot" style="background:${dotColor};"></div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-size:0.84rem; font-weight:800; color:var(--text-head);">${title}</div>
+              <div style="font-size:0.72rem; color:var(--text-light); margin-top:2px;">
+                📅 ${fmtDate(item.date)} ${item.notes ? '• ' + escapeHtml(item.notes) : ''}
+              </div>
+            </div>
+            <div>${badge}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  openModal('vendorHistoryModal');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function updateCustomSelectVisual(selectEl) {
+  if (!selectEl) return;
+  const wrapper = selectEl.nextElementSibling;
+  if (wrapper && wrapper.classList.contains('custom-select')) {
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    if (trigger) trigger.innerHTML = getFormattedOptionHtml(selectEl.value);
+    const customOptions = wrapper.querySelectorAll('.custom-option');
+    customOptions.forEach(opt => {
+      if (opt.getAttribute('data-value') === selectEl.value) opt.classList.add('selected');
+      else opt.classList.remove('selected');
+    });
   }
 }
 
