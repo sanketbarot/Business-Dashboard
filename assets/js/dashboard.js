@@ -75,6 +75,7 @@ const Dash = {
     this.loadPaymentModes(all);
     this.loadRecent(all);
     this.loadGoals(all);
+    this.loadCategoryBudgets(all);
     this.loadBills();
     if (typeof Chart !== 'undefined') {
       this.buildBarChart(all);
@@ -1589,7 +1590,261 @@ const Dash = {
         prfStatusEl.textContent = '🏆 Milestone achieved!';
         prfStatusEl.style.color = 'var(--purple)';
       } else {
+        prfStatusEl.textContent = `₹ ${inrShort(prfTarget - ytdProfit)} remaining for milestone`;
+        prfStatusEl.style.color = 'var(--text-light)';
       }
+    }
+
+    // ============================================
+    // DAILY REVENUE RUN RATE & PACE CALCULATION
+    // ============================================
+    const todayStr = today();
+    const currentDay = parts.day;
+    const daysInMonth = new Date(currentYear, parts.month, 0).getDate();
+    const remainingDays = Math.max(1, daysInMonth - currentDay + 1);
+    const elapsedDays = Math.max(1, currentDay);
+
+    let todayIncome = 0;
+    all.forEach(t => {
+      if (t.type === 'income' && t.date === todayStr) {
+        todayIncome += (parseFloat(t.amount) || 0);
+      }
+    });
+
+    const remainingToRevTarget = Math.max(0, revTarget - mtdIncome);
+    const requiredDailyPace = revTarget > 0 ? (remainingToRevTarget / remainingDays) : 0;
+    const currentDailyPace = mtdIncome / elapsedDays;
+    const projectedMonthEnd = mtdIncome + (currentDailyPace * Math.max(0, daysInMonth - currentDay));
+
+    const paceDaysLeftEl = document.getElementById('paceDaysLeftText');
+    if (paceDaysLeftEl) {
+      paceDaysLeftEl.textContent = `Day ${currentDay} of ${daysInMonth} • ${Math.max(0, daysInMonth - currentDay)} day${(daysInMonth - currentDay) === 1 ? '' : 's'} remaining`;
+    }
+
+    this.setText('paceRequired', `${inr(requiredDailyPace)} / day`);
+    this.setText('paceCurrent', `${inr(currentDailyPace)} / day`);
+    this.setText('paceTodayRev', inr(todayIncome));
+    this.setText('paceProjected', inr(projectedMonthEnd));
+
+    const todayPacePct = requiredDailyPace > 0 ? Math.round((todayIncome / requiredDailyPace) * 100) : (mtdIncome >= revTarget ? 100 : 0);
+    const todayPctTextEl = document.getElementById('paceTodayPct');
+    if (todayPctTextEl) {
+      todayPctTextEl.textContent = `${todayPacePct}% of daily target`;
+    }
+
+    const todayBarTextEl = document.getElementById('paceTodayBarText');
+    if (todayBarTextEl) {
+      todayBarTextEl.textContent = `${inr(todayIncome)} / ${inr(requiredDailyPace)} (${todayPacePct}%)`;
+    }
+
+    const todayBarEl = document.getElementById('paceTodayBar');
+    if (todayBarEl) {
+      todayBarEl.style.width = `${Math.min(100, Math.max(0, todayPacePct))}%`;
+      if (todayPacePct >= 100) {
+        todayBarEl.style.background = 'var(--income)';
+      } else if (todayPacePct >= 70) {
+        todayBarEl.style.background = 'linear-gradient(90deg, #3b82f6 0%, #10b981 100%)';
+      } else {
+        todayBarEl.style.background = 'linear-gradient(90deg, #f59e0b 0%, #3b82f6 100%)';
+      }
+    }
+
+    const badgeEl = document.getElementById('paceStatusBadge');
+    if (badgeEl) {
+      if (mtdIncome >= revTarget) {
+        badgeEl.innerHTML = `<span class="badge-pulse-green" style="font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:var(--r-full); background:rgba(16,185,129,0.15); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="trophy" style="width:12px; height:12px;"></i> Target Achieved! 🎉</span>`;
+      } else if (currentDailyPace >= requiredDailyPace) {
+        badgeEl.innerHTML = `<span class="badge-pulse-green" style="font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:var(--r-full); background:rgba(16,185,129,0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="trending-up" style="width:12px; height:12px;"></i> Ahead of Pace 🚀</span>`;
+      } else if (currentDailyPace >= requiredDailyPace * 0.8) {
+        badgeEl.innerHTML = `<span style="font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:var(--r-full); background:rgba(245,158,11,0.12); color:#d97706; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="activity" style="width:12px; height:12px;"></i> Close to Target Pace ⚡</span>`;
+      } else {
+        const gap = Math.round(requiredDailyPace - currentDailyPace);
+        badgeEl.innerHTML = `<span class="badge-pulse-red" style="font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:var(--r-full); background:rgba(244,63,94,0.12); color:var(--expense); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Need +${inr(gap)}/day Boost</span>`;
+      }
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  },
+
+  loadCategoryBudgets: function (all) {
+    const grid = document.getElementById('categoryBudgetGrid');
+    if (!grid) return;
+
+    const budgets = getBudgets();
+    const parts = getISTDateParts();
+    const currentMonthStr = `${parts.year}-${String(parts.month).padStart(2, '0')}`;
+
+    // Calculate current month's spending per category
+    const mtdCatSpend = {};
+    all.forEach(t => {
+      if (t.type === 'expense' && t.date && t.date.substring(0, 7) === currentMonthStr) {
+        const cat = (t.category || 'Other Expense').trim();
+        const amt = parseFloat(t.amount) || 0;
+        mtdCatSpend[cat] = (mtdCatSpend[cat] || 0) + amt;
+      }
+    });
+
+    const badgeEl = document.getElementById('budgetTotalBadge');
+    if (badgeEl) badgeEl.textContent = `${budgets.length} Active Budget${budgets.length === 1 ? '' : 's'}`;
+
+    if (!budgets || budgets.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 36px 20px; text-align: center; background: var(--bg-app); border: 1.5px dashed var(--border); border-radius: var(--r-lg);">
+          <div style="display:flex; justify-content:center; margin-bottom:10px;"><i data-lucide="pie-chart" style="width:36px; height:36px; color:var(--brand);"></i></div>
+          <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-head); margin-bottom:4px;">No Category Budgets Set</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted); max-width:400px; margin:0 auto 16px;">Set monthly spending limits for categories like Raw Materials, Utilities, Marketing, etc. to monitor overspending in real-time.</p>
+          <button class="btn btn-primary btn-sm" onclick="openBudgetModal()" style="display:inline-flex; align-items:center; gap:6px;">
+            <i data-lucide="plus-circle" style="width:15px; height:15px;"></i>Set First Category Budget
+          </button>
+        </div>
+      `;
+      this.setText('totalBudgetAllocated', '₹ 0.00');
+      this.setText('totalBudgetSpent', '₹ 0.00');
+      this.setText('totalBudgetRemaining', '₹ 0.00');
+      const healthEl = document.getElementById('budgetHealthStatus');
+      if (healthEl) healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:var(--text-muted);"><i data-lucide="info" style="width:16px;height:16px;"></i> Not Configured</span>`;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      return;
+    }
+
+    let totalAllocated = 0;
+    let totalSpentInBudgets = 0;
+    let anyOverBudget = false;
+    let anyWarning = false;
+
+    const cardsHtml = budgets.map(bgt => {
+      const cat = bgt.category;
+      const limit = parseFloat(bgt.amount) || 0;
+      const spent = mtdCatSpend[cat] || 0;
+      totalAllocated += limit;
+      totalSpentInBudgets += spent;
+
+      const pct = limit > 0 ? (spent / limit) * 100 : 0;
+      const roundedPct = Math.round(pct);
+      const isOver = spent > limit;
+      const isWarn = !isOver && pct >= 75;
+      const remaining = Math.max(0, limit - spent);
+      const overspentAmt = isOver ? (spent - limit) : 0;
+
+      if (isOver) anyOverBudget = true;
+      if (isWarn) anyWarning = true;
+
+      // Status Badge & Colors
+      let statusHtml = '';
+      let barColor = 'var(--income)';
+      let cardBorder = 'var(--border)';
+
+      if (isOver) {
+        barColor = 'var(--expense)';
+        cardBorder = 'rgba(244, 63, 94, 0.4)';
+        statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(244, 63, 94, 0.12); color:var(--expense); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> Over by ${inr(overspentAmt)}</span>`;
+      } else if (isWarn) {
+        barColor = '#f59e0b';
+        cardBorder = 'rgba(245, 158, 11, 0.35)';
+        statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(245, 158, 11, 0.12); color:#d97706; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> ${roundedPct}% Used</span>`;
+      } else {
+        statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(16, 185, 129, 0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Safe (${roundedPct}%)</span>`;
+      }
+
+      const iconName = window.getLucideIconName(cat) || 'package';
+      const cleanName = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+
+      return `
+        <div class="category-budget-card" style="background:var(--bg-card); border:1.5px solid ${cardBorder}; border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--sh-card); display:flex; flex-direction:column; justify-content:space-between; transition:var(--tr);">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:32px; height:32px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand); flex-shrink:0;">
+                  <i data-lucide="${iconName}" style="width:16px; height:16px;"></i>
+                </div>
+                <div>
+                  <div style="font-size:0.85rem; font-weight:800; color:var(--text-head); line-height:1.2;">${cleanName}</div>
+                  <div style="font-size:0.7rem; color:var(--text-light); font-weight:500;">Monthly Target</div>
+                </div>
+              </div>
+              <div>${statusHtml}</div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
+              <div>
+                <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Spent</span>
+                <div style="font-size:1.15rem; font-weight:800; color:${isOver ? 'var(--expense)' : 'var(--text-head)'};">${inr(spent)}</div>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Limit</span>
+                <div style="font-size:0.95rem; font-weight:700; color:var(--text-muted);">${inr(limit)}</div>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="height:7px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden; margin-bottom:8px;">
+              <div style="height:100%; width:${Math.min(100, Math.max(0, pct))}%; background:${barColor}; border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px dashed var(--border); margin-top:6px; font-size:0.74rem;">
+            <span style="color:${isOver ? 'var(--expense)' : 'var(--text-light)'}; font-weight:600;">
+              ${isOver ? `🚨 Exceeded by ${inr(overspentAmt)}` : `✨ ${inr(remaining)} remaining`}
+            </span>
+            <button onclick="editCategoryBudget('${escapeHtml(cat)}', ${limit})" style="background:none; border:none; color:var(--brand); font-weight:700; font-size:0.72rem; cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; gap:3px;">
+              <i data-lucide="edit-2" style="width:11px; height:11px;"></i> Edit
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    grid.innerHTML = cardsHtml;
+
+    // Update Summary Row
+    const remainingTotal = Math.max(0, totalAllocated - totalSpentInBudgets);
+    this.setText('totalBudgetAllocated', inr(totalAllocated));
+    this.setText('totalBudgetSpent', inr(totalSpentInBudgets));
+    this.setText('totalBudgetRemaining', inr(remainingTotal));
+
+    const healthEl = document.getElementById('budgetHealthStatus');
+    if (healthEl) {
+      if (anyOverBudget) {
+        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:var(--expense);"><i data-lucide="alert-octagon" style="width:16px;height:16px;"></i> Attention Needed</span>`;
+      } else if (anyWarning) {
+        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:#f59e0b;"><i data-lucide="alert-triangle" style="width:16px;height:16px;"></i> Approaching Limits</span>`;
+      } else {
+        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:var(--income);"><i data-lucide="shield-check" style="width:16px;height:16px;"></i> All on Track</span>`;
+      }
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Check Reminders for overspent budgets
+    this.checkBudgetReminders(budgets, mtdCatSpend, currentMonthStr);
+  },
+
+  checkBudgetReminders: function (budgets, mtdCatSpend, currentMonthStr) {
+    let notified = {};
+    try {
+      notified = JSON.parse(localStorage.getItem('bd_notified_budgets') || '{}');
+    } catch (e) {}
+
+    let hasNew = false;
+    budgets.forEach(bgt => {
+      const cat = bgt.category;
+      const limit = parseFloat(bgt.amount) || 0;
+      const spent = mtdCatSpend[cat] || 0;
+      const notifKey = `${cat}_${currentMonthStr}`;
+
+      if (spent > limit && !notified[notifKey]) {
+        const cleanName = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+        this.addNotification(
+          'danger',
+          '🚨 Budget Exceeded!',
+          `Monthly limit for "${cleanName}" reached. Spent ${inr(spent)} of ${inr(limit)} limit.`
+        );
+        notified[notifKey] = true;
+        hasNew = true;
+      }
+    });
+
+    if (hasNew) {
+      localStorage.setItem('bd_notified_budgets', JSON.stringify(notified));
     }
   },
 
@@ -2269,6 +2524,120 @@ function saveVisionGoals() {
   closeModal('goalSettingsModal');
   Dash.loadAll();
   toast('Business targets updated successfully! 🎯', 'success');
+}
+
+// Category Budgets Modal Handlers
+function openBudgetModal() {
+  const catEl = document.getElementById('bgtCategory');
+  const amtEl = document.getElementById('bgtAmount');
+  if (catEl) {
+    catEl.value = '';
+    const wrapper = catEl.nextElementSibling;
+    if (wrapper && wrapper.classList.contains('custom-select')) {
+      const trigger = wrapper.querySelector('.custom-select-trigger');
+      if (trigger) trigger.innerHTML = getFormattedOptionHtml('Select Category');
+      const customOptions = wrapper.querySelectorAll('.custom-option');
+      customOptions.forEach(opt => opt.classList.remove('selected'));
+    }
+  }
+  if (amtEl) amtEl.value = '';
+  populateBudgetModalList();
+  openModal('budgetModal');
+}
+
+function populateBudgetModalList() {
+  const listEl = document.getElementById('bgtModalList');
+  const countEl = document.getElementById('bgtCountText');
+  if (!listEl) return;
+
+  const budgets = getBudgets();
+  if (countEl) countEl.textContent = `${budgets.length} configured`;
+
+  if (budgets.length === 0) {
+    listEl.innerHTML = `<div style="text-align:center; padding:16px; font-size:0.8rem; color:var(--text-muted);">No category budgets configured yet. Use the form above to add one.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = budgets.map(b => {
+    const iconName = window.getLucideIconName(b.category) || 'package';
+    const cleanName = b.category.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <i data-lucide="${iconName}" style="width:15px; height:15px; color:var(--brand);"></i>
+          <span style="font-weight:700; font-size:0.84rem; color:var(--text-head);">${cleanName}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <strong style="font-size:0.88rem; color:var(--text-head);">${inr(b.amount)}</strong>
+          <button onclick="editCategoryBudget('${escapeHtml(b.category)}', ${b.amount})" title="Edit" style="background:none; border:none; cursor:pointer; color:var(--text-light); padding:4px;">
+            <i data-lucide="edit-2" style="width:14px; height:14px;"></i>
+          </button>
+          <button onclick="deleteCategoryBudget('${escapeHtml(b.category)}')" title="Delete" style="background:none; border:none; cursor:pointer; color:var(--expense); padding:4px;">
+            <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function editCategoryBudget(cat, amount) {
+  const catEl = document.getElementById('bgtCategory');
+  const amtEl = document.getElementById('bgtAmount');
+  if (catEl) {
+    catEl.value = cat;
+    const wrapper = catEl.nextElementSibling;
+    if (wrapper && wrapper.classList.contains('custom-select')) {
+      const trigger = wrapper.querySelector('.custom-select-trigger');
+      if (trigger) trigger.innerHTML = getFormattedOptionHtml(cat);
+      const customOptions = wrapper.querySelectorAll('.custom-option');
+      customOptions.forEach(opt => {
+        if (opt.getAttribute('data-value') === cat) opt.classList.add('selected');
+        else opt.classList.remove('selected');
+      });
+    }
+  }
+  if (amtEl) amtEl.value = amount;
+  openModal('budgetModal');
+}
+
+async function saveCategoryBudgetFromModal() {
+  const catEl = document.getElementById('bgtCategory');
+  const amtEl = document.getElementById('bgtAmount');
+  if (!catEl || !amtEl) return;
+
+  const cat = catEl.value.trim();
+  const amt = parseFloat(amtEl.value);
+
+  if (!cat) {
+    toast('Please select an expense category', 'warning');
+    return;
+  }
+  if (isNaN(amt) || amt <= 0) {
+    toast('Please enter a valid monthly limit amount (> ₹0)', 'warning');
+    return;
+  }
+
+  await saveBudgetToFirebase(cat, amt);
+  toast(`Budget limit of ${inr(amt)} set for "${cat}"! 🎯`, 'success');
+
+  amtEl.value = '';
+  populateBudgetModalList();
+  if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
+    Dash.loadCategoryBudgets(getTxns());
+  }
+}
+
+async function deleteCategoryBudget(cat) {
+  if (!confirm(`Are you sure you want to remove the budget for "${cat}"?`)) return;
+  await deleteBudgetFromFirebase(cat);
+  toast(`Removed budget for "${cat}"`, 'success');
+  populateBudgetModalList();
+  if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
+    Dash.loadCategoryBudgets(getTxns());
+  }
 }
 
 // Pizza Cafe Background Simulator Engine

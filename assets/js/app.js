@@ -22,13 +22,13 @@ const APP = {
 
 // ============================================
 // FIREBASE STORAGE (Real-time Sync)
-// ============================================
-
 let currentTxns = [];
 let currentBills = [];
+let currentBudgets = [];
 let firebaseReady = false;
 let firebaseListener = null;
 let firebaseBillsListener = null;
+let firebaseBudgetsListener = null;
 
 // Get user's transactions collection
 function getUserTxnsRef() {
@@ -44,6 +44,14 @@ function getUserBillsRef() {
   const uid = localStorage.getItem(APP.uidKey);
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('bills');
+}
+
+// Get user's category budgets collection
+function getUserBudgetsRef() {
+  if (localStorage.getItem('bd_mode') === 'demo') return null;
+  const uid = localStorage.getItem(APP.uidKey);
+  if (!uid) return null;
+  return db.collection('users').doc(uid).collection('budgets');
 }
 
 // Setup real-time listener for transactions
@@ -133,6 +141,41 @@ function setupFirebaseBillsSync() {
   );
 }
 
+// Setup real-time listener for category budgets
+function setupFirebaseBudgetsSync() {
+  const ref = getUserBudgetsRef();
+  if (!ref) {
+    console.log('No user, using localStorage for budgets');
+    return;
+  }
+
+  console.log('🔥 Setting up Firebase category budgets real-time sync...');
+
+  if (firebaseBudgetsListener) firebaseBudgetsListener();
+
+  firebaseBudgetsListener = ref.onSnapshot(
+    (snapshot) => {
+      const budgets = [];
+      snapshot.forEach(doc => {
+        budgets.push({ ...doc.data(), id: doc.id });
+      });
+
+      currentBudgets = budgets;
+      localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+
+      // Trigger reload in Dash
+      if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
+        Dash.loadCategoryBudgets(getTxns());
+      }
+
+      console.log('✅ Synced ' + budgets.length + ' category budgets from Firebase');
+    },
+    (error) => {
+      console.error('Firebase budgets sync error:', error);
+    }
+  );
+}
+
 // Initialize Firebase sync on load
 if (typeof auth !== 'undefined') {
   auth.onAuthStateChanged((user) => {
@@ -140,6 +183,7 @@ if (typeof auth !== 'undefined') {
       localStorage.setItem(APP.uidKey, user.uid);
       setupFirebaseSync();
       setupFirebaseBillsSync();
+      setupFirebaseBudgetsSync();
     } else {
       // If we are in local demo mode, do not clear and redirect
       if (localStorage.getItem('bd_mode') === 'demo') {
@@ -174,6 +218,26 @@ function getBills() {
   }
   try {
     return JSON.parse(localStorage.getItem('bd_bills') || '[]');
+  } catch (e) { return []; }
+}
+
+// GET CATEGORY BUDGETS (from Firebase cache or localStorage)
+function getBudgets() {
+  if (firebaseReady && currentBudgets.length >= 0) {
+    return currentBudgets;
+  }
+  try {
+    return JSON.parse(localStorage.getItem('bd_budgets') || '[]');
+  } catch (e) { return []; }
+}
+
+// GET RECURRING RULES (from Firebase cache or localStorage)
+function getRecurringRules() {
+  if (firebaseReady && currentRecurring.length >= 0) {
+    return currentRecurring;
+  }
+  try {
+    return JSON.parse(localStorage.getItem('bd_recurring') || '[]');
   } catch (e) { return []; }
 }
 
@@ -341,6 +405,86 @@ async function deleteBillFromFirebase(id) {
     return true;
   } catch (err) {
     console.error('Firebase bill delete error:', err);
+    return false;
+  }
+}
+
+// SAVE CATEGORY BUDGET (to Firebase or localStorage)
+async function saveBudgetToFirebase(category, amount) {
+  const cleanCat = category.trim();
+  const amt = parseFloat(amount) || 0;
+  const id = 'bgt_' + encodeURIComponent(cleanCat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
+
+  const budgetObj = {
+    id: id,
+    category: cleanCat,
+    amount: amt,
+    savedAt: new Date().toISOString()
+  };
+
+  const ref = getUserBudgetsRef();
+  if (!ref) {
+    // Fallback to localStorage
+    let budgets = getBudgets();
+    const idx = budgets.findIndex(b => b.category === cleanCat || b.id === id);
+    if (idx > -1) {
+      budgets[idx] = budgetObj;
+    } else {
+      budgets.push(budgetObj);
+    }
+    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+    if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
+      Dash.loadCategoryBudgets(getTxns());
+    }
+    return true;
+  }
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(id).set(budgetObj);
+    console.log('✅ Saved category budget to Firebase:', id);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase budget save error:', err);
+    // Local fallback
+    let budgets = getBudgets();
+    const idx = budgets.findIndex(b => b.category === cleanCat || b.id === id);
+    if (idx > -1) budgets[idx] = budgetObj;
+    else budgets.push(budgetObj);
+    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+    toast('Saved budget locally.', 'warning');
+    return false;
+  }
+}
+
+// DELETE CATEGORY BUDGET (from Firebase or localStorage)
+async function deleteBudgetFromFirebase(category) {
+  const cleanCat = category.trim();
+  const id = 'bgt_' + encodeURIComponent(cleanCat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
+
+  const ref = getUserBudgetsRef();
+  if (!ref) {
+    let budgets = getBudgets();
+    budgets = budgets.filter(b => b.category !== cleanCat && b.id !== id);
+    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
+    if (typeof Dash !== 'undefined' && Dash.loadCategoryBudgets) {
+      Dash.loadCategoryBudgets(getTxns());
+    }
+    return true;
+  }
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(id).delete();
+    console.log('✅ Deleted budget from Firebase:', id);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase budget delete error:', err);
+    let budgets = getBudgets();
+    budgets = budgets.filter(b => b.category !== cleanCat && b.id !== id);
+    localStorage.setItem('bd_budgets', JSON.stringify(budgets));
     return false;
   }
 }
