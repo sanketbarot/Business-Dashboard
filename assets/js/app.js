@@ -43,34 +43,45 @@ let firebaseBillsListener = null;
 let firebaseBudgetsListener = null;
 let firebaseVendorsListener = null;
 
+function getActiveUid() {
+  if (typeof auth !== 'undefined' && auth.currentUser && auth.currentUser.uid) {
+    return auth.currentUser.uid;
+  }
+  const localUid = localStorage.getItem(APP.uidKey);
+  if (localUid && localUid !== 'demo_user_id') {
+    return localUid;
+  }
+  return null;
+}
+
 // Get user's transactions collection
 function getUserTxnsRef() {
-  if (localStorage.getItem('bd_mode') === 'demo') return null;
-  const uid = localStorage.getItem(APP.uidKey);
+  if (localStorage.getItem('bd_mode') === 'demo' && !(typeof auth !== 'undefined' && auth.currentUser)) return null;
+  const uid = getActiveUid();
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('transactions');
 }
 
 // Get user's bills collection
 function getUserBillsRef() {
-  if (localStorage.getItem('bd_mode') === 'demo') return null;
-  const uid = localStorage.getItem(APP.uidKey);
+  if (localStorage.getItem('bd_mode') === 'demo' && !(typeof auth !== 'undefined' && auth.currentUser)) return null;
+  const uid = getActiveUid();
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('bills');
 }
 
 // Get user's category budgets collection
 function getUserBudgetsRef() {
-  if (localStorage.getItem('bd_mode') === 'demo') return null;
-  const uid = localStorage.getItem(APP.uidKey);
+  if (localStorage.getItem('bd_mode') === 'demo' && !(typeof auth !== 'undefined' && auth.currentUser)) return null;
+  const uid = getActiveUid();
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('budgets');
 }
 
 // Get user's vendors collection (Khata)
 function getUserVendorsRef() {
-  if (localStorage.getItem('bd_mode') === 'demo') return null;
-  const uid = localStorage.getItem(APP.uidKey);
+  if (localStorage.getItem('bd_mode') === 'demo' && !(typeof auth !== 'undefined' && auth.currentUser)) return null;
+  const uid = getActiveUid();
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('vendors');
 }
@@ -163,6 +174,7 @@ function setupFirebaseBillsSync() {
 }
 
 // Setup real-time listener for category budgets
+let budgetsInitialSyncDone = false;
 function setupFirebaseBudgetsSync() {
   const ref = getUserBudgetsRef();
   if (!ref) {
@@ -181,21 +193,25 @@ function setupFirebaseBudgetsSync() {
         budgets.push({ ...doc.data(), id: doc.id });
       });
 
-      if (budgets.length > 0) {
-        currentBudgets = budgets;
-        localStorage.setItem('bd_budgets', JSON.stringify(budgets));
-      } else {
+      if (snapshot.empty && !budgetsInitialSyncDone) {
+        budgetsInitialSyncDone = true;
         const local = JSON.parse(localStorage.getItem('bd_budgets') || '[]');
         if (local.length > 0) {
           local.forEach(b => {
-            const bId = b.id || ('bgt_' + encodeURIComponent((b.category || '').toLowerCase().replace(/[^a-z0-9]/g, '_')));
-            ref.doc(bId).set(b).catch(console.error);
+            const cleanCat = (b.category || '').trim();
+            const bId = b.id || ('bgt_' + encodeURIComponent(cleanCat).replace(/%/g, '_'));
+            const bObj = { ...b, id: bId, category: cleanCat };
+            ref.doc(bId).set(bObj).catch(console.error);
           });
           currentBudgets = local;
         } else {
           currentBudgets = [];
           localStorage.setItem('bd_budgets', JSON.stringify([]));
         }
+      } else {
+        budgetsInitialSyncDone = true;
+        currentBudgets = budgets;
+        localStorage.setItem('bd_budgets', JSON.stringify(budgets));
       }
 
       // Trigger reload in Dash and modal
@@ -215,6 +231,7 @@ function setupFirebaseBudgetsSync() {
 }
 
 // Setup real-time listener for vendors (Khata)
+let vendorsInitialSyncDone = false;
 function setupFirebaseVendorsSync() {
   const ref = getUserVendorsRef();
   if (!ref) {
@@ -236,21 +253,24 @@ function setupFirebaseVendorsSync() {
       // Sort by latest update
       vendors.sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
 
-      if (vendors.length > 0) {
-        currentVendors = vendors;
-        localStorage.setItem('bd_vendors', JSON.stringify(vendors));
-      } else {
+      if (snapshot.empty && !vendorsInitialSyncDone) {
+        vendorsInitialSyncDone = true;
         const local = JSON.parse(localStorage.getItem('bd_vendors') || '[]');
         if (local.length > 0) {
           local.forEach(v => {
-            const vId = v.id || ('vnd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4));
-            ref.doc(vId).set(v).catch(console.error);
+            const vId = v.id || ('vnd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
+            const vObj = { ...v, id: vId };
+            ref.doc(vId).set(vObj).catch(console.error);
           });
           currentVendors = local;
         } else {
           currentVendors = [];
           localStorage.setItem('bd_vendors', JSON.stringify([]));
         }
+      } else {
+        vendorsInitialSyncDone = true;
+        currentVendors = vendors;
+        localStorage.setItem('bd_vendors', JSON.stringify(vendors));
       }
 
       // Trigger reload in Dash
@@ -270,6 +290,7 @@ function setupFirebaseVendorsSync() {
 if (typeof auth !== 'undefined') {
   auth.onAuthStateChanged((user) => {
     if (user) {
+      localStorage.removeItem('bd_mode'); // Clear demo mode when actual user is authenticated
       localStorage.setItem(APP.uidKey, user.uid);
       setupFirebaseSync();
       setupFirebaseBillsSync();
@@ -324,7 +345,7 @@ function getBills() {
 
 // GET CATEGORY BUDGETS (from Firebase cache or localStorage)
 function getBudgets() {
-  if (currentBudgets && currentBudgets.length > 0) {
+  if (Array.isArray(currentBudgets) && currentBudgets.length > 0) {
     return currentBudgets;
   }
   try {
@@ -339,7 +360,7 @@ function getBudgets() {
 
 // GET RECURRING RULES (from Firebase cache or localStorage)
 function getRecurringRules() {
-  if (currentRecurring && currentRecurring.length > 0) {
+  if (Array.isArray(currentRecurring) && currentRecurring.length > 0) {
     return currentRecurring;
   }
   try {
@@ -354,7 +375,7 @@ function getRecurringRules() {
 
 // GET VENDORS (from Firebase cache or localStorage)
 function getVendors() {
-  if (currentVendors && currentVendors.length > 0) {
+  if (Array.isArray(currentVendors) && currentVendors.length > 0) {
     return currentVendors;
   }
   try {
@@ -409,6 +430,7 @@ async function saveTxnToFirebase(txn) {
       });
       console.log('✅ Updated in Firebase:', txn.id);
     }
+    showSyncIndicator('synced');
     return true;
   } catch (err) {
     console.error('Firebase save error:', err);
@@ -486,6 +508,7 @@ async function updateTxnInFirebase(id, data) {
       savedAt: data.savedAt || new Date().toISOString()
     });
     console.log('✅ Updated in Firebase:', id);
+    showSyncIndicator('synced');
     return true;
   } catch (err) {
     console.error('Firebase update error:', err);
@@ -502,6 +525,7 @@ async function deleteTxnFromFirebase(id) {
     showSyncIndicator('syncing');
     await ref.doc(id).delete();
     console.log('✅ Deleted from Firebase:', id);
+    showSyncIndicator('synced');
     return true;
   } catch (err) {
     console.error('Firebase delete error:', err);
@@ -539,7 +563,8 @@ async function deleteBillFromFirebase(id) {
 async function saveBudgetToFirebase(category, amount) {
   const cleanCat = category.trim();
   const amt = parseFloat(amount) || 0;
-  const id = 'bgt_' + encodeURIComponent(cleanCat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
+  const id = 'bgt_' + encodeURIComponent(cleanCat).replace(/%/g, '_');
+  const legacyId = 'bgt_' + encodeURIComponent(cleanCat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
 
   const budgetObj = {
     id: id,
@@ -550,7 +575,7 @@ async function saveBudgetToFirebase(category, amount) {
 
   // Optimistically update in-memory cache and localStorage first
   let budgets = getBudgets().slice();
-  const idx = budgets.findIndex(b => b.category === cleanCat || b.id === id);
+  const idx = budgets.findIndex(b => b.category === cleanCat || b.id === id || b.id === legacyId);
   if (idx > -1) {
     budgets[idx] = budgetObj;
   } else {
@@ -588,10 +613,11 @@ async function saveBudgetToFirebase(category, amount) {
 // DELETE CATEGORY BUDGET (from Firebase or localStorage)
 async function deleteBudgetFromFirebase(category) {
   const cleanCat = category.trim();
-  const id = 'bgt_' + encodeURIComponent(cleanCat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
+  const id = 'bgt_' + encodeURIComponent(cleanCat).replace(/%/g, '_');
+  const legacyId = 'bgt_' + encodeURIComponent(cleanCat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
 
   let budgets = getBudgets().slice();
-  budgets = budgets.filter(b => b.category !== cleanCat && b.id !== id);
+  budgets = budgets.filter(b => b.category !== cleanCat && b.id !== id && b.id !== legacyId);
   currentBudgets = budgets;
   localStorage.setItem('bd_budgets', JSON.stringify(budgets));
 
@@ -609,7 +635,10 @@ async function deleteBudgetFromFirebase(category) {
 
   try {
     showSyncIndicator('syncing');
-    await ref.doc(id).delete();
+    await ref.doc(id).delete().catch(() => {});
+    if (legacyId !== id) {
+      await ref.doc(legacyId).delete().catch(() => {});
+    }
     console.log('✅ Deleted budget from Firebase:', id);
     showSyncIndicator('synced');
     return true;
@@ -625,11 +654,31 @@ async function deleteBudgetFromFirebase(category) {
 
 // SAVE OR UPDATE VENDOR
 async function saveVendorToFirebase(vendorData) {
-  const id = vendorData.id || ('vnd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4));
+  const id = vendorData.id || ('vnd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
   const totalAmount = parseFloat(vendorData.totalAmount) || 0;
   const paidAmount = parseFloat(vendorData.paidAmount) || 0;
   const pendingAmount = Math.max(0, totalAmount - paidAmount);
   const status = pendingAmount <= 0 ? 'settled' : (paidAmount > 0 ? 'partial' : 'pending');
+
+  const cleanHistory = (vendorData.history && Array.isArray(vendorData.history))
+    ? vendorData.history.map(h => ({
+        id: h.id || ('h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)),
+        type: h.type || 'purchase',
+        amount: parseFloat(h.amount) || 0,
+        date: h.date || new Date().toISOString().substring(0, 10),
+        mode: h.mode || '',
+        notes: h.notes || '',
+        savedAt: h.savedAt || new Date().toISOString()
+      }))
+    : (totalAmount > 0 ? [{
+        id: 'h_' + Date.now(),
+        type: 'purchase',
+        amount: totalAmount,
+        date: vendorData.date || new Date().toISOString().substring(0, 10),
+        mode: '',
+        notes: vendorData.notes ? ('Opening Bill: ' + vendorData.notes) : 'Initial Purchase Bill',
+        savedAt: new Date().toISOString()
+      }] : []);
 
   const vendorObj = {
     id: id,
@@ -642,14 +691,7 @@ async function saveVendorToFirebase(vendorData) {
     status: status,
     dueDate: vendorData.dueDate || '',
     notes: (vendorData.notes || '').trim(),
-    history: vendorData.history || (totalAmount > 0 ? [{
-      id: 'h_' + Date.now(),
-      type: 'purchase',
-      amount: totalAmount,
-      date: vendorData.date || new Date().toISOString().substring(0, 10),
-      notes: vendorData.notes ? ('Opening Bill: ' + vendorData.notes) : 'Initial Purchase Bill',
-      savedAt: new Date().toISOString()
-    }] : []),
+    history: cleanHistory,
     createdAt: vendorData.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -698,10 +740,11 @@ async function addVendorBillToFirebase(vendorId, billAmount, date, notes) {
   const history = Array.isArray(vendor.history) ? [...vendor.history] : [];
 
   history.push({
-    id: 'h_' + Date.now(),
+    id: 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     type: 'purchase',
     amount: amt,
     date: date || new Date().toISOString().substring(0, 10),
+    mode: '',
     notes: notes || 'New Goods / Supply Received',
     savedAt: new Date().toISOString()
   });
@@ -749,7 +792,7 @@ async function recordVendorPaymentToFirebase(vendorId, payAmount, date, mode, no
   const history = Array.isArray(vendor.history) ? [...vendor.history] : [];
 
   history.push({
-    id: 'h_' + Date.now(),
+    id: 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     type: 'payment',
     amount: amt,
     date: date || new Date().toISOString().substring(0, 10),
@@ -777,6 +820,7 @@ async function recordVendorPaymentToFirebase(vendorId, payAmount, date, mode, no
       category: vendor.category || '💸 Other Expense',
       amount: amt,
       mode: mode || 'Cash',
+      from: '',
       vendor: vendor.name || '',
       notes: notes ? (`Paid to ${vendor.name}: ${notes}`) : (`Paid to Supplier: ${vendor.name}`),
       savedAt: new Date().toISOString()
@@ -843,6 +887,7 @@ async function deleteMultipleFromFirebase(ids) {
     });
     await batch.commit();
     console.log('✅ Deleted ' + ids.length + ' from Firebase');
+    showSyncIndicator('synced');
     return true;
   } catch (err) {
     console.error('Firebase batch delete error:', err);
@@ -863,6 +908,7 @@ function saveTxns(data) {
 // ============================================
 // SYNC INDICATOR
 // ============================================
+let syncIndicatorTimer = null;
 function showSyncIndicator(status) {
   let indicator = document.getElementById('syncIndicator');
   if (!indicator) {
@@ -887,6 +933,11 @@ function showSyncIndicator(status) {
     document.body.appendChild(indicator);
   }
 
+  if (syncIndicatorTimer) {
+    clearTimeout(syncIndicatorTimer);
+    syncIndicatorTimer = null;
+  }
+
   const configs = {
     syncing: { bg: '#fef3c7', color: '#92400e', text: '⟳ Syncing...', border: '#fcd34d' },
     synced: { bg: '#d1fae5', color: '#059669', text: '☁️ Synced', border: '#6ee7b7' },
@@ -900,16 +951,19 @@ function showSyncIndicator(status) {
   indicator.style.color = config.color;
   indicator.style.border = '1px solid ' + config.border;
   indicator.textContent = config.text;
+  indicator.style.opacity = '1';
 
-  // Auto-hide "synced" after 2s
-  if (status === 'synced') {
-    setTimeout(() => {
+  // Auto-resolve "syncing" to "synced" after 1.5s so badge never gets stuck
+  if (status === 'syncing') {
+    syncIndicatorTimer = setTimeout(() => {
+      showSyncIndicator('synced');
+    }, 1500);
+  } else if (status === 'synced') {
+    syncIndicatorTimer = setTimeout(() => {
       if (indicator && indicator.textContent === '☁️ Synced') {
         indicator.style.opacity = '0.6';
       }
-    }, 2000);
-  } else {
-    indicator.style.opacity = '1';
+    }, 2500);
   }
 }
 
@@ -1391,14 +1445,23 @@ function exportPDF() {
 
 function downloadBackup() {
   const txns = getTxns();
-  if (!txns.length) { toast('No data to backup!', 'warning'); return; }
+  const budgets = getBudgets();
+  const vendors = getVendors();
+  const bills = getBills();
+  if (!txns.length && !budgets.length && !vendors.length && !bills.length) {
+    toast('No data to backup!', 'warning');
+    return;
+  }
   try {
     const data = {
-      version: '5.0',
+      version: '5.1',
       business: 'Crust & Chilly',
       exported: new Date().toISOString(),
       count: txns.length,
-      transactions: txns
+      transactions: txns,
+      budgets: budgets,
+      vendors: vendors,
+      bills: bills
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1409,7 +1472,7 @@ function downloadBackup() {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 100);
-    toast('Backup downloaded!', 'success');
+    toast('Complete backup downloaded!', 'success');
   } catch (err) {
     toast('Backup failed!', 'error');
   }

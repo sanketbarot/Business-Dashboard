@@ -597,6 +597,7 @@
     // Check if already logged in via Firebase
     auth.onAuthStateChanged(function (user) {
       if (user) {
+        localStorage.removeItem('bd_mode');
         localStorage.setItem('bd_auth', 'true');
         localStorage.setItem('bd_user', user.email);
         localStorage.setItem('bd_uid', user.uid);
@@ -640,6 +641,7 @@
       auth.signInWithEmailAndPassword(em, pw)
         .then(function (userCredential) {
           var user = userCredential.user;
+          localStorage.removeItem('bd_mode');
           localStorage.setItem('bd_auth', 'true');
           localStorage.setItem('bd_user', user.email);
           localStorage.setItem('bd_uid', user.uid);
