@@ -37,11 +37,15 @@ let currentRecurring = (() => {
 let currentVendors = (() => {
   try { return JSON.parse(localStorage.getItem('bd_vendors') || '[]'); } catch (e) { return []; }
 })();
+let currentExpiryItems = (() => {
+  try { return JSON.parse(localStorage.getItem('bd_expiry_items') || '[]'); } catch (e) { return []; }
+})();
 let firebaseReady = false;
 let firebaseListener = null;
 let firebaseBillsListener = null;
 let firebaseBudgetsListener = null;
 let firebaseVendorsListener = null;
+let firebaseExpiryListener = null;
 
 function getActiveUid() {
   if (typeof auth !== 'undefined' && auth.currentUser && auth.currentUser.uid) {
@@ -84,6 +88,14 @@ function getUserVendorsRef() {
   const uid = getActiveUid();
   if (!uid) return null;
   return db.collection('users').doc(uid).collection('vendors');
+}
+
+// Get user's stock & expiry items collection
+function getUserExpiryRef() {
+  if (localStorage.getItem('bd_mode') === 'demo' && !(typeof auth !== 'undefined' && auth.currentUser)) return null;
+  const uid = getActiveUid();
+  if (!uid) return null;
+  return db.collection('users').doc(uid).collection('expiry_items');
 }
 
 // Setup real-time listener for transactions
@@ -286,6 +298,67 @@ function setupFirebaseVendorsSync() {
   );
 }
 
+// Setup real-time listener for stock & expiry items
+let expiryInitialSyncDone = false;
+function setupFirebaseExpirySync() {
+  const ref = getUserExpiryRef();
+  if (!ref) {
+    console.log('No user, using localStorage for stock expiry items');
+    return;
+  }
+
+  console.log('🔥 Setting up Firebase stock & expiry items real-time sync...');
+
+  if (firebaseExpiryListener) firebaseExpiryListener();
+
+  firebaseExpiryListener = ref.onSnapshot(
+    (snapshot) => {
+      const items = [];
+      snapshot.forEach(doc => {
+        items.push({ ...doc.data(), id: doc.id });
+      });
+
+      // Sort by earliest expiry date first
+      items.sort((a, b) => new Date(a.expiryDate || '9999-12-31') - new Date(b.expiryDate || '9999-12-31'));
+
+      if (snapshot.empty && !expiryInitialSyncDone) {
+        expiryInitialSyncDone = true;
+        const local = JSON.parse(localStorage.getItem('bd_expiry_items') || '[]');
+        if (local.length > 0) {
+          local.forEach(item => {
+            const itemId = item.id || ('exp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
+            const itemObj = { ...item, id: itemId };
+            ref.doc(itemId).set(itemObj).catch(console.error);
+          });
+          currentExpiryItems = local;
+        } else {
+          currentExpiryItems = [];
+          localStorage.setItem('bd_expiry_items', JSON.stringify([]));
+        }
+      } else {
+        expiryInitialSyncDone = true;
+        currentExpiryItems = items;
+        localStorage.setItem('bd_expiry_items', JSON.stringify(items));
+      }
+
+      // Trigger reload on Expiry page if active
+      if (typeof ExpiryPage !== 'undefined' && ExpiryPage.render) {
+        ExpiryPage.render();
+      }
+
+      // Trigger reload on Dashboard if alert widget present
+      if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
+        Dash.renderExpiryAlerts();
+      }
+
+      console.log('✅ Synced ' + currentExpiryItems.length + ' stock & expiry items from Firebase');
+    },
+    (error) => {
+      console.error('Firebase stock expiry sync error:', error);
+    }
+  );
+}
+
 // Initialize Firebase sync on load
 if (typeof auth !== 'undefined') {
   auth.onAuthStateChanged((user) => {
@@ -296,6 +369,7 @@ if (typeof auth !== 'undefined') {
       setupFirebaseBillsSync();
       setupFirebaseBudgetsSync();
       setupFirebaseVendorsSync();
+      setupFirebaseExpirySync();
     } else {
       // If we are in local demo mode, do not clear and redirect
       if (localStorage.getItem('bd_mode') === 'demo') {
@@ -386,6 +460,21 @@ function getVendors() {
     }
   } catch (e) { }
   return currentVendors || [];
+}
+
+// GET STOCK & EXPIRY ITEMS (from Firebase cache or localStorage)
+function getExpiryItems() {
+  if (Array.isArray(currentExpiryItems) && currentExpiryItems.length > 0) {
+    return currentExpiryItems;
+  }
+  try {
+    const local = JSON.parse(localStorage.getItem('bd_expiry_items') || '[]');
+    if (Array.isArray(local) && local.length > 0) {
+      currentExpiryItems = local;
+      return local;
+    }
+  } catch (e) { }
+  return currentExpiryItems || [];
 }
 
 // SAVE TRANSACTION (to Firebase)
@@ -635,9 +724,9 @@ async function deleteBudgetFromFirebase(category) {
 
   try {
     showSyncIndicator('syncing');
-    await ref.doc(id).delete().catch(() => {});
+    await ref.doc(id).delete().catch(() => { });
     if (legacyId !== id) {
-      await ref.doc(legacyId).delete().catch(() => {});
+      await ref.doc(legacyId).delete().catch(() => { });
     }
     console.log('✅ Deleted budget from Firebase:', id);
     showSyncIndicator('synced');
@@ -662,23 +751,23 @@ async function saveVendorToFirebase(vendorData) {
 
   const cleanHistory = (vendorData.history && Array.isArray(vendorData.history))
     ? vendorData.history.map(h => ({
-        id: h.id || ('h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)),
-        type: h.type || 'purchase',
-        amount: parseFloat(h.amount) || 0,
-        date: h.date || new Date().toISOString().substring(0, 10),
-        mode: h.mode || '',
-        notes: h.notes || '',
-        savedAt: h.savedAt || new Date().toISOString()
-      }))
+      id: h.id || ('h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)),
+      type: h.type || 'purchase',
+      amount: parseFloat(h.amount) || 0,
+      date: h.date || new Date().toISOString().substring(0, 10),
+      mode: h.mode || '',
+      notes: h.notes || '',
+      savedAt: h.savedAt || new Date().toISOString()
+    }))
     : (totalAmount > 0 ? [{
-        id: 'h_' + Date.now(),
-        type: 'purchase',
-        amount: totalAmount,
-        date: vendorData.date || new Date().toISOString().substring(0, 10),
-        mode: '',
-        notes: vendorData.notes ? ('Opening Bill: ' + vendorData.notes) : 'Initial Purchase Bill',
-        savedAt: new Date().toISOString()
-      }] : []);
+      id: 'h_' + Date.now(),
+      type: 'purchase',
+      amount: totalAmount,
+      date: vendorData.date || new Date().toISOString().substring(0, 10),
+      mode: '',
+      notes: vendorData.notes ? ('Opening Bill: ' + vendorData.notes) : 'Initial Purchase Bill',
+      savedAt: new Date().toISOString()
+    }] : []);
 
   const vendorObj = {
     id: id,
@@ -891,6 +980,212 @@ async function deleteMultipleFromFirebase(ids) {
     return true;
   } catch (err) {
     console.error('Firebase batch delete error:', err);
+    return false;
+  }
+}
+
+// ============================================
+// STOCK & EXPIRY MANAGEMENT FUNCTIONS
+// ============================================
+
+function calculateExpiryMeta(expiryDateStr) {
+  if (!expiryDateStr) {
+    return {
+      daysLeft: 999,
+      status: 'safe',
+      label: 'No Expiry Set',
+      shortLabel: 'No Expiry',
+      badgeClass: 'badge-safe',
+      isExpiringSoon: false,
+      isExpired: false,
+      urgencyRank: 5
+    };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const expDate = new Date(expiryDateStr);
+  expDate.setHours(0, 0, 0, 0);
+
+  const diffMs = expDate.getTime() - today.getTime();
+  const daysLeft = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (daysLeft < 0) {
+    const passed = Math.abs(daysLeft);
+    return {
+      daysLeft,
+      status: 'expired',
+      label: passed === 1 ? 'Expired Yesterday' : `Expired ${passed} Days Ago`,
+      shortLabel: `Expired (${passed}d ago)`,
+      badgeClass: 'badge-expired',
+      isExpiringSoon: false,
+      isExpired: true,
+      urgencyRank: 1 // Top priority
+    };
+  } else if (daysLeft === 0) {
+    return {
+      daysLeft: 0,
+      status: 'warning',
+      label: 'Expires Today! ⚠️',
+      shortLabel: 'Expires Today',
+      badgeClass: 'badge-urgent',
+      isExpiringSoon: true,
+      isExpired: false,
+      urgencyRank: 2
+    };
+  } else if (daysLeft <= 15) {
+    return {
+      daysLeft,
+      status: 'warning',
+      label: daysLeft === 1 ? 'Expires Tomorrow (1 Day Left) ⏳' : `Expiring in ${daysLeft} Days ⏳`,
+      shortLabel: `${daysLeft} Days Left`,
+      badgeClass: 'badge-warning',
+      isExpiringSoon: true,
+      isExpired: false,
+      urgencyRank: 3
+    };
+  } else {
+    return {
+      daysLeft,
+      status: 'safe',
+      label: `Safe (${daysLeft} Days Left) ✅`,
+      shortLabel: `${daysLeft} Days Left`,
+      badgeClass: 'badge-safe',
+      isExpiringSoon: false,
+      isExpired: false,
+      urgencyRank: 4
+    };
+  }
+}
+
+// SAVE OR UPDATE STOCK & EXPIRY ITEM
+async function saveExpiryItemToFirebase(itemObj) {
+  if (!itemObj) return null;
+  const id = itemObj.id || ('exp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
+  const now = new Date().toISOString();
+
+  const fullItem = {
+    ...itemObj,
+    id: id,
+    name: (itemObj.name || '').trim(),
+    brand: (itemObj.brand || '').trim(),
+    category: itemObj.category || 'Sauces & Condiments',
+    storageLocation: itemObj.storageLocation || 'Chiller / Refrigerator',
+    quantity: parseFloat(itemObj.quantity) || 1,
+    unit: itemObj.unit || 'Bottles',
+    inwardDate: itemObj.inwardDate || today(),
+    expiryDate: itemObj.expiryDate || '',
+    cost: parseFloat(itemObj.cost) || 0,
+    batchNo: (itemObj.batchNo || '').trim(),
+    supplier: (itemObj.supplier || '').trim(),
+    notes: (itemObj.notes || '').trim(),
+    status: itemObj.status || 'in_stock', // in_stock, consumed, disposed
+    updatedAt: now,
+    createdAt: itemObj.createdAt || now
+  };
+
+  let items = getExpiryItems().slice();
+  const idx = items.findIndex(i => i.id === id);
+  if (idx > -1) {
+    items[idx] = fullItem;
+  } else {
+    items.unshift(fullItem);
+  }
+
+  // Sort by earliest expiry date
+  items.sort((a, b) => new Date(a.expiryDate || '9999-12-31') - new Date(b.expiryDate || '9999-12-31'));
+
+  currentExpiryItems = items;
+  localStorage.setItem('bd_expiry_items', JSON.stringify(items));
+
+  if (typeof ExpiryPage !== 'undefined' && ExpiryPage.render) {
+    ExpiryPage.render();
+  }
+  if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
+    Dash.renderExpiryAlerts();
+  }
+
+  const ref = getUserExpiryRef();
+  if (!ref) return fullItem;
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(id).set(fullItem);
+    console.log('✅ Saved stock & expiry item to Firebase:', id);
+    showSyncIndicator('synced');
+    return fullItem;
+  } catch (err) {
+    console.error('Firebase stock item save error:', err);
+    toast('Saved stock item locally.', 'warning');
+    return fullItem;
+  }
+}
+
+// DELETE STOCK & EXPIRY ITEM
+async function deleteExpiryItemFromFirebase(itemId) {
+  let items = getExpiryItems().slice();
+  items = items.filter(i => i.id !== itemId);
+  currentExpiryItems = items;
+  localStorage.setItem('bd_expiry_items', JSON.stringify(items));
+
+  if (typeof ExpiryPage !== 'undefined' && ExpiryPage.render) {
+    ExpiryPage.render();
+  }
+  if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
+    Dash.renderExpiryAlerts();
+  }
+
+  const ref = getUserExpiryRef();
+  if (!ref) return true;
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(itemId).delete();
+    console.log('✅ Deleted stock item from Firebase:', itemId);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase stock item delete error:', err);
+    return false;
+  }
+}
+
+// MARK ITEM AS USED / CONSUMED / DISPOSED
+async function markExpiryItemStatusInFirebase(itemId, newStatus = 'consumed') {
+  let items = getExpiryItems().slice();
+  const idx = items.findIndex(i => i.id === itemId);
+  if (idx === -1) return false;
+
+  const updatedItem = {
+    ...items[idx],
+    status: newStatus,
+    consumedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  items[idx] = updatedItem;
+  currentExpiryItems = items;
+  localStorage.setItem('bd_expiry_items', JSON.stringify(items));
+
+  if (typeof ExpiryPage !== 'undefined' && ExpiryPage.render) {
+    ExpiryPage.render();
+  }
+  if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
+    Dash.renderExpiryAlerts();
+  }
+
+  const ref = getUserExpiryRef();
+  if (!ref) return true;
+
+  try {
+    showSyncIndicator('syncing');
+    await ref.doc(itemId).set(updatedItem);
+    console.log(`✅ Marked stock item ${itemId} as ${newStatus}`);
+    showSyncIndicator('synced');
+    return true;
+  } catch (err) {
+    console.error('Firebase stock item status update error:', err);
     return false;
   }
 }
@@ -1448,20 +1743,22 @@ function downloadBackup() {
   const budgets = getBudgets();
   const vendors = getVendors();
   const bills = getBills();
-  if (!txns.length && !budgets.length && !vendors.length && !bills.length) {
+  const expiryItems = getExpiryItems();
+  if (!txns.length && !budgets.length && !vendors.length && !bills.length && !expiryItems.length) {
     toast('No data to backup!', 'warning');
     return;
   }
   try {
     const data = {
-      version: '5.1',
+      version: '5.2',
       business: 'Crust & Chilly',
       exported: new Date().toISOString(),
       count: txns.length,
       transactions: txns,
       budgets: budgets,
       vendors: vendors,
-      bills: bills
+      bills: bills,
+      expiryItems: expiryItems
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1525,7 +1822,7 @@ window.addEventListener('appinstalled', (evt) => {
 });
 
 // Global Helpers to map emojis/categories to Lucide line icons
-window.getLucideIconName = function(emojiOrText) {
+window.getLucideIconName = function (emojiOrText) {
   if (!emojiOrText) return null;
   const lower = emojiOrText.toLowerCase();
   if (emojiOrText.includes('💰') || lower.includes('cash income') || lower.includes('income')) return 'banknote';
@@ -1557,7 +1854,7 @@ window.getLucideIconName = function(emojiOrText) {
 };
 
 // Formatter to strip emojis and wrap in dynamic Lucide HTML
-window.getFormattedOptionHtml = function(text, size = 14) {
+window.getFormattedOptionHtml = function (text, size = 14) {
   if (!text) return '<span>Select</span>';
   const iconName = window.getLucideIconName(text);
   const cleanText = text.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
@@ -1688,15 +1985,18 @@ const themeColors = {
   getExpense: () => getComputedStyle(document.documentElement).getPropertyValue('--expense').trim() || '#F43F5E',
   getProfit: () => getComputedStyle(document.documentElement).getPropertyValue('--profit').trim() || '#F59E0B',
   getPurple: () => getComputedStyle(document.documentElement).getPropertyValue('--purple').trim() || '#8b5cf6',
-  getGridColor: () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.04)'
+  getGridColor: () => {
+    const t = document.documentElement.getAttribute('data-theme') || 'glass';
+    return (t === 'dark' || t === 'glass') ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.04)';
+  }
 };
 
 const APP_THEME = {
-  theme: 'light',
+  theme: 'glass',
   accent: 'indigo',
 
-  init: function() {
-    this.theme = localStorage.getItem('bd_theme') || 'light';
+  init: function () {
+    this.theme = localStorage.getItem('bd_theme') || 'glass';
     this.accent = localStorage.getItem('bd_accent') || 'indigo';
 
     document.documentElement.setAttribute('data-theme', this.theme);
@@ -1715,7 +2015,7 @@ const APP_THEME = {
     });
   },
 
-  toggleMenu: function(e) {
+  toggleMenu: function (e) {
     if (e) e.stopPropagation();
     const dropdown = document.getElementById('themeDropdown');
     if (dropdown) {
@@ -1727,7 +2027,7 @@ const APP_THEME = {
     }
   },
 
-  setTheme: function(theme) {
+  setTheme: function (theme) {
     this.theme = theme;
     localStorage.setItem('bd_theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
@@ -1735,7 +2035,7 @@ const APP_THEME = {
     this.reloadCharts();
   },
 
-  setAccent: function(accent) {
+  setAccent: function (accent) {
     this.accent = accent;
     localStorage.setItem('bd_accent', accent);
     document.documentElement.setAttribute('data-accent', accent);
@@ -1743,30 +2043,31 @@ const APP_THEME = {
     this.reloadCharts();
   },
 
-  updateUI: function() {
+  updateUI: function () {
     // Mode Buttons Highlight
+    const btnGlass = document.getElementById('theme-btn-glass');
     const btnLight = document.getElementById('theme-btn-light');
     const btnDark = document.getElementById('theme-btn-dark');
-    
-    if (btnLight && btnDark) {
-      if (this.theme === 'light') {
-        btnLight.style.borderColor = 'var(--brand)';
-        btnLight.style.background = 'var(--brand-soft)';
-        btnLight.style.color = 'var(--brand)';
-        
-        btnDark.style.borderColor = 'var(--border)';
-        btnDark.style.background = 'var(--bg-page)';
-        btnDark.style.color = 'var(--text-head)';
-      } else {
-        btnDark.style.borderColor = 'var(--brand)';
-        btnDark.style.background = 'var(--brand-soft)';
-        btnDark.style.color = 'var(--brand)';
-        
-        btnLight.style.borderColor = 'var(--border)';
-        btnLight.style.background = 'var(--bg-page)';
-        btnLight.style.color = 'var(--text-head)';
+
+    [
+      { btn: btnGlass, key: 'glass' },
+      { btn: btnLight, key: 'light' },
+      { btn: btnDark, key: 'dark' }
+    ].forEach(item => {
+      if (item.btn) {
+        if (this.theme === item.key) {
+          item.btn.style.borderColor = 'var(--brand)';
+          item.btn.style.background = 'var(--brand-soft)';
+          item.btn.style.color = 'var(--brand)';
+          item.btn.style.boxShadow = '0 0 10px var(--brand-soft)';
+        } else {
+          item.btn.style.borderColor = 'var(--border)';
+          item.btn.style.background = 'var(--bg-page)';
+          item.btn.style.color = 'var(--text-head)';
+          item.btn.style.boxShadow = 'none';
+        }
       }
-    }
+    });
 
     // Accent Dots Highlight
     const accents = ['blue', 'emerald', 'indigo', 'rose', 'amber'];
@@ -1790,7 +2091,7 @@ const APP_THEME = {
     }
   },
 
-  reloadCharts: function() {
+  reloadCharts: function () {
     // Reload Dashboard Charts if they exist
     if (typeof Dash !== 'undefined') {
       if (Dash.charts) {

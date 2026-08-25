@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Prevent theme/accent flash on page load
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('bd_theme') || 'glass');
+    document.documentElement.setAttribute('data-accent', localStorage.getItem('bd_accent') || 'indigo');
+  </script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stock & Expiry Tracker — Crust & Chilly</title>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="theme-color" content="#a396ff"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AI Toolcor"/>
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="assets/css/style.css?v=1.0.0"/>
+<link rel="stylesheet" href="assets/css/animations.css?v=1.0.0"/>
+<link rel="stylesheet" href="assets/css/expiry.css?v=1.0.0"/>
+
+<!-- Firebase SDKs - MUST BE BEFORE app.js -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<!-- Export Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
+<!-- Lucide Outline Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon-wrap">
+        <img src="assets/icons/logo.png" alt="Logo" onerror="this.onerror=null;this.src='favicon.svg';"/>
+      </div>
+      <div class="sb-logo-info">
+        <div class="sb-logo-text">Crust & Chilly</div>
+        <div class="sb-logo-sub">BUSINESS SUITE</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">Overview</div>
+      <a href="index.html" class="sb-link"><span class="sb-icon"><i data-lucide="layout-dashboard"></i></span><span>Dashboard</span></a>
+      <a href="transaction.html" class="sb-link"><span class="sb-icon"><i data-lucide="arrow-left-right"></i></span><span>Transactions</span></a>
+      <a href="analytics.html" class="sb-link"><span class="sb-icon"><i data-lucide="line-chart"></i></span><span>Analytics</span></a>
+      <a href="expiry.html" class="sb-link active"><span class="sb-icon"><i data-lucide="calendar-clock"></i></span><span>Stock & Expiry</span></a>
+
+      <div class="sb-section">Quick Add</div>
+      <div class="sb-link" onclick="openStockModal()"><span class="sb-icon"><i data-lucide="package-plus"></i></span><span>Add Stock Item</span></div>
+      <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon"><i data-lucide="plus-circle"></i></span><span>New Income</span></div>
+      <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon"><i data-lucide="minus-circle"></i></span><span>New Expense</span></div>
+
+      <div class="sb-section">Reports</div>
+      <div class="sb-link" onclick="exportExpiryExcel()"><span class="sb-icon"><i data-lucide="file-spreadsheet"></i></span><span>Expiry Excel</span></div>
+      <div class="sb-link" onclick="exportExpiryPDF()"><span class="sb-icon"><i data-lucide="file-text"></i></span><span>Expiry PDF</span></div>
+      <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon"><i data-lucide="database"></i></span><span>Backup Data</span></div>
+      <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span class="sb-icon"><i data-lucide="smartphone"></i></span><span>Install App</span></div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">S</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Sanket Barot</div>
+          <div class="sb-user-email">sanketbarot3901@gmail.com</div>
+        </div>
+      </div>
+      <button class="sb-logout" onclick="logout()"><i data-lucide="log-out" style="width: 15px; height: 15px; margin-right: 8px; vertical-align: middle;"></i>Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <main class="main">
+    <header class="header">
+      <div class="hd-left">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="hd-title">
+          <h4>Stock & Expiry Tracker</h4>
+          <p id="headerDate">Loading...</p>
+        </div>
+      </div>
+      <div class="hd-right" style="display: flex; align-items: center; gap: 14px;">
+        <!-- Theme Picker Toggle Button -->
+        <div class="theme-picker-wrapper">
+          <button class="theme-picker-btn" onclick="APP_THEME.toggleMenu(event)"
+            style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr);"
+            title="Customize Interface">
+            <i data-lucide="palette" style="width: 20px; height: 20px;"></i>
+          </button>
+          <div class="theme-dropdown" id="themeDropdown">
+            
+            <!-- Dark / Light Mode -->
+            <div>
+              <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme</div>
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;">
+                <button onclick="APP_THEME.setTheme('glass')" class="theme-mode-btn" id="theme-btn-glass" title="Liquid Glass Theme">
+                  <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i> Glass
+                </button>
+                <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light" title="Light Theme">
+                  <i data-lucide="sun" style="width: 13px; height: 13px;"></i> Light
+                </button>
+                <button onclick="APP_THEME.setTheme('dark')" class="theme-mode-btn" id="theme-btn-dark" title="Dark Theme">
+                  <i data-lucide="moon" style="width: 13px; height: 13px;"></i> Dark
+                </button>
+              </div>
+            </div>
+            
+            <!-- Accent Colors -->
+            <div>
+              <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="paintbrush" style="width: 14px; height: 14px;"></i> Brand Accent</div>
+              <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; justify-items:center;">
+                <button onclick="APP_THEME.setAccent('blue')" title="Blue" class="accent-dot-btn" id="accent-dot-blue" style="background:#3b82f6;"></button>
+                <button onclick="APP_THEME.setAccent('emerald')" title="Emerald" class="accent-dot-btn" id="accent-dot-emerald" style="background:#10b981;"></button>
+                <button onclick="APP_THEME.setAccent('indigo')" title="Indigo" class="accent-dot-btn" id="accent-dot-indigo" style="background:#6366f1;"></button>
+                <button onclick="APP_THEME.setAccent('rose')" title="Rose" class="accent-dot-btn" id="accent-dot-rose" style="background:#f43f5e;"></button>
+                <button onclick="APP_THEME.setAccent('amber')" title="Amber" class="accent-dot-btn" id="accent-dot-amber" style="background:#f59e0b;"></button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="an-live-sync-card">
+          <div class="pulse-dot"></div>
+          <span>Firebase Sync Connected</span>
+        </div>
+        <div class="hd-live" id="liveTime">--:--</div>
+      </div>
+    </header>
+
+    <div class="content" style="padding: 24px;">
+
+      <!-- Hero Header -->
+      <section class="exp-hero">
+        <div class="exp-hero-text">
+          <div class="exp-hero-tag">
+            <span class="pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--primary); box-shadow:0 0 8px var(--primary);"></span>
+            Real-Time Expiry Monitor Active
+          </div>
+          <h2><i data-lucide="boxes" style="color:var(--primary);"></i> Inward Stock & Expiry Tracker</h2>
+          <p>Real-time shelf life monitoring for sauces, dairy, beverages & supplies. Automatic 15-day warning notices ensure zero wastage.</p>
+        </div>
+        <div class="exp-hero-actions">
+          <button class="btn btn-outline" onclick="exportExpiryExcel()" style="display:inline-flex; align-items:center; gap:7px;">
+            <i data-lucide="file-spreadsheet" style="width:16px; height:16px;"></i> Excel Export
+          </button>
+          <button class="btn btn-outline" onclick="exportExpiryPDF()" style="display:inline-flex; align-items:center; gap:7px;">
+            <i data-lucide="file-text" style="width:16px; height:16px;"></i> PDF Report
+          </button>
+          <button class="btn btn-primary" onclick="ExpiryPage.openModal()" style="display:inline-flex; align-items:center; gap:8px; font-weight:750; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);">
+            <i data-lucide="plus-circle" style="width:18px; height:18px;"></i> + Inward Stock / Add Item
+          </button>
+        </div>
+      </section>
+
+      <!-- 15-Day Urgent Expiry Notice Banner (Auto-populated by JS) -->
+      <div id="expUrgentBanner" class="exp-urgent-banner" style="display: none;"></div>
+
+      <!-- KPI Summary Cards -->
+      <div class="exp-kpi-grid">
+        <div class="exp-kpi-card kpi-total">
+          <div class="exp-kpi-hd">
+            <span class="exp-kpi-label">Total Stock Items</span>
+            <div class="exp-kpi-icon"><i data-lucide="package"></i></div>
+          </div>
+          <div class="exp-kpi-val" id="kpiTotalCount">0</div>
+          <div class="exp-kpi-sub"><span id="kpiTotalUnitsSub">0 total units in stock</span></div>
+        </div>
+
+        <div class="exp-kpi-card kpi-stock-val">
+          <div class="exp-kpi-hd">
+            <span class="exp-kpi-label">Total Stock Value</span>
+            <div class="exp-kpi-icon"><i data-lucide="wallet"></i></div>
+          </div>
+          <div class="exp-kpi-val" id="kpiTotalStockValue">₹ 0.00</div>
+          <div class="exp-kpi-sub"><span>Current live inventory worth</span></div>
+        </div>
+
+        <div class="exp-kpi-card kpi-warning">
+          <div class="exp-kpi-hd">
+            <span class="exp-kpi-label">⏳ Notice: ≤ 15 Days</span>
+            <div class="exp-kpi-icon"><i data-lucide="alert-triangle"></i></div>
+          </div>
+          <div class="exp-kpi-val" id="kpiWarningCount">0</div>
+          <div class="exp-kpi-sub"><span>Action required soon</span></div>
+        </div>
+
+        <div class="exp-kpi-card kpi-expired">
+          <div class="exp-kpi-hd">
+            <span class="exp-kpi-label">🔴 Expired Stock</span>
+            <div class="exp-kpi-icon"><i data-lucide="alert-octagon"></i></div>
+          </div>
+          <div class="exp-kpi-val" id="kpiExpiredCount">0</div>
+          <div class="exp-kpi-sub"><span>Past expiry date</span></div>
+        </div>
+
+        <div class="exp-kpi-card kpi-safe">
+          <div class="exp-kpi-hd">
+            <span class="exp-kpi-label">🟢 Safe Stock</span>
+            <div class="exp-kpi-icon"><i data-lucide="check-circle"></i></div>
+          </div>
+          <div class="exp-kpi-val" id="kpiSafeCount">0</div>
+          <div class="exp-kpi-sub"><span>15+ days remaining</span></div>
+        </div>
+
+        <div class="exp-kpi-card kpi-cost">
+          <div class="exp-kpi-hd">
+            <span class="exp-kpi-label">Value at Risk</span>
+            <div class="exp-kpi-icon"><i data-lucide="indian-rupee"></i></div>
+          </div>
+          <div class="exp-kpi-val" id="kpiRiskValue">₹ 0.00</div>
+          <div class="exp-kpi-sub"><span>Cost of expiring/expired items</span></div>
+        </div>
+      </div>
+
+      <!-- Controls & Filter Toolbar -->
+      <div class="exp-controls-card">
+        <div class="exp-controls-top">
+          <!-- Status Tabs -->
+          <div class="exp-status-tabs">
+            <button class="exp-tab-btn active" data-status="all" onclick="ExpiryPage.setStatusTab('all')">
+              <i data-lucide="layers" style="width:14px; height:14px;"></i> All Stock <span class="exp-tab-badge" id="tabBadgeAll">0</span>
+            </button>
+            <button class="exp-tab-btn" data-status="warning" onclick="ExpiryPage.setStatusTab('warning')">
+              <i data-lucide="clock" style="width:14px; height:14px;"></i> ⏳ 15-Day Notice <span class="exp-tab-badge" id="tabBadgeWarn">0</span>
+            </button>
+            <button class="exp-tab-btn" data-status="expired" onclick="ExpiryPage.setStatusTab('expired')">
+              <i data-lucide="alert-circle" style="width:14px; height:14px;"></i> 🔴 Expired <span class="exp-tab-badge" id="tabBadgeExp">0</span>
+            </button>
+            <button class="exp-tab-btn" data-status="safe" onclick="ExpiryPage.setStatusTab('safe')">
+              <i data-lucide="shield-check" style="width:14px; height:14px;"></i> 🟢 Safe Stock <span class="exp-tab-badge" id="tabBadgeSafe">0</span>
+            </button>
+          </div>
+
+          <!-- View Mode Toggle -->
+          <div class="exp-view-toggle">
+            <button class="exp-icon-btn active" id="btnViewTable" onclick="ExpiryPage.setViewMode('table')" title="Table View">
+              <i data-lucide="table" style="width:16px; height:16px;"></i>
+            </button>
+            <button class="exp-icon-btn" id="btnViewGrid" onclick="ExpiryPage.setViewMode('grid')" title="Card Grid View">
+              <i data-lucide="layout-grid" style="width:16px; height:16px;"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="exp-controls-bottom">
+          <div class="exp-search-box">
+            <i data-lucide="search"></i>
+            <input type="text" class="exp-search-input" id="expSearch" placeholder="Search by name, brand (Veeba, Cremica), batch..."/>
+          </div>
+
+          <div>
+            <select class="exp-select" id="expCategoryFilter" style="width:100%;">
+              <option value="all">📁 All Categories</option>
+              <option value="Sauces & Condiments">🥫 Sauces & Condiments</option>
+              <option value="Dairy & Cheese">🧀 Dairy & Cheese</option>
+              <option value="Beverages & Cold Drinks">🥤 Beverages & Cold Drinks</option>
+              <option value="Bakery & Buns">🍞 Bakery & Buns</option>
+              <option value="Frozen & Patties">🧊 Frozen & Patties</option>
+              <option value="Spices & Seasonings">🧂 Spices & Seasonings</option>
+              <option value="Syrups & Crushes">🍯 Syrups & Crushes</option>
+              <option value="Packaging & Disposables">📦 Packaging</option>
+              <option value="Other">🏷️ Other</option>
+            </select>
+          </div>
+
+          <div>
+            <select class="exp-select" id="expStorageFilter" style="width:100%;">
+              <option value="all">📍 All Locations</option>
+              <option value="Chiller / Refrigerator">❄️ Chiller / Refrigerator</option>
+              <option value="Deep Freezer">🧊 Deep Freezer</option>
+              <option value="Dry Shelf / Storage">📦 Dry Storage</option>
+              <option value="Kitchen Counter">🏪 Kitchen Counter</option>
+            </select>
+          </div>
+
+          <div>
+            <select class="exp-select" id="expSortSelect" style="width:100%;">
+              <option value="expiry_asc">⚡ Expiry: Earliest First (Default)</option>
+              <option value="expiry_desc">📅 Expiry: Furthest First</option>
+              <option value="name_asc">🔤 Name: A to Z</option>
+              <option value="qty_desc">🔢 Quantity: High to Low</option>
+              <option value="newest">🕒 Recently Added</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Stock Table / Grid Container -->
+      <div class="exp-table-card">
+        <div class="exp-table-hd">
+          <h3><i data-lucide="list-ordered"></i> Stock & Expiry Schedule</h3>
+          <span style="font-size:0.84rem; color:var(--text-muted);">Sorted by closest expiry date</span>
+        </div>
+        <div id="expContainer">
+          <!-- Dynamically Rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ADD / EDIT STOCK MODAL -->
+<div class="modal-bg" id="stockModal">
+  <div class="modal exp-stock-modal">
+    <div class="modal-hd">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="exp-modal-icon-badge">
+          <i data-lucide="package-plus" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div>
+          <h3 id="stkTitleText" style="font-size:1.15rem; font-weight:800; color:var(--text-head); margin:0;">Add Inward Stock Item</h3>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin:2px 0 0 0; font-weight:500;">Record batch details, shelf-life & expiry date</p>
+        </div>
+      </div>
+      <button class="modal-x" type="button" onclick="ExpiryPage.closeModal()">✕</button>
+    </div>
+    
+    <div class="modal-bd">
+
+      <!-- Quick Presets -->
+      <div class="exp-preset-group" style="margin-bottom: 16px;">
+        <div class="exp-preset-label"><i data-lucide="sparkles" style="width:13px; height:13px; color:var(--primary);"></i> Quick Restaurant Presets:</div>
+        <div class="exp-preset-chips">
+          <button type="button" class="exp-preset-chip" onclick="ExpiryPage.applyPreset('Burger Mayonnaise 1kg', 'Veeba', 'Sauces & Condiments', 'Chiller / Refrigerator', 'Bottles', 45, 185)">🥫 Veeba Mayo (+45d)</button>
+          <button type="button" class="exp-preset-chip" onclick="ExpiryPage.applyPreset('Pizza & Pasta Sauce', 'Cremica', 'Sauces & Condiments', 'Chiller / Refrigerator', 'Bottles', 30, 210)">🥫 Cremica Pizza (+30d)</button>
+          <button type="button" class="exp-preset-chip" onclick="ExpiryPage.applyPreset('Cheese Blend Sauce', 'Cremica', 'Sauces & Condiments', 'Chiller / Refrigerator', 'Bottles', 30, 240)">🧀 Cheese Sauce (+30d)</button>
+          <button type="button" class="exp-preset-chip" onclick="ExpiryPage.applyPreset('Mozzarella Cheese Diced 1kg', 'Amul', 'Dairy & Cheese', 'Deep Freezer', 'Packets', 60, 440)">🧊 Amul Mozzarella (+60d)</button>
+          <button type="button" class="exp-preset-chip" onclick="ExpiryPage.applyPreset('Thums Up Cans 250ml', 'Coca-Cola', 'Beverages & Cold Drinks', 'Chiller / Refrigerator', 'Cans', 90, 35)">🥤 Thums Up (+90d)</button>
+          <button type="button" class="exp-preset-chip" onclick="ExpiryPage.applyPreset('Burger Buns 4-inch (Pack of 6)', 'English Oven', 'Bakery & Buns', 'Kitchen Counter', 'Packets', 5, 45)">🍞 Buns (+5d)</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="fg" style="flex:2;">
+          <label class="fl">PRODUCT / ITEM NAME <span class="req">*</span></label>
+          <input type="text" class="fc" id="stkName" placeholder="e.g. Veeba Burger Mayonnaise 1kg" autocomplete="off" list="productSuggestions"/>
+          <datalist id="productSuggestions">
+            <option value="Veeba Burger Mayonnaise">
+            <option value="Veeba Thousand Island Sauce">
+            <option value="Veeba Chipotle Dressing">
+            <option value="Veeba Mint Mayonnaise">
+            <option value="Cremica Pizza & Pasta Sauce">
+            <option value="Cremica Cheese Blend Sauce">
+            <option value="Cremica Burger Sauce">
+            <option value="Amul Mozzarella Cheese Diced">
+            <option value="Amul Processed Cheese Block">
+            <option value="Amul Table Butter 500g">
+            <option value="Thums Up Can 250ml">
+            <option value="Sprite Can 250ml">
+            <option value="Burger Buns 4-inch">
+            <option value="French Fries 9mm Frozen">
+          </datalist>
+        </div>
+        <div class="fg" style="flex:1;">
+          <label class="fl">BRAND / COMPANY</label>
+          <input type="text" class="fc" id="stkBrand" placeholder="e.g. Veeba / Cremica" autocomplete="off" list="brandSuggestions"/>
+          <datalist id="brandSuggestions">
+            <option value="Veeba">
+            <option value="Cremica">
+            <option value="Amul">
+            <option value="Del Monte">
+            <option value="FunFoods">
+            <option value="Coca-Cola">
+            <option value="PepsiCo">
+            <option value="McCain">
+            <option value="Mother Dairy">
+            <option value="Monin">
+          </datalist>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="fg">
+          <label class="fl">CATEGORY <span class="req">*</span></label>
+          <select class="fc" id="stkCategory">
+            <option value="Sauces & Condiments">🥫 Sauces & Condiments</option>
+            <option value="Dairy & Cheese">🧀 Dairy & Cheese</option>
+            <option value="Beverages & Cold Drinks">🥤 Beverages & Cold Drinks</option>
+            <option value="Bakery & Buns">🍞 Bakery & Buns</option>
+            <option value="Frozen & Patties">🧊 Frozen & Patties</option>
+            <option value="Spices & Seasonings">🧂 Spices & Seasonings</option>
+            <option value="Syrups & Crushes">🍯 Syrups & Crushes</option>
+            <option value="Packaging & Disposables">📦 Packaging & Disposables</option>
+            <option value="Other">🏷️ Other Supply</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">STORAGE LOCATION</label>
+          <select class="fc" id="stkStorage">
+            <option value="Chiller / Refrigerator">❄️ Chiller / Refrigerator</option>
+            <option value="Deep Freezer">🧊 Deep Freezer</option>
+            <option value="Dry Shelf / Storage">📦 Dry Shelf / Storage</option>
+            <option value="Kitchen Counter">🏪 Kitchen Counter</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="fg">
+          <label class="fl">QUANTITY <span class="req">*</span></label>
+          <input type="number" class="fc" id="stkQty" placeholder="1" min="0.1" step="any" value="1"/>
+        </div>
+        <div class="fg">
+          <label class="fl">UNIT</label>
+          <select class="fc" id="stkUnit">
+            <option value="Bottles">Bottles</option>
+            <option value="Packets">Packets</option>
+            <option value="Cans">Cans</option>
+            <option value="Kg">Kg</option>
+            <option value="Grams">Grams</option>
+            <option value="Liters">Liters</option>
+            <option value="Boxes">Boxes</option>
+            <option value="Pieces">Pieces</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="fg">
+          <label class="fl">INWARD DATE</label>
+          <input type="date" class="fc" id="stkInwardDate" onchange="ExpiryPage.updateModalPreview()"/>
+        </div>
+        <div class="fg">
+          <label class="fl">EXPIRY DATE <span class="req">*</span></label>
+          <input type="date" class="fc" id="stkExpiryDate" style="border-color:var(--primary); font-weight:700;" onchange="ExpiryPage.updateModalPreview()"/>
+          <div class="exp-date-shortcuts">
+            <button type="button" class="exp-date-chip" onclick="ExpiryPage.addDaysToExpiry(7)">+7 Days</button>
+            <button type="button" class="exp-date-chip" onclick="ExpiryPage.addDaysToExpiry(15)">+15 Days</button>
+            <button type="button" class="exp-date-chip" onclick="ExpiryPage.addDaysToExpiry(30)">+30 Days</button>
+            <button type="button" class="exp-date-chip" onclick="ExpiryPage.addDaysToExpiry(45)">+45 Days</button>
+            <button type="button" class="exp-date-chip" onclick="ExpiryPage.addDaysToExpiry(60)">+60 Days</button>
+            <button type="button" class="exp-date-chip" onclick="ExpiryPage.addDaysToExpiry(90)">+90 Days</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Expiry Preview Card -->
+      <div id="stkPreviewBox" style="display:none; padding:12px 18px; border-radius:var(--r-lg); margin-bottom:14px; font-size:0.88rem; font-weight:750; align-items:center; justify-content:space-between; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <span id="stkPreviewText">Calculating...</span>
+        <span id="stkPreviewBadge" class="badge-countdown">--</span>
+      </div>
+
+      <div class="form-row">
+        <div class="fg">
+          <label class="fl">UNIT COST / PRICE (₹)</label>
+          <input type="number" class="fc" id="stkCost" placeholder="0.00" min="0" step="0.01"/>
+        </div>
+        <div class="fg">
+          <label class="fl">BATCH / LOT NO.</label>
+          <input type="text" class="fc" id="stkBatch" placeholder="Optional batch no." autocomplete="off"/>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">NOTES / INSTRUCTIONS</label>
+        <textarea class="fc" id="stkNotes" rows="2" placeholder="e.g. Keep chilled after opening, use for crispy burger..."></textarea>
+      </div>
+
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" type="button" onclick="ExpiryPage.closeModal()" style="font-weight:700;">Cancel</button>
+      <button class="btn btn-primary" type="button" onclick="ExpiryPage.saveItem()" style="display:inline-flex; align-items:center; gap:8px; font-weight:750; box-shadow:0 4px 14px rgba(139, 92, 246, 0.35);">
+        <i data-lucide="check" style="width: 16px; height: 16px;"></i> Save Stock Item
+      </button>
+    </div>
+    <input type="hidden" id="stkEditId"/>
+  </div>
+</div>
+
+<!-- GLOBAL INCOME MODAL (For Sidebar action) -->
+<div class="modal-bg" id="incomeModal">
+  <div class="modal">
+    <div class="modal-hd" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%) !important; border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;">
+      <h3 id="incomeTitle" style="display:flex; align-items:center; gap:8px; color:#10b981;"><i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span></h3>
+      <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="form-row">
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="iDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="iCat"><option value="">Select</option><option>💰 Cash Income</option><option>📱 Online Payment</option><option>🛒 Sales</option><option>↩️ Refund Received</option><option>📈 Investment Return</option><option>🎁 Gift / Bonus</option><option>🛵 Swiggy</option><option>🛵 Zomato</option><option>📦 Other Income</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#059669;z-index:1;">₹</span><input type="number" class="fc" id="iAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="iMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">CUSTOMER / FROM</label><input type="text" class="fc" id="iFrom" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="iNote" rows="2" placeholder="Optional..."></textarea></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
+      <button class="btn btn-income" onclick="saveTransaction('income')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Income</button>
+    </div>
+    <input type="hidden" id="iEditId"/>
+  </div>
+</div>
+
+<!-- GLOBAL EXPENSE MODAL (For Sidebar action) -->
+<div class="modal-bg" id="expenseModal">
+  <div class="modal">
+    <div class="modal-hd" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(244, 63, 94, 0.03) 100%) !important; border-bottom: 1px solid rgba(244, 63, 94, 0.15) !important;">
+      <h3 id="expenseTitle" style="display:flex; align-items:center; gap:8px; color:#f43f5e;"><i data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span></h3>
+      <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="form-row">
+        <div class="fg"><label class="fl">DATE <span class="req">*</span></label><input type="date" class="fc" id="eDate"/></div>
+        <div class="fg"><label class="fl">CATEGORY <span class="req">*</span></label><select class="fc" id="eCat"><option value="">Select</option><option>🧾 Electricity Bill</option><option>📡 Internet Bill</option><option>📱 Mobile Bill</option><option>🏠 Rent</option><option>🛒 Grocery</option><option>🥦 Vegetables</option><option>🍞 Bread / Bakery</option><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>⛽ Fuel</option><option>👥 Salary</option><option>🔨 Maintenance</option><option>📢 Marketing</option><option>📦 Supplies</option><option>📋 Tax</option><option>↩️ Refund Given</option><option>💸 Other Expense</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">AMOUNT (₹) <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:#dc2626;z-index:1;">₹</span><input type="number" class="fc" id="eAmt" placeholder="0.00" min="0" step="0.01" style="padding-left:30px;"/></div></div>
+        <div class="fg"><label class="fl">MODE</label><select class="fc" id="eMode"><option value="Cash">💵 Cash</option><option value="Online">📱 Online</option><option value="UPI">📲 UPI</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Card">💳 Card</option><option value="Cheque">📄 Cheque</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">VENDOR</label><input type="text" class="fc" id="eVendor" placeholder="Optional" autocomplete="off"/></div>
+      <div class="fg"><label class="fl">NOTES</label><textarea class="fc" id="eNote" rows="2" placeholder="Optional..."></textarea></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
+      <button class="btn btn-expense" onclick="saveTransaction('expense')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Expense</button>
+    </div>
+    <input type="hidden" id="eEditId"/>
+  </div>
+</div>
+
+<div class="toast-box" id="toastBox"></div>
+
+<!-- JS Files - app.js MUST be before expiry-page.js -->
+<script src="assets/js/app.js?v=1.0.4"></script>
+<script src="assets/js/expiry-page.js?v=1.0.4"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('✅ ServiceWorker registered', reg))
+        .catch(err => console.error('❌ ServiceWorker registration failed', err));
+    });
+  }
+</script>
+</body>
+</html>

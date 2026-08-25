@@ -642,27 +642,31 @@ textarea {
 }
 
 .hd-live {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: #fff;
+  gap: 7px;
+  padding: 6px 14px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--r-full);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.76rem;
+  font-weight: 750;
   color: var(--brand);
   white-space: nowrap;
   box-shadow: var(--sh-sm);
   transition: var(--tr);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .hd-live::before {
   content: '';
   width: 7px;
   height: 7px;
-  background: var(--brand);
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 /* BUTTONS (Tactile Matte Finish) */
@@ -1806,6 +1810,11 @@ select option {
   --brand-light: #151d30;
   --brand-soft: rgba(59, 130, 246, 0.15);
 }
+[data-theme="glass"][data-accent="blue"] {
+  --brand-light: rgba(59, 130, 246, 0.15);
+  --brand-soft: rgba(59, 130, 246, 0.2);
+  --balance-gradient: linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(29, 78, 216, 0.75) 100%);
+}
 
 [data-accent="emerald"] {
   --primary: #10b981;
@@ -1819,6 +1828,11 @@ select option {
 [data-theme="dark"][data-accent="emerald"] {
   --brand-light: #132d24;
   --brand-soft: rgba(16, 185, 129, 0.15);
+}
+[data-theme="glass"][data-accent="emerald"] {
+  --brand-light: rgba(16, 185, 129, 0.15);
+  --brand-soft: rgba(16, 185, 129, 0.2);
+  --balance-gradient: linear-gradient(135deg, rgba(16, 185, 129, 0.85) 0%, rgba(4, 120, 87, 0.75) 100%);
 }
 
 [data-accent="indigo"] {
@@ -1834,6 +1848,11 @@ select option {
   --brand-light: #1c1538;
   --brand-soft: rgba(139, 92, 246, 0.16);
 }
+[data-theme="glass"][data-accent="indigo"] {
+  --brand-light: rgba(139, 92, 246, 0.16);
+  --brand-soft: rgba(139, 92, 246, 0.22);
+  --balance-gradient: linear-gradient(135deg, rgba(168, 85, 247, 0.85) 0%, rgba(139, 92, 246, 0.75) 50%, rgba(109, 40, 217, 0.75) 100%);
+}
 
 [data-accent="rose"] {
   --primary: #f43f5e;
@@ -1848,6 +1867,11 @@ select option {
   --brand-light: #331821;
   --brand-soft: rgba(244, 63, 94, 0.15);
 }
+[data-theme="glass"][data-accent="rose"] {
+  --brand-light: rgba(244, 63, 94, 0.15);
+  --brand-soft: rgba(244, 63, 94, 0.2);
+  --balance-gradient: linear-gradient(135deg, rgba(244, 63, 94, 0.85) 0%, rgba(190, 18, 60, 0.75) 100%);
+}
 
 [data-accent="amber"] {
   --primary: #f59e0b;
@@ -1861,6 +1885,241 @@ select option {
 [data-theme="dark"][data-accent="amber"] {
   --brand-light: #302010;
   --brand-soft: rgba(245, 158, 11, 0.15);
+}
+[data-theme="glass"][data-accent="amber"] {
+  --brand-light: rgba(245, 158, 11, 0.15);
+  --brand-soft: rgba(245, 158, 11, 0.2);
+  --balance-gradient: linear-gradient(135deg, rgba(245, 158, 11, 0.85) 0%, rgba(180, 83, 9, 0.75) 100%);
+}
+
+/* ==========================================================================
+   LIQUID GLASS THEME — FUTURISTIC TRANSPARENT GLASSMORPHISM (REFERENCE IMAGE)
+   ========================================================================== */
+[data-theme="glass"] {
+  --background: #080C14;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-solid: rgba(18, 24, 38, 0.7);
+  --border: rgba(255, 255, 255, 0.16);
+  --border-light: rgba(255, 255, 255, 0.08);
+
+  --text: #F8FAFC;
+  --text-light: #94A3B8;
+  
+  --text-head: #FFFFFF;
+  --text-body: #E2E8F0;
+  --text-muted: #94A3B8;
+  
+  --bg-page: #080C14;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card-solid: rgba(18, 24, 38, 0.75);
+  --bg-subtle: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.09);
+  --sidebar-bg: rgba(14, 19, 32, 0.58);
+  
+  --balance-bg: rgba(139, 92, 246, 0.15);
+  --income-bg: rgba(16, 185, 129, 0.14);
+  --expense-bg: rgba(244, 63, 94, 0.14);
+  --profit-bg: rgba(245, 158, 11, 0.14);
+
+  --sh-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --sh-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --sh-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --sh-glass: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 1.5px rgba(255, 255, 255, 0.45), inset 0 -1px 1px rgba(255, 255, 255, 0.05);
+  --sh-3d-card: 0 8px 30px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.3);
+  --sh-3d-card-hover: 0 16px 44px rgba(0, 0, 0, 0.5), inset 0 1.5px 2px rgba(255, 255, 255, 0.7);
+  --sh-3d-inset: inset 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* Glass Atmospheric Bokeh Backgrounds */
+[data-theme="glass"] body {
+  background-color: #080C14;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(251, 191, 36, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 12%, rgba(56, 189, 248, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.14) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+[data-theme="glass"] body::before {
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.14) 0%, rgba(245, 158, 11, 0.04) 45%, transparent 70%);
+  filter: blur(80px);
+  opacity: 0.9;
+}
+
+[data-theme="glass"] body::after {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, rgba(139, 92, 246, 0.06) 45%, transparent 70%);
+  filter: blur(80px);
+  opacity: 0.9;
+}
+
+[data-theme="glass"] .app::before {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 70%);
+  filter: blur(75px);
+}
+
+/* Liquid Glass Component Styling */
+[data-theme="glass"] .main {
+  background: rgba(14, 20, 32, 0.45) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), inset 0 1px 1.5px rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="glass"] .sidebar {
+  background: rgba(14, 19, 32, 0.55) !important;
+  backdrop-filter: blur(30px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.35) !important;
+}
+
+[data-theme="glass"] .header {
+  background: rgba(18, 24, 40, 0.5) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="glass"] .sb-logo {
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-theme="glass"] .sb-footer {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-theme="glass"] .sb-link {
+  color: #E2E8F0 !important;
+  border: 1px solid transparent;
+}
+
+[data-theme="glass"] .sb-link:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+[data-theme="glass"] .sb-user {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+[data-theme="glass"] .hd-search {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="glass"] .hd-search:focus-within {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.4) !important;
+}
+
+[data-theme="glass"] .hd-live {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+[data-theme="glass"] .hero {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(30px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), inset 0 1.5px 2px rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-theme="glass"] .period-wrap {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.35) !important;
+}
+
+[data-theme="glass"] .pb-tab {
+  color: #CBD5E1 !important;
+}
+
+[data-theme="glass"] .pb-tab.active {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme="glass"] .card,
+[data-theme="glass"] .co-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.35) !important;
+}
+
+[data-theme="glass"] .co-header {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-theme="glass"] .co-balance {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-theme="glass"] .fc {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #FFFFFF !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+[data-theme="glass"] .fc:focus {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.4) !important;
+}
+
+[data-theme="glass"] .modal {
+  background: rgba(14, 20, 32, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  backdrop-filter: blur(36px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(200%) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), inset 0 1.5px 2px rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-theme="glass"] .modal-hd {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+[data-theme="glass"] .modal-ft {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+[data-theme="glass"] .compare-box {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+[data-theme="glass"] .notif-dropdown {
+  background: rgba(14, 20, 32, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1.5px 2px rgba(255, 255, 255, 0.4) !important;
+}
+
+[data-theme="glass"] .notif-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
 }
 
 /* Dark Mode Variable Base Overrides — Ultra-Matte Velvet Dark */
@@ -2023,11 +2282,13 @@ select option {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  width: 250px;
-  background: var(--bg-card);
+  width: 270px;
+  background: var(--bg-card-solid);
   border: 1.5px solid var(--border);
   border-radius: var(--r-xl);
   box-shadow: var(--sh-lg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   z-index: 1001;
   padding: 16px;
   flex-direction: column;
@@ -2048,19 +2309,20 @@ select option {
 
 .theme-mode-btn {
   flex: 1;
-  padding: 8px;
+  padding: 8px 6px;
   border-radius: var(--r-md);
   border: 1.5px solid var(--border);
   background: var(--bg-page);
   color: var(--text-head);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   transition: var(--tr);
+  white-space: nowrap;
 }
 
 .theme-mode-btn:hover {

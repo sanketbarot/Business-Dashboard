@@ -3,7 +3,7 @@
 <head>
   <script>
     // Prevent theme/accent flash on page load
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('bd_theme') || 'light');
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('bd_theme') || 'glass');
     document.documentElement.setAttribute('data-accent', localStorage.getItem('bd_accent') || 'indigo');
   </script>
 <meta charset="UTF-8"/>
@@ -57,6 +57,7 @@
       <a href="index.html" class="sb-link"><span class="sb-icon"><i data-lucide="layout-dashboard"></i></span><span>Dashboard</span></a>
       <a href="transaction.html" class="sb-link active"><span class="sb-icon"><i data-lucide="arrow-left-right"></i></span><span>Transactions</span></a>
       <a href="analytics.html" class="sb-link"><span class="sb-icon"><i data-lucide="line-chart"></i></span><span>Analytics</span></a>
+      <a href="expiry.html" class="sb-link"><span class="sb-icon"><i data-lucide="calendar-clock"></i></span><span>Stock & Expiry</span></a>
       <div class="sb-section">Quick Add</div>
       <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon"><i data-lucide="plus-circle"></i></span><span>New Income</span></div>
       <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon"><i data-lucide="minus-circle"></i></span><span>New Expense</span></div>
@@ -101,11 +102,14 @@
             <!-- Dark / Light Mode -->
             <div>
               <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme</div>
-              <div style="display:flex; gap:8px;">
-                <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light">
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;">
+                <button onclick="APP_THEME.setTheme('glass')" class="theme-mode-btn" id="theme-btn-glass" title="Liquid Glass Theme">
+                  <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i> Glass
+                </button>
+                <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light" title="Light Theme">
                   <i data-lucide="sun" style="width: 13px; height: 13px;"></i> Light
                 </button>
-                <button onclick="APP_THEME.setTheme('dark')" class="theme-mode-btn" id="theme-btn-dark">
+                <button onclick="APP_THEME.setTheme('dark')" class="theme-mode-btn" id="theme-btn-dark" title="Dark Theme">
                   <i data-lucide="moon" style="width: 13px; height: 13px;"></i> Dark
                 </button>
               </div>
@@ -265,8 +269,8 @@
 <div class="toast-box" id="toastBox"></div>
 
 <!-- JS Files -->
-<script src="assets/js/app.js?v=1.0.1"></script>
-<script src="assets/js/transaction-page.js?v=1.0.1"></script>
+<script src="assets/js/app.js?v=1.0.4"></script>
+<script src="assets/js/transaction-page.js?v=1.0.4"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

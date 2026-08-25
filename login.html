@@ -30,13 +30,17 @@
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
       display: flex;
-      background: #F4F3F8;
-      color: #334155;
+      background: #080C14;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(251, 191, 36, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 12%, rgba(56, 189, 248, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.14) 0%, transparent 50%);
+      background-attachment: fixed;
+      color: #E2E8F0;
       overflow-x: hidden;
       position: relative;
     }
@@ -47,10 +51,10 @@
       width: 50vw;
       height: 50vw;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.05) 0%, transparent 65%);
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.14) 0%, rgba(245, 158, 11, 0.04) 45%, transparent 70%);
       top: -12vw;
       left: 3vw;
-      filter: blur(75px);
+      filter: blur(80px);
       z-index: 1;
       pointer-events: none;
     }
@@ -61,10 +65,10 @@
       width: 55vw;
       height: 55vw;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.04) 0%, transparent 65%);
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, rgba(139, 92, 246, 0.06) 45%, transparent 70%);
       bottom: -15vw;
       right: -5vw;
-      filter: blur(75px);
+      filter: blur(80px);
       z-index: 1;
       pointer-events: none;
     }
@@ -95,14 +99,15 @@
     .brand-logo {
       width: 56px;
       height: 56px;
-      background: rgba(139, 92, 246, 0.08);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.18);
-      border: 1px solid rgba(139, 92, 246, 0.25);
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25), inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       overflow: hidden;
       padding: 0;
     }
@@ -116,12 +121,12 @@
     .brand-logo-name {
       font-size: 1.15rem;
       font-weight: 800;
-      color: #0f172a;
+      color: #FFFFFF;
     }
 
     .brand-logo-tag {
       font-size: 0.7rem;
-      color: #8b5cf6;
+      color: #C084FC;
       font-weight: 700;
     }
 
@@ -130,14 +135,15 @@
       align-items: center;
       gap: 10px;
       padding: 8px 16px;
-      background: rgba(139, 92, 246, 0.08);
-      border: 1px solid rgba(139, 92, 246, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 100px;
       margin-bottom: 24px;
       font-size: 0.72rem;
       font-weight: 700;
-      color: #8b5cf6;
-      box-shadow: 0 2px 10px rgba(139, 92, 246, 0.1);
+      color: #C084FC;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3);
     }
 
     .brand h1 {
@@ -145,11 +151,11 @@
       font-weight: 800;
       line-height: 1.15;
       margin-bottom: 20px;
-      color: #0f172a;
+      color: #FFFFFF;
     }
 
     .brand h1 .accent {
-      background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #6d28d9 100%);
+      background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #38bdf8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -157,7 +163,7 @@
 
     .brand>p {
       font-size: 1rem;
-      color: #64748b;
+      color: #94A3B8;
       line-height: 1.7;
       margin-bottom: 36px;
     }
@@ -170,30 +176,32 @@
 
     .stat-box {
       padding: 18px;
-      background: #ffffff;
-      border: 1px solid rgba(139, 92, 246, 0.16);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 16px;
       text-align: center;
       transition: all 0.25s;
-      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.06);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
     }
 
     .stat-box:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
-      border-color: rgba(139, 92, 246, 0.35);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45), inset 0 1.5px 2px rgba(255, 255, 255, 0.6);
+      border-color: rgba(255, 255, 255, 0.35);
     }
 
     .stat-box .num {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #8b5cf6;
+      color: #A855F7;
       margin-bottom: 4px;
     }
 
     .stat-box .lbl {
       font-size: 0.72rem;
-      color: #64748b;
+      color: #94A3B8;
       font-weight: 600;
     }
 
@@ -210,11 +218,13 @@
     .form-card {
       width: 100%;
       max-width: 400px;
-      background: #ffffff;
-      border: 1px solid #E4DFEE;
-      border-radius: 20px;
+      background: rgba(14, 20, 32, 0.6);
+      backdrop-filter: blur(32px) saturate(200%);
+      -webkit-backdrop-filter: blur(32px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 24px;
       padding: 40px 34px;
-      box-shadow: 0 10px 30px rgba(24, 18, 43, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
       animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -241,7 +251,7 @@
       gap: 12px;
       margin-bottom: 26px;
       padding-bottom: 26px;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .mobile-logo-icon {
@@ -267,7 +277,7 @@
     .mobile-logo-text {
       font-size: 1.15rem;
       font-weight: 800;
-      color: #0f172a;
+      color: #FFFFFF;
     }
 
     .cloud-badge {
@@ -275,14 +285,14 @@
       align-items: center;
       gap: 6px;
       padding: 5px 12px;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.15);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-radius: 100px;
       font-size: 0.7rem;
       font-weight: 700;
-      color: #10b981;
+      color: #34D399;
       margin-bottom: 20px;
     }
 
@@ -290,12 +300,12 @@
       font-size: 1.6rem;
       font-weight: 800;
       margin-bottom: 6px;
-      color: #0f172a;
+      color: #FFFFFF;
     }
 
     .form-card>p {
       font-size: 0.88rem;
-      color: #64748b;
+      color: #94A3B8;
       margin-bottom: 28px;
     }
 
@@ -307,7 +317,7 @@
       display: block;
       font-size: 0.72rem;
       font-weight: 700;
-      color: #8b5cf6;
+      color: #C084FC;
       margin-bottom: 8px;
       letter-spacing: 0.05em;
       text-transform: uppercase;
@@ -327,32 +337,34 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #8b5cf6;
+      color: #A855F7;
     }
 
     .fi {
       width: 100%;
       padding: 14px 16px 14px 46px;
-      background: #FAF9FD;
-      border: 1.5px solid rgba(139, 92, 246, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
       border-radius: 50px;
-      color: #0f172a;
+      color: #FFFFFF;
       font-size: 0.9rem;
       font-family: inherit;
       outline: none;
       transition: all 0.25s;
       min-height: 50px;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
     }
 
     .fi:focus {
-      border-color: #8b5cf6;
-      background: #ffffff;
-      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.18);
+      border-color: rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.4);
       transform: translateY(-1px);
     }
 
     .fi::placeholder {
-      color: #94a3b8;
+      color: #64748B;
     }
 
     .pt {

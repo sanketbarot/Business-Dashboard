@@ -1063,3 +1063,48 @@
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   LIQUID GLASS THEME STYLES FOR ANALYTICS (TRANSPARENT FROSTED GLASS)
+   ========================================================================== */
+[data-theme="glass"] .an-hero {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(30px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), inset 0 1.5px 2px rgba(255, 255, 255, 0.5) !important;
+}
+
+[data-theme="glass"] .an-card,
+[data-theme="glass"] .chart-box,
+[data-theme="glass"] .an-panel,
+[data-theme="glass"] .insight-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.35) !important;
+}
+
+[data-theme="glass"] .an-card:hover,
+[data-theme="glass"] .chart-box:hover,
+[data-theme="glass"] .insight-card:hover {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.48), inset 0 1.5px 2px rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme="glass"] .an-btn-period,
+[data-theme="glass"] .an-filter-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #CBD5E1 !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+[data-theme="glass"] .an-btn-period.active,
+[data-theme="glass"] .an-filter-btn.active {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+}

@@ -1929,3 +1929,53 @@ mark {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   LIQUID GLASS THEME STYLES FOR TRANSACTIONS (TRANSPARENT FROSTED GLASS)
+   ========================================================================== */
+[data-theme="glass"] .cmd-bar,
+[data-theme="glass"] .tx-stat,
+[data-theme="glass"] .filter-wrap,
+[data-theme="glass"] .tbl-card,
+[data-theme="glass"] .detail-card,
+[data-theme="glass"] .mobile-txn-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35), inset 0 1px 1.5px rgba(255, 255, 255, 0.35) !important;
+}
+
+[data-theme="glass"] .tx-stat:hover,
+[data-theme="glass"] .tbl-card:hover {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.48), inset 0 1.5px 2px rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme="glass"] .filter-tabs {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+[data-theme="glass"] .ft.active {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-theme="glass"] .fsel,
+[data-theme="glass"] .filter-search {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="glass"] .tx-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="glass"] .tx-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+}

@@ -4,7 +4,7 @@
 <head>
   <script>
     // Prevent theme/accent flash on page load
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('bd_theme') || 'light');
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('bd_theme') || 'glass');
     document.documentElement.setAttribute('data-accent', localStorage.getItem('bd_accent') || 'indigo');
   </script>
   <meta charset="UTF-8" />
@@ -59,18 +59,28 @@
 
       <nav class="sb-nav">
         <div class="sb-section">Overview</div>
-        <a href="index.html" class="sb-link active"><span class="sb-icon"><i data-lucide="layout-dashboard"></i></span><span>Dashboard</span></a>
-        <a href="transaction.html" class="sb-link"><span class="sb-icon"><i data-lucide="arrow-left-right"></i></span><span>Transactions</span></a>
-        <a href="analytics.html" class="sb-link"><span class="sb-icon"><i data-lucide="line-chart"></i></span><span>Analytics</span></a>
+        <a href="index.html" class="sb-link active"><span class="sb-icon"><i
+              data-lucide="layout-dashboard"></i></span><span>Dashboard</span></a>
+        <a href="transaction.html" class="sb-link"><span class="sb-icon"><i
+              data-lucide="arrow-left-right"></i></span><span>Transactions</span></a>
+        <a href="analytics.html" class="sb-link"><span class="sb-icon"><i
+              data-lucide="line-chart"></i></span><span>Analytics</span></a>
+        <a href="expiry.html" class="sb-link"><span class="sb-icon"><i
+              data-lucide="calendar-clock"></i></span><span>Stock & Expiry</span></a>
 
         <div class="sb-section">Quick Add</div>
-        <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon"><i data-lucide="plus-circle"></i></span><span>New Income</span></div>
-        <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon"><i data-lucide="minus-circle"></i></span><span>New Expense</span></div>
+        <div class="sb-link" onclick="openIncomeModal()"><span class="sb-icon"><i
+              data-lucide="plus-circle"></i></span><span>New Income</span></div>
+        <div class="sb-link" onclick="openExpenseModal()"><span class="sb-icon"><i
+              data-lucide="minus-circle"></i></span><span>New Expense</span></div>
 
         <div class="sb-section">Reports</div>
-        <div class="sb-link" onclick="exportExcel()"><span class="sb-icon"><i data-lucide="file-spreadsheet"></i></span><span>Excel Report</span></div>
-        <div class="sb-link" onclick="exportPDF()"><span class="sb-icon"><i data-lucide="file-text"></i></span><span>PDF Report</span></div>
-        <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon"><i data-lucide="database"></i></span><span>Backup Data</span></div>
+        <div class="sb-link" onclick="exportExcel()"><span class="sb-icon"><i
+              data-lucide="file-spreadsheet"></i></span><span>Excel Report</span></div>
+        <div class="sb-link" onclick="exportPDF()"><span class="sb-icon"><i data-lucide="file-text"></i></span><span>PDF
+            Report</span></div>
+        <div class="sb-link" onclick="downloadBackup()"><span class="sb-icon"><i
+              data-lucide="database"></i></span><span>Backup Data</span></div>
         <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span
             class="sb-icon"><i data-lucide="smartphone"></i></span><span>Install App</span></div>
       </nav>
@@ -83,7 +93,8 @@
             <div class="sb-user-email">sanketbarot3901@gmail.com</div>
           </div>
         </div>
-        <button class="sb-logout" onclick="logout()"><i data-lucide="log-out" style="width: 15px; height: 15px; margin-right: 8px; vertical-align: middle;"></i>Sign Out</button>
+        <button class="sb-logout" onclick="logout()"><i data-lucide="log-out"
+            style="width: 15px; height: 15px; margin-right: 8px; vertical-align: middle;"></i>Sign Out</button>
       </div>
     </aside>
 
@@ -107,29 +118,44 @@
               <i data-lucide="palette" style="width: 20px; height: 20px;"></i>
             </button>
             <div class="theme-dropdown" id="themeDropdown">
-              
+
               <!-- Dark / Light Mode -->
               <div>
-                <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme</div>
-                <div style="display:flex; gap:8px;">
-                  <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light">
+                <div
+                  style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                  <i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme</div>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;">
+                  <button onclick="APP_THEME.setTheme('glass')" class="theme-mode-btn" id="theme-btn-glass"
+                    title="Liquid Glass Theme">
+                    <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i> Glass
+                  </button>
+                  <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light"
+                    title="Light Theme">
                     <i data-lucide="sun" style="width: 13px; height: 13px;"></i> Light
                   </button>
-                  <button onclick="APP_THEME.setTheme('dark')" class="theme-mode-btn" id="theme-btn-dark">
+                  <button onclick="APP_THEME.setTheme('dark')" class="theme-mode-btn" id="theme-btn-dark"
+                    title="Dark Theme">
                     <i data-lucide="moon" style="width: 13px; height: 13px;"></i> Dark
                   </button>
                 </div>
               </div>
-              
+
               <!-- Accent Colors -->
               <div>
-                <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i data-lucide="paintbrush" style="width: 14px; height: 14px;"></i> Brand Accent</div>
+                <div
+                  style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                  <i data-lucide="paintbrush" style="width: 14px; height: 14px;"></i> Brand Accent</div>
                 <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; justify-items:center;">
-                  <button onclick="APP_THEME.setAccent('blue')" title="Blue" class="accent-dot-btn" id="accent-dot-blue" style="background:#3b82f6;"></button>
-                  <button onclick="APP_THEME.setAccent('emerald')" title="Emerald" class="accent-dot-btn" id="accent-dot-emerald" style="background:#10b981;"></button>
-                  <button onclick="APP_THEME.setAccent('indigo')" title="Indigo" class="accent-dot-btn" id="accent-dot-indigo" style="background:#6366f1;"></button>
-                  <button onclick="APP_THEME.setAccent('rose')" title="Rose" class="accent-dot-btn" id="accent-dot-rose" style="background:#f43f5e;"></button>
-                  <button onclick="APP_THEME.setAccent('amber')" title="Amber" class="accent-dot-btn" id="accent-dot-amber" style="background:#f59e0b;"></button>
+                  <button onclick="APP_THEME.setAccent('blue')" title="Blue" class="accent-dot-btn" id="accent-dot-blue"
+                    style="background:#3b82f6;"></button>
+                  <button onclick="APP_THEME.setAccent('emerald')" title="Emerald" class="accent-dot-btn"
+                    id="accent-dot-emerald" style="background:#10b981;"></button>
+                  <button onclick="APP_THEME.setAccent('indigo')" title="Indigo" class="accent-dot-btn"
+                    id="accent-dot-indigo" style="background:#6366f1;"></button>
+                  <button onclick="APP_THEME.setAccent('rose')" title="Rose" class="accent-dot-btn" id="accent-dot-rose"
+                    style="background:#f43f5e;"></button>
+                  <button onclick="APP_THEME.setAccent('amber')" title="Amber" class="accent-dot-btn"
+                    id="accent-dot-amber" style="background:#f59e0b;"></button>
                 </div>
               </div>
 
@@ -147,7 +173,9 @@
               style="display:none; position:absolute; top:calc(100% + 12px); right:0; width:320px; background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--r-xl); box-shadow:var(--sh-lg); z-index:1001; overflow:hidden;">
               <div class="notif-header"
                 style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:800; font-size:0.9rem; color:var(--text-head); display:flex; align-items:center; gap:6px;"><i data-lucide="bell" style="width: 15px; height: 15px; color:var(--brand);"></i> Notifications</span>
+                <span
+                  style="font-weight:800; font-size:0.9rem; color:var(--text-head); display:flex; align-items:center; gap:6px;"><i
+                    data-lucide="bell" style="width: 15px; height: 15px; color:var(--brand);"></i> Notifications</span>
                 <button onclick="Dash.clearNotifs()"
                   style="background:none; border:none; font-size:0.72rem; font-weight:700; color:var(--brand); cursor:pointer; font-family:inherit;">Clear
                   All</button>
@@ -170,14 +198,21 @@
             <p id="heroSubtext">Here's your business overview</p>
           </div>
           <div class="hero-actions">
-            <button class="btn btn-primary" onclick="openIncomeModal()"><i data-lucide="plus-circle"></i>Add Income</button>
-            <button class="btn btn-expense" onclick="openExpenseModal()"><i data-lucide="minus-circle"></i>Add Expense</button>
+            <button class="btn btn-primary" onclick="openIncomeModal()"><i data-lucide="plus-circle"></i>Add
+              Income</button>
+            <button class="btn btn-expense" onclick="openExpenseModal()"><i data-lucide="minus-circle"></i>Add
+              Expense</button>
             <button class="btn btn-outline" onclick="exportPDF()"><i data-lucide="file-text"></i>Report</button>
           </div>
         </section>
 
+        <!-- Dynamic Stock Expiry 15-Day Notice Banner -->
+        <div id="dashExpiryBanner" style="display:none; margin-bottom:22px;"></div>
+
         <div class="period-wrap">
-          <span class="period-title"><i data-lucide="line-chart" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px; color: var(--brand);"></i>Financial Summary</span>
+          <span class="period-title"><i data-lucide="line-chart"
+              style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px; color: var(--brand);"></i>Financial
+            Summary</span>
           <div class="period-bar">
             <button class="pb-tab active" data-p="today" onclick="switchPeriod('today',this)">Today</button>
             <button class="pb-tab" data-p="yesterday" onclick="switchPeriod('yesterday',this)">Yesterday</button>
@@ -189,24 +224,33 @@
           </div>
         </div>
 
-        <div id="customDateRangeWrap" class="card" style="display:none; margin-top:-16px; margin-bottom:26px; padding:16px 24px; animation: themeDropdownSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div id="customDateRangeWrap" class="card"
+          style="display:none; margin-top:-16px; margin-bottom:26px; padding:16px 24px; animation: themeDropdownSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
           <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
-            <span style="font-size:0.8rem; font-weight:800; text-transform:uppercase; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;">
+            <span
+              style="font-size:0.8rem; font-weight:800; text-transform:uppercase; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;">
               <i data-lucide="calendar" style="width:16px; height:16px; color:var(--brand);"></i>
               Select Custom Period
             </span>
             <div style="display:flex; align-items:center; gap:8px;">
-              <label for="customStart" style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">From:</label>
-              <input type="date" id="customStart" class="fc" style="padding:6px 12px; min-height:36px; width:150px; border-radius:var(--r-md); font-size:0.8rem;" onchange="applyCustomDateRange()"/>
+              <label for="customStart"
+                style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">From:</label>
+              <input type="date" id="customStart" class="fc"
+                style="padding:6px 12px; min-height:36px; width:150px; border-radius:var(--r-md); font-size:0.8rem;"
+                onchange="applyCustomDateRange()" />
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <label for="customEnd" style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">To:</label>
-              <input type="date" id="customEnd" class="fc" style="padding:6px 12px; min-height:36px; width:150px; border-radius:var(--r-md); font-size:0.8rem;" onchange="applyCustomDateRange()"/>
+              <input type="date" id="customEnd" class="fc"
+                style="padding:6px 12px; min-height:36px; width:150px; border-radius:var(--r-md); font-size:0.8rem;"
+                onchange="applyCustomDateRange()" />
             </div>
-            <button class="btn btn-primary btn-sm" onclick="applyCustomDateRange()" style="padding:6px 16px; min-height:36px; border-radius:var(--r-md); font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+            <button class="btn btn-primary btn-sm" onclick="applyCustomDateRange()"
+              style="padding:6px 16px; min-height:36px; border-radius:var(--r-md); font-weight:700; display:inline-flex; align-items:center; gap:6px;">
               <i data-lucide="filter" style="width:14px; height:14px;"></i> Apply Filter
             </button>
-            <button class="btn btn-outline btn-sm" onclick="resetCustomDateRange()" style="padding:6px 12px; min-height:36px; border-radius:var(--r-md); font-weight:700; display:inline-flex; align-items:center; gap:6px; color:var(--expense);">
+            <button class="btn btn-outline btn-sm" onclick="resetCustomDateRange()"
+              style="padding:6px 12px; min-height:36px; border-radius:var(--r-md); font-weight:700; display:inline-flex; align-items:center; gap:6px; color:var(--expense);">
               <i data-lucide="rotate-ccw" style="width:14px; height:14px;"></i> Reset
             </button>
           </div>
@@ -215,7 +259,8 @@
         <section class="sum-grid">
           <div class="sum-card income-card">
             <div class="sc-top">
-              <div class="sc-icon"><i data-lucide="trending-up"></i></div><span class="sc-trend" id="incomeTrend">→ 0%</span>
+              <div class="sc-icon"><i data-lucide="trending-up"></i></div><span class="sc-trend" id="incomeTrend">→
+                0%</span>
             </div>
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
@@ -230,7 +275,8 @@
           </div>
           <div class="sum-card expense-card">
             <div class="sc-top">
-              <div class="sc-icon"><i data-lucide="trending-down"></i></div><span class="sc-trend" id="expenseTrend">→ 0%</span>
+              <div class="sc-icon"><i data-lucide="trending-down"></i></div><span class="sc-trend" id="expenseTrend">→
+                0%</span>
             </div>
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
@@ -245,7 +291,8 @@
           </div>
           <div class="sum-card profit-card">
             <div class="sc-top">
-              <div class="sc-icon"><i data-lucide="dollar-sign"></i></div><span class="sc-trend" id="profitTrend">→ 0%</span>
+              <div class="sc-icon"><i data-lucide="dollar-sign"></i></div><span class="sc-trend" id="profitTrend">→
+                0%</span>
             </div>
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
@@ -303,7 +350,9 @@
                 <div class="co-row-amt text-expense" id="cashOut">₹ 0</div>
               </div>
               <div class="co-balance">
-                <div class="co-balance-label"><i data-lucide="coins" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>Net Cash in Hand</div>
+                <div class="co-balance-label"><i data-lucide="coins"
+                    style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>Net Cash in Hand
+                </div>
                 <div class="co-balance-amt" id="cashBalance">₹ 0</div>
               </div>
             </div>
@@ -335,7 +384,9 @@
                 <div class="co-row-amt text-expense" id="onlineOut">₹ 0</div>
               </div>
               <div class="co-balance online-balance">
-                <div class="co-balance-label"><i data-lucide="credit-card" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>Net Online Balance</div>
+                <div class="co-balance-label"><i data-lucide="credit-card"
+                    style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>Net Online Balance
+                </div>
                 <div class="co-balance-amt" id="onlineBalance">₹ 0</div>
               </div>
             </div>
@@ -346,12 +397,14 @@
         <section class="card" style="margin-bottom:26px;">
           <div class="card-hd">
             <div style="display:flex; align-items:center; gap:10px;">
-              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="target" style="width: 18px; height: 18px; color: var(--brand);"></i>Business Targets & Vision Roadmap</h4>
+              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="target"
+                  style="width: 18px; height: 18px; color: var(--brand);"></i>Business Targets & Vision Roadmap</h4>
               <span
                 style="font-size:0.72rem; background:var(--brand-soft); color:var(--brand); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">VISION
                 METRICS</span>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="openGoalSettingsModal()"><i data-lucide="settings" style="width: 14px; height: 14px; margin-right: 6px;"></i>Configure Goals</button>
+            <button class="btn btn-outline btn-sm" onclick="openGoalSettingsModal()"><i data-lucide="settings"
+                style="width: 14px; height: 14px; margin-right: 6px;"></i>Configure Goals</button>
           </div>
           <div class="card-bd">
             <div class="goals-wrapper-grid"
@@ -361,7 +414,10 @@
               <div class="goal-item-card"
                 style="background:rgba(99,102,241,0.02); border:1px solid rgba(99,102,241,0.06); border-radius:var(--r-md); padding:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i data-lucide="trending-up" style="width: 14px; height: 14px; color: var(--income);"></i>MTD REVENUE TARGET</span>
+                  <span
+                    style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i
+                      data-lucide="trending-up" style="width: 14px; height: 14px; color: var(--income);"></i>MTD REVENUE
+                    TARGET</span>
                   <span style="font-size:0.85rem; font-weight:800; color:var(--income);" id="goalRevPct">0%</span>
                 </div>
                 <div style="margin-bottom:12px;">
@@ -384,7 +440,10 @@
               <div class="goal-item-card"
                 style="background:rgba(239,68,68,0.02); border:1px solid rgba(239,68,68,0.06); border-radius:var(--r-md); padding:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i data-lucide="trending-down" style="width: 14px; height: 14px; color: var(--expense);"></i>MTD EXPENSE CAP</span>
+                  <span
+                    style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i
+                      data-lucide="trending-down" style="width: 14px; height: 14px; color: var(--expense);"></i>MTD
+                    EXPENSE CAP</span>
                   <span style="font-size:0.85rem; font-weight:800; color:var(--expense);" id="goalExpPct">0%</span>
                 </div>
                 <div style="margin-bottom:12px;">
@@ -407,7 +466,10 @@
               <div class="goal-item-card"
                 style="background:rgba(139,92,246,0.02); border:1px solid rgba(139,92,246,0.06); border-radius:var(--r-md); padding:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i data-lucide="trophy" style="width: 14px; height: 14px; color: var(--purple);"></i>YTD NET PROFIT MILESTONE</span>
+                  <span
+                    style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i
+                      data-lucide="trophy" style="width: 14px; height: 14px; color: var(--purple);"></i>YTD NET PROFIT
+                    MILESTONE</span>
                   <span style="font-size:0.85rem; font-weight:800; color:var(--purple);" id="goalPrfPct">0%</span>
                 </div>
                 <div style="margin-bottom:12px;">
@@ -430,63 +492,89 @@
             </div>
 
             <!-- DAILY REVENUE RUN RATE & PACE METER -->
-            <div class="pace-meter-card" style="margin-top:20px; padding:18px 20px; background:linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(16,185,129,0.04) 100%); border:1.5px solid var(--border); border-radius:var(--r-lg);">
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+            <div class="pace-meter-card"
+              style="margin-top:20px; padding:18px 20px; background:linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(16,185,129,0.04) 100%); border:1.5px solid var(--border); border-radius:var(--r-lg);">
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                  <div style="width:30px; height:30px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand);">
+                  <div
+                    style="width:30px; height:30px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand);">
                     <i data-lucide="gauge" style="width:16px; height:16px;"></i>
                   </div>
                   <div>
-                    <strong style="font-size:0.88rem; color:var(--text-head); display:flex; align-items:center; gap:6px;">
+                    <strong
+                      style="font-size:0.88rem; color:var(--text-head); display:flex; align-items:center; gap:6px;">
                       Daily Revenue Run Rate & Required Pace
                     </strong>
-                    <span style="font-size:0.72rem; color:var(--text-light);" id="paceDaysLeftText">Day 17 of 31 • 14 days remaining</span>
+                    <span style="font-size:0.72rem; color:var(--text-light);" id="paceDaysLeftText">Day 17 of 31 • 14
+                      days remaining</span>
                   </div>
                 </div>
                 <div id="paceStatusBadge">
-                  <span style="font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:var(--r-full); background:rgba(16,185,129,0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;">
+                  <span
+                    style="font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:var(--r-full); background:rgba(16,185,129,0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;">
                     <i data-lucide="zap" style="width:12px; height:12px;"></i> Calculating Pace...
                   </span>
                 </div>
               </div>
 
               <!-- Pace Stats Grid -->
-              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:14px;">
-                <div class="pace-stat-card" style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">Required Daily Pace</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--brand); margin-top:2px;" id="paceRequired">₹ 0.00 / day</div>
+              <div
+                style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:14px;">
+                <div class="pace-stat-card"
+                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
+                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                    Required Daily Pace</div>
+                  <div style="font-size:1.15rem; font-weight:800; color:var(--brand); margin-top:2px;"
+                    id="paceRequired">₹ 0.00 / day</div>
                   <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">to reach monthly target</div>
                 </div>
 
-                <div class="pace-stat-card" style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">Current Average Pace</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--text-head); margin-top:2px;" id="paceCurrent">₹ 0.00 / day</div>
+                <div class="pace-stat-card"
+                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
+                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                    Current Average Pace</div>
+                  <div style="font-size:1.15rem; font-weight:800; color:var(--text-head); margin-top:2px;"
+                    id="paceCurrent">₹ 0.00 / day</div>
                   <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">actual velocity so far</div>
                 </div>
 
-                <div class="pace-stat-card" style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">Today's Revenue</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--income); margin-top:2px;" id="paceTodayRev">₹ 0.00</div>
-                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;" id="paceTodayPct">0% of daily target</div>
+                <div class="pace-stat-card"
+                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
+                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                    Today's Revenue</div>
+                  <div style="font-size:1.15rem; font-weight:800; color:var(--income); margin-top:2px;"
+                    id="paceTodayRev">₹ 0.00</div>
+                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;" id="paceTodayPct">0% of daily
+                    target</div>
                 </div>
 
-                <div class="pace-stat-card" style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">Projected Month-End</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--purple); margin-top:2px;" id="paceProjected">₹ 0.00</div>
-                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">at current pace trajectory</div>
+                <div class="pace-stat-card"
+                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
+                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                    Projected Month-End</div>
+                  <div style="font-size:1.15rem; font-weight:800; color:var(--purple); margin-top:2px;"
+                    id="paceProjected">₹ 0.00</div>
+                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">at current pace trajectory
+                  </div>
                 </div>
               </div>
 
               <!-- Today's Live Target Progress Bar -->
               <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; margin-bottom:5px;">
+                <div
+                  style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; margin-bottom:5px;">
                   <span style="font-weight:700; color:var(--text-head); display:flex; align-items:center; gap:4px;">
-                    <i data-lucide="flame" style="width:13px; height:13px; color:#f59e0b;"></i> Today's Daily Target Completion
+                    <i data-lucide="flame" style="width:13px; height:13px; color:#f59e0b;"></i> Today's Daily Target
+                    Completion
                   </span>
                   <span style="font-weight:800; color:var(--income);" id="paceTodayBarText">₹ 0.00 / ₹ 0.00 (0%)</span>
                 </div>
-                <div style="height:8px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden;">
-                  <div id="paceTodayBar" style="height:100%; width:0%; background:linear-gradient(90deg, #10b981 0%, #3b82f6 100%); border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                <div
+                  style="height:8px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden;">
+                  <div id="paceTodayBar"
+                    style="height:100%; width:0%; background:linear-gradient(90deg, #10b981 0%, #3b82f6 100%); border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                  </div>
                 </div>
               </div>
             </div>
@@ -495,47 +583,64 @@
 
         <!-- CATEGORY BUDGETS & SPENDING LIMITS -->
         <section class="card budget-section" style="margin-bottom:26px;">
-          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div class="card-hd"
+            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div style="display:flex; align-items:center; gap:10px;">
               <h4 style="display:flex; align-items:center; gap:8px;">
                 <i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--brand);"></i>
                 Category Budgets & Spending Limits
               </h4>
-              <span class="badge" id="budgetTotalBadge" style="font-size:0.72rem; background:var(--brand-soft); color:var(--brand); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">
+              <span class="badge" id="budgetTotalBadge"
+                style="font-size:0.72rem; background:var(--brand-soft); color:var(--brand); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">
                 0 Active Budgets
               </span>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <button class="btn btn-outline btn-sm" onclick="openBudgetModal()" style="display:inline-flex; align-items:center; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="openBudgetModal()"
+                style="display:inline-flex; align-items:center; gap:6px;">
                 <i data-lucide="sliders" style="width: 14px; height: 14px;"></i>Manage Budgets
               </button>
             </div>
           </div>
           <div class="card-bd">
             <!-- Overall Budget Summary Row -->
-            <div class="budget-summary-bar" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
+            <div class="budget-summary-bar"
+              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Total Budget Allocated</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--text-head); margin-top:2px;" id="totalBudgetAllocated">₹ 0.00</div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Total Budget Allocated</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--text-head); margin-top:2px;"
+                  id="totalBudgetAllocated">₹ 0.00</div>
               </div>
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Total Spent in Budgeted</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--expense); margin-top:2px;" id="totalBudgetSpent">₹ 0.00</div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Total Spent in Budgeted</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--expense); margin-top:2px;"
+                  id="totalBudgetSpent">₹ 0.00</div>
               </div>
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Remaining Allowance</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;" id="totalBudgetRemaining">₹ 0.00</div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Remaining Allowance</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
+                  id="totalBudgetRemaining">₹ 0.00</div>
               </div>
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Overall Health</div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Overall Health</div>
                 <div style="font-size:1.05rem; font-weight:800; margin-top:4px;" id="budgetHealthStatus">
-                  <span style="display:inline-flex; align-items:center; gap:5px; color:var(--income);"><i data-lucide="shield-check" style="width:16px;height:16px;"></i> On Track</span>
+                  <span style="display:inline-flex; align-items:center; gap:5px; color:var(--income);"><i
+                      data-lucide="shield-check" style="width:16px;height:16px;"></i> On Track</span>
                 </div>
               </div>
             </div>
 
             <!-- Category Cards Grid -->
-            <div id="categoryBudgetGrid" class="category-budget-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+            <div id="categoryBudgetGrid" class="category-budget-grid"
+              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
               <!-- Dynamic Budget Cards injected by dashboard.js -->
             </div>
           </div>
@@ -543,47 +648,64 @@
 
         <!-- VENDOR OUTSTANDINGS & SUPPLIER KHATA -->
         <section class="card vendor-khata-section" style="margin-bottom:26px;">
-          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div class="card-hd"
+            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div style="display:flex; align-items:center; gap:10px;">
               <h4 style="display:flex; align-items:center; gap:8px;">
                 <i data-lucide="truck" style="width: 18px; height: 18px; color: var(--brand);"></i>
                 Vendor Outstandings & Supplier Khata
               </h4>
-              <span class="badge" id="vendorPendingBadge" style="font-size:0.72rem; background:rgba(244,63,94,0.12); color:var(--expense); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">
+              <span class="badge" id="vendorPendingBadge"
+                style="font-size:0.72rem; background:rgba(244,63,94,0.12); color:var(--expense); padding:2px 8px; border-radius:var(--r-sm); font-weight:700;">
                 0 Due
               </span>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <button class="btn btn-primary btn-sm" onclick="openVendorModal()" style="display:inline-flex; align-items:center; gap:6px;">
+              <button class="btn btn-primary btn-sm" onclick="openVendorModal()"
+                style="display:inline-flex; align-items:center; gap:6px;">
                 <i data-lucide="plus-circle" style="width: 14px; height: 14px;"></i>Add Supplier / Vendor
               </button>
             </div>
           </div>
           <div class="card-bd">
             <!-- Overall Vendor Summary Bar -->
-            <div class="budget-summary-bar" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
+            <div class="budget-summary-bar"
+              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Total Outstanding Payable</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--expense); margin-top:2px;" id="totalVendorPending">₹ 0.00</div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Total Outstanding Payable</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--expense); margin-top:2px;"
+                  id="totalVendorPending">₹ 0.00</div>
               </div>
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Total Goods Purchased</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--text-head); margin-top:2px;" id="totalVendorBilled">₹ 0.00</div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Total Goods Purchased</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--text-head); margin-top:2px;"
+                  id="totalVendorBilled">₹ 0.00</div>
               </div>
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Total Amount Paid</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;" id="totalVendorPaid">₹ 0.00</div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Total Amount Paid</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
+                  id="totalVendorPaid">₹ 0.00</div>
               </div>
               <div>
-                <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">Active Suppliers</div>
-                <div style="font-size:1.05rem; font-weight:800; color:var(--text-head); margin-top:4px;" id="totalVendorCount">
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Active Suppliers</div>
+                <div style="font-size:1.05rem; font-weight:800; color:var(--text-head); margin-top:4px;"
+                  id="totalVendorCount">
                   0 Active
                 </div>
               </div>
             </div>
 
             <!-- Vendor Cards Grid -->
-            <div id="vendorGrid" class="category-budget-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+            <div id="vendorGrid" class="category-budget-grid"
+              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
               <!-- Dynamic Vendor Cards injected by dashboard.js -->
             </div>
           </div>
@@ -649,15 +771,18 @@
         <section class="chart-grid">
           <div class="card chart-enhanced">
             <div class="card-hd">
-              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="bar-chart-2" style="width: 18px; height: 18px; color: var(--brand);"></i>Income vs Expense</h4><select class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
+              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="bar-chart-2"
+                  style="width: 18px; height: 18px; color: var(--brand);"></i>Income vs Expense</h4><select
+                class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
             </div>
             <div class="card-bd">
-            <div class="chart-wrap-lg"><canvas id="barChart"></canvas></div>
+              <div class="chart-wrap-lg"><canvas id="barChart"></canvas></div>
             </div>
           </div>
           <div class="card chart-enhanced">
             <div class="card-hd">
-              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--brand);"></i>Expense Breakdown</h4>
+              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="pie-chart"
+                  style="width: 18px; height: 18px; color: var(--brand);"></i>Expense Breakdown</h4>
               <select class="chart-sel" id="donutPeriod" onchange="buildDonutChart()">
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
@@ -711,7 +836,8 @@
           <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
             <div class="card chart-enhanced">
               <div class="card-hd">
-                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="sparkles" style="width: 18px; height: 18px; color: var(--brand);"></i>Smart Insights & AI Copilot</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="sparkles"
+                    style="width: 18px; height: 18px; color: var(--brand);"></i>Smart Insights & AI Copilot</h4>
               </div>
               <div class="card-bd" style="display:flex; flex-direction:column; gap:20px; padding:20px 24px;">
                 <!-- Health Score SVG circular gauge -->
@@ -744,7 +870,9 @@
                 <!-- Smart Insights recommendations -->
                 <div id="insightsBox"
                   style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; width:100%;">
-                  <div class="insight-item info" style="grid-column: span 2;"><span class="insight-icon" style="display:inline-flex; align-items:center; justify-content:center;"><i data-lucide="lightbulb" style="width: 14px; height: 14px;"></i></span>
+                  <div class="insight-item info" style="grid-column: span 2;"><span class="insight-icon"
+                      style="display:inline-flex; align-items:center; justify-content:center;"><i
+                        data-lucide="lightbulb" style="width: 14px; height: 14px;"></i></span>
                     <div class="insight-text">Add transactions to see insights</div>
                   </div>
                 </div>
@@ -753,7 +881,8 @@
             <div class="card">
               <div class="card-hd"
                 style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="history" style="width: 18px; height: 18px; color: var(--brand);"></i>Recent Activity</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="history"
+                    style="width: 18px; height: 18px; color: var(--brand);"></i>Recent Activity</h4>
                 <div style="display:flex; gap:8px;">
                   <button onclick="exportTransactionsCSV()" class="btn btn-outline btn-sm"
                     style="padding: 6px 12px; font-size: 0.75rem;">📥 Export CSV</button>
@@ -775,7 +904,9 @@
                     <tr>
                       <td colspan="5">
                         <div class="empty">
-                          <div class="empty-icon" style="display:flex; justify-content:center;"><i data-lucide="clipboard-list" style="width:32px; height:32px; color:var(--text-muted);"></i></div>
+                          <div class="empty-icon" style="display:flex; justify-content:center;"><i
+                              data-lucide="clipboard-list"
+                              style="width:32px; height:32px; color:var(--text-muted);"></i></div>
                           <h4>No transactions yet</h4>
                         </div>
                       </td>
@@ -788,7 +919,8 @@
           <div class="right-col">
             <div class="card chart-enhanced">
               <div class="card-hd">
-                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-compare" style="width: 18px; height: 18px; color: var(--brand);"></i>Month Comparison</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-compare"
+                    style="width: 18px; height: 18px; color: var(--brand);"></i>Month Comparison</h4>
               </div>
               <div class="card-bd">
                 <div class="compare-grid" style="margin-bottom:10px;">
@@ -809,7 +941,8 @@
 
             <div class="card">
               <div class="card-hd">
-                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="width: 18px; height: 18px; color: var(--expense);"></i>Top Expenses</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up"
+                    style="width: 18px; height: 18px; color: var(--expense);"></i>Top Expenses</h4>
               </div>
               <div class="card-bd" id="topCatBox">
                 <div class="empty">
@@ -819,7 +952,8 @@
             </div>
             <div class="card chart-enhanced">
               <div class="card-hd">
-                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="credit-card" style="width: 18px; height: 18px; color: var(--brand);"></i>Payment Modes</h4>
+                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="credit-card"
+                    style="width: 18px; height: 18px; color: var(--brand);"></i>Payment Modes</h4>
               </div>
               <div class="card-bd">
                 <div style="position:relative;height:150px;margin-bottom:12px;"><canvas id="payModeChart"></canvas>
@@ -843,7 +977,8 @@
     <div class="modal">
       <div class="modal-hd"
         style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%) !important; border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;">
-        <h3 id="incomeTitle" style="display:flex; align-items:center; gap:8px; color:#10b981;"><i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span></h3>
+        <h3 id="incomeTitle" style="display:flex; align-items:center; gap:8px; color:#10b981;"><i
+            data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span></h3>
         <button class="modal-x" onclick="closeModal('incomeModal')">✕</button>
       </div>
       <div class="modal-bd">
@@ -887,7 +1022,9 @@
             id="iPreviewVal">₹ 0.00</strong></div>
       </div>
       <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
-        <button class="btn btn-income" onclick="saveTransaction('income')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Income</button>
+        <button class="btn btn-income" onclick="saveTransaction('income')"
+          style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check"
+            style="width: 16px; height: 16px;"></i>Save Income</button>
       </div>
       <input type="hidden" id="iEditId" />
     </div>
@@ -898,7 +1035,8 @@
     <div class="modal">
       <div class="modal-hd"
         style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(244, 63, 94, 0.03) 100%) !important; border-bottom: 1px solid rgba(244, 63, 94, 0.15) !important;">
-        <h3 id="expenseTitle" style="display:flex; align-items:center; gap:8px; color:#f43f5e;"><i data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span></h3>
+        <h3 id="expenseTitle" style="display:flex; align-items:center; gap:8px; color:#f43f5e;"><i
+            data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span></h3>
         <button class="modal-x" onclick="closeModal('expenseModal')">✕</button>
       </div>
       <div class="modal-bd">
@@ -950,7 +1088,9 @@
             id="ePreviewVal">₹ 0.00</strong></div>
       </div>
       <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
-        <button class="btn btn-expense" onclick="saveTransaction('expense')" style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check" style="width: 16px; height: 16px;"></i>Save Expense</button>
+        <button class="btn btn-expense" onclick="saveTransaction('expense')"
+          style="display:inline-flex; align-items:center; gap:8px;"><i data-lucide="check"
+            style="width: 16px; height: 16px;"></i>Save Expense</button>
       </div>
       <input type="hidden" id="eEditId" />
       <input type="hidden" id="eBillId" />
@@ -962,7 +1102,8 @@
     <div class="modal" style="max-width: 480px;">
       <div class="modal-hd"
         style="background: linear-gradient(135deg, rgba(224, 231, 255, 0.4) 0%, rgba(237, 233, 254, 0.4) 100%) !important;">
-        <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="target" style="width: 18px; height: 18px; color: var(--brand);"></i>Configure Business Goals</h3>
+        <h3 style="display:flex; align-items:center; gap:8px;"><i data-lucide="target"
+            style="width: 18px; height: 18px; color: var(--brand);"></i>Configure Business Goals</h3>
         <button class="modal-x" onclick="closeModal('goalSettingsModal')">✕</button>
       </div>
       <div class="modal-bd">
@@ -981,7 +1122,8 @@
       </div>
       <div class="modal-ft">
         <button class="btn btn-outline" onclick="closeModal('goalSettingsModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveVisionGoals()"><i data-lucide="target" style="width: 16px; height: 16px; margin-right: 6px;"></i>Save Targets</button>
+        <button class="btn btn-primary" onclick="saveVisionGoals()"><i data-lucide="target"
+            style="width: 16px; height: 16px; margin-right: 6px;"></i>Save Targets</button>
       </div>
     </div>
   </div>
@@ -989,14 +1131,19 @@
   <!-- CATEGORY BUDGET MANAGER MODAL -->
   <div class="modal-bg" id="budgetModal">
     <div class="modal" style="max-width: 540px;">
-      <div class="modal-hd" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
-        <h3 style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="sliders" style="width: 20px; height: 20px;"></i><span>Manage Category Budgets</span></h3>
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
+        <h3 style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="sliders"
+            style="width: 20px; height: 20px;"></i><span>Manage Category Budgets</span></h3>
         <button class="modal-x" onclick="closeModal('budgetModal')">✕</button>
       </div>
       <div class="modal-bd" style="max-height: calc(85vh - 140px); overflow-y: auto; padding: 20px 24px;">
-        <div style="background: var(--bg-app); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px; margin-bottom: 20px;">
-          <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-head); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-            <i data-lucide="plus-circle" style="width: 15px; height: 15px; color: var(--brand);"></i> Set / Update Category Limit
+        <div
+          style="background: var(--bg-app); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px; margin-bottom: 20px;">
+          <div
+            style="font-weight: 700; font-size: 0.82rem; color: var(--text-head); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="plus-circle" style="width: 15px; height: 15px; color: var(--brand);"></i> Set / Update
+            Category Limit
           </div>
           <div class="form-row">
             <div class="fg" style="flex: 1.3;">
@@ -1025,17 +1172,21 @@
             <div class="fg" style="flex: 1;">
               <label class="fl">MONTHLY LIMIT (₹) <span class="req">*</span></label>
               <div style="position:relative;">
-                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--brand);z-index:1;">₹</span>
-                <input type="number" class="fc" id="bgtAmount" placeholder="10000" min="0" step="100" style="padding-left:30px;" />
+                <span
+                  style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--brand);z-index:1;">₹</span>
+                <input type="number" class="fc" id="bgtAmount" placeholder="10000" min="0" step="100"
+                  style="padding-left:30px;" />
               </div>
             </div>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="saveCategoryBudgetFromModal()" style="width:100%; justify-content:center; margin-top:8px;">
+          <button class="btn btn-primary btn-sm" onclick="saveCategoryBudgetFromModal()"
+            style="width:100%; justify-content:center; margin-top:8px;">
             <i data-lucide="save" style="width:14px; height:14px; margin-right:6px;"></i>Save Category Budget
           </button>
         </div>
 
-        <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-head); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <div
+          style="font-weight: 700; font-size: 0.82rem; color: var(--text-head); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
           <span>Active Category Budgets</span>
           <span style="font-size:0.72rem; color:var(--text-light);" id="bgtCountText">0 configured</span>
         </div>
@@ -1052,15 +1203,18 @@
   <!-- ADD / EDIT VENDOR MODAL -->
   <div class="modal-bg" id="vendorModal">
     <div class="modal" style="max-width: 520px;">
-      <div class="modal-hd" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
-        <h3 id="vendorModalTitle" style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="truck" style="width: 20px; height: 20px;"></i><span>Add Supplier / Vendor</span></h3>
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
+        <h3 id="vendorModalTitle" style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i
+            data-lucide="truck" style="width: 20px; height: 20px;"></i><span>Add Supplier / Vendor</span></h3>
         <button class="modal-x" onclick="closeModal('vendorModal')">✕</button>
       </div>
       <div class="modal-bd">
         <div class="form-row">
           <div class="fg">
             <label class="fl">SUPPLIER / VENDOR NAME <span class="req">*</span></label>
-            <input type="text" class="fc" id="vndName" placeholder="e.g. Amul Dairy, Vegetable Market" autocomplete="off" />
+            <input type="text" class="fc" id="vndName" placeholder="e.g. Amul Dairy, Vegetable Market"
+              autocomplete="off" />
           </div>
           <div class="fg">
             <label class="fl">SUPPLY CATEGORY <span class="req">*</span></label>
@@ -1086,8 +1240,10 @@
           <div class="fg">
             <label class="fl">INITIAL BILL / PURCHASE (₹)</label>
             <div style="position:relative;">
-              <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--brand);z-index:1;">₹</span>
-              <input type="number" class="fc" id="vndAmount" placeholder="0.00" min="0" step="1" style="padding-left:30px;" />
+              <span
+                style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--brand);z-index:1;">₹</span>
+              <input type="number" class="fc" id="vndAmount" placeholder="0.00" min="0" step="1"
+                style="padding-left:30px;" />
             </div>
           </div>
         </div>
@@ -1105,7 +1261,8 @@
       </div>
       <div class="modal-ft">
         <button class="btn btn-outline" onclick="closeModal('vendorModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveVendorFromModal()" style="display:inline-flex; align-items:center; gap:6px;">
+        <button class="btn btn-primary" onclick="saveVendorFromModal()"
+          style="display:inline-flex; align-items:center; gap:6px;">
           <i data-lucide="save" style="width:15px; height:15px;"></i>Save Supplier
         </button>
       </div>
@@ -1116,23 +1273,30 @@
   <!-- ADD NEW BILL / PURCHASE MODAL (માલ ઉમેરો) -->
   <div class="modal-bg" id="vendorBillModal">
     <div class="modal" style="max-width: 480px;">
-      <div class="modal-hd" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
-        <h3 style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add New Goods / Bill</span></h3>
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
+        <h3 style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="plus-circle"
+            style="width: 20px; height: 20px;"></i><span>Add New Goods / Bill</span></h3>
         <button class="modal-x" onclick="closeModal('vendorBillModal')">✕</button>
       </div>
       <div class="modal-bd">
-        <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:12px 16px; margin-bottom:16px;">
+        <div
+          style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:12px 16px; margin-bottom:16px;">
           <div style="font-size:0.75rem; color:var(--text-light); font-weight:700;">SUPPLIER</div>
-          <div id="vndBillSupplierName" style="font-size:1rem; font-weight:800; color:var(--text-head); margin-top:2px;">--</div>
-          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Current Pending: <strong id="vndBillCurrentPending" style="color:var(--expense);">₹ 0.00</strong></div>
+          <div id="vndBillSupplierName"
+            style="font-size:1rem; font-weight:800; color:var(--text-head); margin-top:2px;">--</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Current Pending: <strong
+              id="vndBillCurrentPending" style="color:var(--expense);">₹ 0.00</strong></div>
         </div>
 
         <div class="form-row">
           <div class="fg">
             <label class="fl">NEW BILL AMOUNT (₹) <span class="req">*</span></label>
             <div style="position:relative;">
-              <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--brand);z-index:1;">₹</span>
-              <input type="number" class="fc" id="vndBillAmt" placeholder="5000" min="1" step="1" style="padding-left:30px;" />
+              <span
+                style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--brand);z-index:1;">₹</span>
+              <input type="number" class="fc" id="vndBillAmt" placeholder="5000" min="1" step="1"
+                style="padding-left:30px;" />
             </div>
           </div>
           <div class="fg">
@@ -1143,12 +1307,14 @@
 
         <div class="fg">
           <label class="fl">ITEMS / INVOICE NOTES</label>
-          <input type="text" class="fc" id="vndBillNotes" placeholder="e.g. 20kg Cheese, 50 Butter Packets, Bill #104" />
+          <input type="text" class="fc" id="vndBillNotes"
+            placeholder="e.g. 20kg Cheese, 50 Butter Packets, Bill #104" />
         </div>
       </div>
       <div class="modal-ft">
         <button class="btn btn-outline" onclick="closeModal('vendorBillModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="submitVendorBillModal()" style="display:inline-flex; align-items:center; gap:6px;">
+        <button class="btn btn-primary" onclick="submitVendorBillModal()"
+          style="display:inline-flex; align-items:center; gap:6px;">
           <i data-lucide="plus" style="width:15px; height:15px;"></i>Add To Pending Bill
         </button>
       </div>
@@ -1159,19 +1325,24 @@
   <!-- RECORD PAYMENT TO VENDOR MODAL (રકમ ચૂકવો) -->
   <div class="modal-bg" id="vendorPayModal">
     <div class="modal" style="max-width: 480px;">
-      <div class="modal-hd" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%) !important; border-bottom:1px solid rgba(16, 185, 129, 0.15) !important;">
-        <h3 style="display:flex; align-items:center; gap:8px; color:var(--income);"><i data-lucide="check-circle" style="width: 20px; height: 20px;"></i><span>Record Supplier Payment</span></h3>
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%) !important; border-bottom:1px solid rgba(16, 185, 129, 0.15) !important;">
+        <h3 style="display:flex; align-items:center; gap:8px; color:var(--income);"><i data-lucide="check-circle"
+            style="width: 20px; height: 20px;"></i><span>Record Supplier Payment</span></h3>
         <button class="modal-x" onclick="closeModal('vendorPayModal')">✕</button>
       </div>
       <div class="modal-bd">
-        <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:12px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+        <div
+          style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:12px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <div style="font-size:0.75rem; color:var(--text-light); font-weight:700;">SUPPLIER</div>
-            <div id="vndPaySupplierName" style="font-size:1rem; font-weight:800; color:var(--text-head); margin-top:2px;">--</div>
+            <div id="vndPaySupplierName"
+              style="font-size:1rem; font-weight:800; color:var(--text-head); margin-top:2px;">--</div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:0.75rem; color:var(--text-light); font-weight:700;">OUTSTANDING DUE</div>
-            <div id="vndPayOutstandingAmt" style="font-size:1.15rem; font-weight:900; color:var(--expense); margin-top:2px;">₹ 0.00</div>
+            <div id="vndPayOutstandingAmt"
+              style="font-size:1.15rem; font-weight:900; color:var(--expense); margin-top:2px;">₹ 0.00</div>
           </div>
         </div>
 
@@ -1179,8 +1350,10 @@
           <div class="fg">
             <label class="fl">PAYMENT AMOUNT (₹) <span class="req">*</span></label>
             <div style="position:relative;">
-              <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--income);z-index:1;">₹</span>
-              <input type="number" class="fc" id="vndPayAmt" placeholder="0.00" min="1" step="1" style="padding-left:30px;" />
+              <span
+                style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--income);z-index:1;">₹</span>
+              <input type="number" class="fc" id="vndPayAmt" placeholder="0.00" min="1" step="1"
+                style="padding-left:30px;" />
             </div>
           </div>
           <div class="fg">
@@ -1206,16 +1379,20 @@
           </div>
         </div>
 
-        <div style="margin-top:12px; padding:10px 14px; background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.2); border-radius:var(--r-md); display:flex; align-items:center; gap:8px;">
-          <input type="checkbox" id="vndPayAutoExpense" checked style="width:16px; height:16px; cursor:pointer; accent-color:var(--income);" />
-          <label for="vndPayAutoExpense" style="font-size:0.78rem; font-weight:700; color:var(--text-head); cursor:pointer; margin:0;">
+        <div
+          style="margin-top:12px; padding:10px 14px; background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.2); border-radius:var(--r-md); display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="vndPayAutoExpense" checked
+            style="width:16px; height:16px; cursor:pointer; accent-color:var(--income);" />
+          <label for="vndPayAutoExpense"
+            style="font-size:0.78rem; font-weight:700; color:var(--text-head); cursor:pointer; margin:0;">
             Automatically log this payment in Expense Ledger
           </label>
         </div>
       </div>
       <div class="modal-ft">
         <button class="btn btn-outline" onclick="closeModal('vendorPayModal')">Cancel</button>
-        <button class="btn btn-income" onclick="submitVendorPayModal()" style="display:inline-flex; align-items:center; gap:6px;">
+        <button class="btn btn-income" onclick="submitVendorPayModal()"
+          style="display:inline-flex; align-items:center; gap:6px;">
           <i data-lucide="check" style="width:16px; height:16px;"></i>Confirm Payment
         </button>
       </div>
@@ -1226,28 +1403,35 @@
   <!-- VENDOR LEDGER / PURCHASE & PAYMENT HISTORY MODAL -->
   <div class="modal-bg" id="vendorHistoryModal">
     <div class="modal" style="max-width: 560px;">
-      <div class="modal-hd" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
-        <h3 style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="file-text" style="width: 20px; height: 20px;"></i><span id="vndHistoryTitle">Supplier Ledger History</span></h3>
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
+        <h3 style="display:flex; align-items:center; gap:8px; color:var(--brand);"><i data-lucide="file-text"
+            style="width: 20px; height: 20px;"></i><span id="vndHistoryTitle">Supplier Ledger History</span></h3>
         <button class="modal-x" onclick="closeModal('vendorHistoryModal')">✕</button>
       </div>
       <div class="modal-bd" style="max-height: calc(80vh - 140px); overflow-y: auto;">
         <!-- Header KPI bar for supplier -->
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:18px; padding:12px 14px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); text-align:center;">
+        <div
+          style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:18px; padding:12px 14px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); text-align:center;">
           <div>
             <div style="font-size:0.7rem; color:var(--text-light); font-weight:700;">TOTAL BILLED</div>
-            <div id="vndHistBilled" style="font-size:1rem; font-weight:800; color:var(--text-head); margin-top:2px;">₹ 0.00</div>
+            <div id="vndHistBilled" style="font-size:1rem; font-weight:800; color:var(--text-head); margin-top:2px;">₹
+              0.00</div>
           </div>
           <div>
             <div style="font-size:0.7rem; color:var(--text-light); font-weight:700;">TOTAL PAID</div>
-            <div id="vndHistPaid" style="font-size:1rem; font-weight:800; color:var(--income); margin-top:2px;">₹ 0.00</div>
+            <div id="vndHistPaid" style="font-size:1rem; font-weight:800; color:var(--income); margin-top:2px;">₹ 0.00
+            </div>
           </div>
           <div>
             <div style="font-size:0.7rem; color:var(--text-light); font-weight:700;">OUTSTANDING</div>
-            <div id="vndHistPending" style="font-size:1rem; font-weight:800; color:var(--expense); margin-top:2px;">₹ 0.00</div>
+            <div id="vndHistPending" style="font-size:1rem; font-weight:800; color:var(--expense); margin-top:2px;">₹
+              0.00</div>
           </div>
         </div>
 
-        <div style="font-weight:700; font-size:0.82rem; color:var(--text-head); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+        <div
+          style="font-weight:700; font-size:0.82rem; color:var(--text-head); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
           <i data-lucide="history" style="width:15px; height:15px; color:var(--brand);"></i> Timeline Ledger
         </div>
         <div id="vndHistoryTimeline" style="padding: 4px 10px;">
@@ -1263,8 +1447,8 @@
   <div class="toast-box" id="toastBox"></div>
 
   <!-- JS Files - app.js MUST be before dashboard.js -->
-  <script src="assets/js/app.js?v=1.0.1"></script>
-  <script src="assets/js/dashboard.js?v=1.0.1"></script>
+  <script src="assets/js/app.js?v=1.0.4"></script>
+  <script src="assets/js/dashboard.js?v=1.0.4"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
