@@ -1862,10 +1862,13 @@ const Dash = {
     if (!grid) return;
 
     const vendors = getVendors();
+    const currentMonthStr = typeof today === 'function' ? today().substring(0, 7) : new Date().toISOString().substring(0, 7);
 
     let totalPending = 0;
     let totalBilled = 0;
     let totalPaid = 0;
+    let monthlyBilled = 0;
+    let monthlyPaid = 0;
     let pendingCount = 0;
 
     vendors.forEach(v => {
@@ -1876,6 +1879,46 @@ const Dash = {
       totalPaid += paid;
       totalPending += pending;
       if (pending > 0) pendingCount++;
+
+      // Monthly Purchases Calculation
+      const historyPurchases = Array.isArray(v.history)
+        ? v.history.filter(h => h.type === 'purchase')
+        : [];
+      if (historyPurchases.length > 0) {
+        monthlyBilled += historyPurchases
+          .filter(h => h.date && h.date.startsWith(currentMonthStr))
+          .reduce((sum, h) => sum + (parseFloat(h.amount) || 0), 0);
+
+        const totalHistPurchased = historyPurchases.reduce((sum, h) => sum + (parseFloat(h.amount) || 0), 0);
+        const initialAmtDiff = Math.max(0, billed - totalHistPurchased);
+        if (initialAmtDiff > 0 && v.date && v.date.startsWith(currentMonthStr)) {
+          monthlyBilled += initialAmtDiff;
+        }
+      } else {
+        if (v.date && v.date.startsWith(currentMonthStr)) {
+          monthlyBilled += billed;
+        }
+      }
+
+      // Monthly Payments Calculation
+      const historyPayments = Array.isArray(v.history)
+        ? v.history.filter(h => h.type === 'payment')
+        : [];
+      if (historyPayments.length > 0) {
+        monthlyPaid += historyPayments
+          .filter(h => h.date && h.date.startsWith(currentMonthStr))
+          .reduce((sum, h) => sum + (parseFloat(h.amount) || 0), 0);
+
+        const totalHistPaid = historyPayments.reduce((sum, h) => sum + (parseFloat(h.amount) || 0), 0);
+        const diffPaid = Math.max(0, paid - totalHistPaid);
+        if (diffPaid > 0 && v.date && v.date.startsWith(currentMonthStr)) {
+          monthlyPaid += diffPaid;
+        }
+      } else {
+        if (v.date && v.date.startsWith(currentMonthStr)) {
+          monthlyPaid += paid;
+        }
+      }
     });
 
     const badgeEl = document.getElementById('vendorPendingBadge');
@@ -1886,9 +1929,10 @@ const Dash = {
     }
 
     this.setText('totalVendorPending', inr(totalPending));
+    this.setText('monthlyVendorBilled', inr(monthlyBilled));
+    this.setText('monthlyVendorPaid', inr(monthlyPaid));
     this.setText('totalVendorBilled', inr(totalBilled));
     this.setText('totalVendorPaid', inr(totalPaid));
-    this.setText('totalVendorCount', `${vendors.length} Active`);
 
     if (!vendors || vendors.length === 0) {
       grid.innerHTML = `
@@ -2932,7 +2976,16 @@ async function saveVendorFromModal() {
       paidAmount: 0,
       dueDate: dueEl ? dueEl.value : '',
       notes: notesEl ? notesEl.value.trim() : '',
-      date: new Date().toISOString().substring(0, 10)
+      date: new Date().toISOString().substring(0, 10),
+      history: initialAmt > 0 ? [{
+        id: 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        type: 'purchase',
+        amount: initialAmt,
+        date: new Date().toISOString().substring(0, 10),
+        mode: '',
+        notes: notesEl && notesEl.value.trim() ? notesEl.value.trim() : 'Initial Opening Balance / Purchase',
+        savedAt: new Date().toISOString()
+      }] : []
     };
     await saveVendorToFirebase(vendorObj);
     toast(`Supplier "${name}" added to Khata! 🤝`, 'success');

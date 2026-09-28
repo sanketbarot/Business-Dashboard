@@ -670,13 +670,27 @@
           <div class="card-bd">
             <!-- Overall Vendor Summary Bar -->
             <div class="budget-summary-bar"
-              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
+              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
               <div>
                 <div
                   style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
                   Total Outstanding Payable</div>
                 <div style="font-size:1.25rem; font-weight:800; color:var(--expense); margin-top:2px;"
                   id="totalVendorPending">₹ 0.00</div>
+              </div>
+              <div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Monthly Goods Purchased</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--brand); margin-top:2px;"
+                  id="monthlyVendorBilled">₹ 0.00</div>
+              </div>
+              <div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
+                  Monthly Amount Paid</div>
+                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
+                  id="monthlyVendorPaid">₹ 0.00</div>
               </div>
               <div>
                 <div
@@ -691,15 +705,6 @@
                   Total Amount Paid</div>
                 <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
                   id="totalVendorPaid">₹ 0.00</div>
-              </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Active Suppliers</div>
-                <div style="font-size:1.05rem; font-weight:800; color:var(--text-head); margin-top:4px;"
-                  id="totalVendorCount">
-                  0 Active
-                </div>
               </div>
             </div>
 
@@ -1224,6 +1229,7 @@
               <option>🍞 Bread / Bakery</option>
               <option>🍔 Food & Dining</option>
               <option>📦 Supplies</option>
+              <option>👥 Salary</option>
               <option>⛽ Fuel</option>
               <option>🔨 Maintenance</option>
               <option>📢 Marketing</option>
