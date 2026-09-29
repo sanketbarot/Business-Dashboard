@@ -90,6 +90,19 @@ const Dash = {
     try { this.loadBills(); } catch (e) { console.error('loadBills err:', e); }
     try { this.renderExpiryAlerts(); } catch (e) { console.error('renderExpiryAlerts err:', e); }
 
+    // Real-time listener for Stock updates from Expiry Tracker page or storage changes
+    if (!this._stockListenersAttached) {
+      this._stockListenersAttached = true;
+      window.addEventListener('stockUpdated', () => {
+        try { this.loadVendors(); } catch (e) { }
+      });
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'bd_expiry_items' || e.key === 'bd_vendors') {
+          try { this.loadVendors(); } catch (e) { }
+        }
+      });
+    }
+
     const renderAllCharts = () => {
       const txns = getTxns();
       try { this.buildBarChart(txns); } catch (e) { console.error('buildBarChart err:', e); }
@@ -1928,11 +1941,15 @@ const Dash = {
       badgeEl.style.color = pendingCount > 0 ? 'var(--expense)' : 'var(--income)';
     }
 
+    const stockItems = (typeof getExpiryItems === 'function' ? getExpiryItems() : []);
+    const totalStockValue = stockItems.reduce((sum, i) => sum + ((parseFloat(i.cost) || 0) * (parseFloat(i.quantity) || 0)), 0);
+
     this.setText('totalVendorPending', inr(totalPending));
     this.setText('monthlyVendorBilled', inr(monthlyBilled));
     this.setText('monthlyVendorPaid', inr(monthlyPaid));
     this.setText('totalVendorBilled', inr(totalBilled));
     this.setText('totalVendorPaid', inr(totalPaid));
+    this.setText('totalVendorStockValue', inr(totalStockValue));
 
     if (!vendors || vendors.length === 0) {
       grid.innerHTML = `
@@ -1956,6 +1973,21 @@ const Dash = {
       const isSettled = pending <= 0;
       const isPartial = !isSettled && paid > 0;
       const pctPaid = billed > 0 ? Math.min(100, Math.round((paid / billed) * 100)) : 100;
+
+      const vNameClean = (v.name || '').trim().toLowerCase();
+      const vendorStockVal = stockItems
+        .filter(item => {
+          if (!vNameClean) return false;
+          const itemBrand = (item.brand || '').trim().toLowerCase();
+          const itemName = (item.name || '').trim().toLowerCase();
+          const itemSupplier = (item.supplier || '').trim().toLowerCase();
+          return itemBrand === vNameClean ||
+                 (itemBrand && vNameClean.includes(itemBrand)) ||
+                 (itemBrand && itemBrand.includes(vNameClean)) ||
+                 (itemSupplier && (itemSupplier.includes(vNameClean) || vNameClean.includes(itemSupplier))) ||
+                 itemName.includes(vNameClean);
+        })
+        .reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * (parseFloat(item.quantity) || 0)), 0);
 
       let statusBadge = '';
       let cardBorder = 'var(--border)';
@@ -1983,8 +2015,9 @@ const Dash = {
                 </div>
                 <div>
                   <div style="font-size:0.9rem; font-weight:800; color:var(--text-head); line-height:1.2;">${escapeHtml(v.name)}</div>
-                  <div style="font-size:0.7rem; color:var(--text-light); font-weight:600; margin-top:2px;">
-                    ${escapeHtml(v.category)} ${v.phone ? '• 📞 ' + escapeHtml(v.phone) : ''}
+                  <div style="font-size:0.7rem; color:var(--text-light); font-weight:600; margin-top:2px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <span>${escapeHtml(v.category)} ${v.phone ? '• 📞 ' + escapeHtml(v.phone) : ''}</span>
+                    ${vendorStockVal > 0 ? `<span style="font-size:0.68rem; font-weight:800; color:#8b5cf6; background:rgba(139,92,246,0.12); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;" title="Current In-Stock Inventory Value"><i data-lucide="package" style="width:10px; height:10px;"></i> Stock: ${inr(vendorStockVal)}</span>` : ''}
                   </div>
                 </div>
               </div>

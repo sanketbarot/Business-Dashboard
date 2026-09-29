@@ -23,8 +23,25 @@ const ExpiryPage = {
       }
     }
 
+    this.populateVendorSuggestions();
     this.bindEvents();
     this.render();
+  },
+
+  populateVendorSuggestions() {
+    const brandDatalist = document.getElementById('brandSuggestions');
+    if (brandDatalist && typeof getVendors === 'function') {
+      const vendors = getVendors();
+      const existingOptions = Array.from(brandDatalist.querySelectorAll('option')).map(o => (o.value || '').toLowerCase());
+      vendors.forEach(v => {
+        if (v && v.name && !existingOptions.includes(v.name.toLowerCase())) {
+          const opt = document.createElement('option');
+          opt.value = v.name;
+          brandDatalist.appendChild(opt);
+          existingOptions.push(v.name.toLowerCase());
+        }
+      });
+    }
   },
 
   bindEvents() {
@@ -524,6 +541,8 @@ const ExpiryPage = {
     const modal = document.getElementById('stockModal');
     if (!modal) return;
 
+    this.populateVendorSuggestions();
+
     // Reset fields
     document.getElementById('stkEditId').value = '';
     document.getElementById('stkName').value = '';
@@ -1006,6 +1025,10 @@ const ExpiryPage = {
 
     currentExpiryItems = sampleItems;
     localStorage.setItem('bd_expiry_items', JSON.stringify(sampleItems));
+    if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+      Dash.loadVendors();
+    }
+    window.dispatchEvent(new CustomEvent('stockUpdated', { detail: { items: sampleItems } }));
   },
 
   escapeHtml(str) {

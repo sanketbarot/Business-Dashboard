@@ -123,7 +123,8 @@
               <div>
                 <div
                   style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                  <i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme</div>
+                  <i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme
+                </div>
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;">
                   <button onclick="APP_THEME.setTheme('glass')" class="theme-mode-btn" id="theme-btn-glass"
                     title="Liquid Glass Theme">
@@ -144,7 +145,8 @@
               <div>
                 <div
                   style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                  <i data-lucide="paintbrush" style="width: 14px; height: 14px;"></i> Brand Accent</div>
+                  <i data-lucide="paintbrush" style="width: 14px; height: 14px;"></i> Brand Accent
+                </div>
                 <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; justify-items:center;">
                   <button onclick="APP_THEME.setAccent('blue')" title="Blue" class="accent-dot-btn" id="accent-dot-blue"
                     style="background:#3b82f6;"></button>
@@ -705,6 +707,18 @@
                   Total Amount Paid</div>
                 <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
                   id="totalVendorPaid">₹ 0.00</div>
+              </div>
+              <div>
+                <div
+                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; justify-content:space-between;">
+                  <span>Total Stock Value</span>
+                  <a href="expiry.html" title="View Stock & Expiry Tracker"
+                    style="font-size:0.65rem; color:#8b5cf6; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:2px;">
+                    Stock <i data-lucide="arrow-up-right" style="width:10px; height:10px;"></i>
+                  </a>
+                </div>
+                <div style="font-size:1.25rem; font-weight:800; color:#8b5cf6; margin-top:2px;"
+                  id="totalVendorStockValue">₹ 0.00</div>
               </div>
             </div>
 

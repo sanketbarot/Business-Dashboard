@@ -350,6 +350,10 @@ function setupFirebaseExpirySync() {
       if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
         Dash.renderExpiryAlerts();
       }
+      if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+        Dash.loadVendors();
+      }
+      window.dispatchEvent(new CustomEvent('stockUpdated', { detail: { items: currentExpiryItems } }));
 
       console.log('✅ Synced ' + currentExpiryItems.length + ' stock & expiry items from Firebase');
     },
@@ -1105,6 +1109,10 @@ async function saveExpiryItemToFirebase(itemObj) {
   if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
     Dash.renderExpiryAlerts();
   }
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+  window.dispatchEvent(new CustomEvent('stockUpdated', { detail: { items } }));
 
   const ref = getUserExpiryRef();
   if (!ref) return fullItem;
@@ -1135,7 +1143,10 @@ async function deleteExpiryItemFromFirebase(itemId) {
   if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
     Dash.renderExpiryAlerts();
   }
-
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+  window.dispatchEvent(new CustomEvent('stockUpdated', { detail: { items } }));
   const ref = getUserExpiryRef();
   if (!ref) return true;
 
@@ -1174,6 +1185,10 @@ async function markExpiryItemStatusInFirebase(itemId, newStatus = 'consumed') {
   if (typeof Dash !== 'undefined' && Dash.renderExpiryAlerts) {
     Dash.renderExpiryAlerts();
   }
+  if (typeof Dash !== 'undefined' && Dash.loadVendors) {
+    Dash.loadVendors();
+  }
+  window.dispatchEvent(new CustomEvent('stockUpdated', { detail: { items } }));
 
   const ref = getUserExpiryRef();
   if (!ref) return true;
