@@ -339,29 +339,49 @@ const Dash = {
     this.setBarWidth('msExpenseBar', (avgExpense / maxAvg) * 100);
     this.setBarWidth('msSavingsBar', Math.max(0, savingsRate));
 
-    // --- MONTHLY ANALYTICS ---
-    const monthSet = new Set();
-    for (let i = 0; i < all.length; i++) {
-      if (all[i].date && typeof all[i].date === 'string') {
-        monthSet.add(all[i].date.substring(0, 7));
+    // --- CURRENT MONTH ANALYTICS (Active days in current month) ---
+    const monthTxns = (typeof filterByPeriod === 'function') ? filterByPeriod(all, 'month') : [];
+    if (!monthTxns.length) {
+      this.setText('msAvgIncomeMonth', '₹ 0');
+      this.setText('msAvgExpenseMonth', '₹ 0');
+      this.setText('msSavingsMonth', '0%');
+      this.setText('msIncomeMonths', 'No data this month');
+      this.setText('msExpenseMonths', 'No data this month');
+      this.setText('msSavingsMonthSub', 'Start adding data');
+      this.setBarWidth('msIncomeMonthBar', 0);
+      this.setBarWidth('msExpenseMonthBar', 0);
+      this.setBarWidth('msSavingsMonthBar', 0);
+    } else {
+      const mDaySet = new Set();
+      for (let i = 0; i < monthTxns.length; i++) {
+        if (monthTxns[i].date) mDaySet.add(monthTxns[i].date);
       }
+      const mNumDays = Math.max(mDaySet.size, 1);
+      const mTot = calcTotals(monthTxns);
+      const mAvgIncome = mTot.income / mNumDays;
+      const mAvgExpense = mTot.expense / mNumDays;
+      const mSavingsRate = mTot.income > 0 ? Math.round((mTot.profit / mTot.income) * 100) : 0;
+
+      this.setText('msAvgIncomeMonth', inr(mAvgIncome));
+      this.setText('msAvgExpenseMonth', inr(mAvgExpense));
+      this.setText('msSavingsMonth', mSavingsRate + '%');
+
+      const mDayLabel = mNumDays === 1 ? 'day' : 'days';
+      this.setText('msIncomeMonths', 'Across ' + mNumDays + ' active ' + mDayLabel + ' this month');
+      this.setText('msExpenseMonths', 'Across ' + mNumDays + ' active ' + mDayLabel + ' this month');
+
+      let mSub = '❌ Loss';
+      if (mSavingsRate >= 30) mSub = '🎉 Excellent!';
+      else if (mSavingsRate >= 20) mSub = '💪 Great!';
+      else if (mSavingsRate >= 10) mSub = '👍 Good';
+      else if (mSavingsRate > 0) mSub = '⚠️ Improve';
+      this.setText('msSavingsMonthSub', mSub);
+
+      const maxAvgMonth = Math.max(mAvgIncome, mAvgExpense, 1);
+      this.setBarWidth('msIncomeMonthBar', (mAvgIncome / maxAvgMonth) * 100);
+      this.setBarWidth('msExpenseMonthBar', (mAvgExpense / maxAvgMonth) * 100);
+      this.setBarWidth('msSavingsMonthBar', Math.max(0, mSavingsRate));
     }
-    const numMonths = Math.max(monthSet.size, 1);
-    const avgIncomeMonth = tot.income / numMonths;
-    const avgExpenseMonth = tot.expense / numMonths;
-    const monthLabel = numMonths === 1 ? 'month' : 'months';
-
-    this.setText('msAvgIncomeMonth', inr(avgIncomeMonth));
-    this.setText('msAvgExpenseMonth', inr(avgExpenseMonth));
-    this.setText('msSavingsMonth', savingsRate + '%');
-    this.setText('msIncomeMonths', 'Across ' + numMonths + ' active ' + monthLabel);
-    this.setText('msExpenseMonths', 'Across ' + numMonths + ' active ' + monthLabel);
-    this.setText('msSavingsMonthSub', sub);
-
-    const maxAvgMonth = Math.max(avgIncomeMonth, avgExpenseMonth, 1);
-    this.setBarWidth('msIncomeMonthBar', (avgIncomeMonth / maxAvgMonth) * 100);
-    this.setBarWidth('msExpenseMonthBar', (avgExpenseMonth / maxAvgMonth) * 100);
-    this.setBarWidth('msSavingsMonthBar', Math.max(0, savingsRate));
   },
 
   setBarWidth: function (id, percent) {
@@ -1313,45 +1333,44 @@ const Dash = {
       savingsRateData[idx] = Math.max(0, rate);
     });
 
-    // Monthly sparkline data (last 6 months)
-    const monthKeys = [];
-    const monthLabels = [];
-    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
-    const curYear = now.getFullYear();
-    const curMonth = now.getMonth();
-    const mNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // Current month sparkline data (daily trend of current month)
+    const monthTxns = (typeof filterByPeriod === 'function') ? filterByPeriod(all, 'month') : [];
+    const curNow = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
+    const curParts = (typeof getISTDateParts === 'function') ? getISTDateParts(curNow) : { year: curNow.getFullYear(), month: curNow.getMonth() + 1, day: curNow.getDate() };
+    const curYear = curParts.year;
+    const curMonth = curParts.month;
+    const curDay = Math.max(curParts.day, 1);
 
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(curYear, curMonth - i, 1);
-      const y = d.getFullYear();
-      const m = d.getMonth();
-      const yyyy_mm = `${y}-${String(m + 1).padStart(2, '0')}`;
-      monthKeys.push(yyyy_mm);
-      monthLabels.push(mNames[m]);
+    const curMonthDates = [];
+    const curMonthLabels = [];
+    const startDay = Math.max(1, curDay - 13);
+    for (let d = startDay; d <= curDay; d++) {
+      const ds = `${curYear}-${String(curMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      curMonthDates.push(ds);
+      curMonthLabels.push(String(d));
     }
 
-    const monthIncomeData = new Array(6).fill(0);
-    const monthExpenseData = new Array(6).fill(0);
-    const monthSavingsRateData = new Array(6).fill(0);
+    const curMonthIncome = new Array(curMonthDates.length).fill(0);
+    const curMonthExpense = new Array(curMonthDates.length).fill(0);
+    const curMonthSavingsRate = new Array(curMonthDates.length).fill(0);
 
-    const monthMap = {};
-    all.forEach(t => {
-      if (!t.date || typeof t.date !== 'string') return;
-      const key = t.date.substring(0, 7);
-      if (!monthMap[key]) monthMap[key] = { income: 0, expense: 0 };
+    const curMonthMap = {};
+    monthTxns.forEach(t => {
+      if (!t.date) return;
+      if (!curMonthMap[t.date]) curMonthMap[t.date] = { income: 0, expense: 0 };
       const amt = parseFloat(t.amount || 0);
-      if (t.type === 'income') monthMap[key].income += amt;
-      else if (t.type === 'expense') monthMap[key].expense += amt;
+      if (t.type === 'income') curMonthMap[t.date].income += amt;
+      else if (t.type === 'expense') curMonthMap[t.date].expense += amt;
     });
 
-    monthKeys.forEach((key, idx) => {
-      const mData = monthMap[key] || { income: 0, expense: 0 };
-      monthIncomeData[idx] = mData.income;
-      monthExpenseData[idx] = mData.expense;
-      const inc = mData.income;
-      const exp = mData.expense;
+    curMonthDates.forEach((ds, idx) => {
+      const dData = curMonthMap[ds] || { income: 0, expense: 0 };
+      curMonthIncome[idx] = dData.income;
+      curMonthExpense[idx] = dData.expense;
+      const inc = dData.income;
+      const exp = dData.expense;
       const rate = inc > 0 ? Math.round(((inc - exp) / inc) * 100) : 0;
-      monthSavingsRateData[idx] = Math.max(0, rate);
+      curMonthSavingsRate[idx] = Math.max(0, rate);
     });
 
     const sparkConfigs = [
@@ -1362,9 +1381,9 @@ const Dash = {
       { id: 'sparklineAvgIncome', data: incomeData, labels: dateLabels, color: themeColors.getIncome(), label: 'Avg Income', chartKey: 'sparkAvgIncome' },
       { id: 'sparklineAvgExpense', data: expenseData, labels: dateLabels, color: themeColors.getExpense(), label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
       { id: 'sparklineSavingsRate', data: savingsRateData, labels: dateLabels, color: themeColors.getPurple(), label: 'Savings Rate', chartKey: 'sparkSavings' },
-      { id: 'sparklineAvgIncomeMonth', data: monthIncomeData, labels: monthLabels, color: themeColors.getIncome(), label: 'Avg Income / Month', chartKey: 'sparkAvgIncomeMonth' },
-      { id: 'sparklineAvgExpenseMonth', data: monthExpenseData, labels: monthLabels, color: themeColors.getExpense(), label: 'Avg Expense / Month', chartKey: 'sparkAvgExpenseMonth' },
-      { id: 'sparklineSavingsRateMonth', data: monthSavingsRateData, labels: monthLabels, color: themeColors.getPurple(), label: 'Savings Rate / Month', chartKey: 'sparkSavingsMonth' }
+      { id: 'sparklineAvgIncomeMonth', data: curMonthIncome, labels: curMonthLabels, color: themeColors.getIncome(), label: 'Avg Income / Month', chartKey: 'sparkAvgIncomeMonth' },
+      { id: 'sparklineAvgExpenseMonth', data: curMonthExpense, labels: curMonthLabels, color: themeColors.getExpense(), label: 'Avg Expense / Month', chartKey: 'sparkAvgExpenseMonth' },
+      { id: 'sparklineSavingsRateMonth', data: curMonthSavingsRate, labels: curMonthLabels, color: themeColors.getPurple(), label: 'Savings Rate / Month', chartKey: 'sparkSavingsMonth' }
     ];
 
     sparkConfigs.forEach(conf => {
