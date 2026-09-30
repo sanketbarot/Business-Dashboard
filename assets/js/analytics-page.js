@@ -12,7 +12,8 @@ const AnalyticsPage = {
     categoryShare: null, 
     weekdayActivity: null,
     cumulativeBalance: null,
-    paymentMode: null 
+    paymentMode: null,
+    platformChannel: null
   },
   period: 'month', // Default period selection
 
@@ -63,14 +64,24 @@ const AnalyticsPage = {
     // 3. Load Forecast/Projections
     this.loadProjections(allTxns);
 
-    // 4. Build five Charts
+    // 4. Load Break-Even & Profit Runway Tracker
+    this.loadBreakEvenTracker(allTxns);
+
+    // 5. Load Platform Channel Analysis
+    this.loadPlatformAnalysis(filteredTxns);
+
+    // 6. Build five Charts
     this.buildCharts(filteredTxns);
 
-    // 5. Load Detailed Capital Report & Ratios
+    // 7. Load Detailed Capital Report & Ratios
     this.loadCapitalChannelsReport(filteredTxns, allTxns);
 
-    // 6. Animate Numbers
+    // 8. Animate Numbers
     this.animateMetrics();
+
+    if (typeof lucide !== 'undefined') {
+      try { lucide.createIcons(); } catch (e) { }
+    }
   },
 
   filterTxns: function(txns, period) {
@@ -903,12 +914,260 @@ const AnalyticsPage = {
     }
   },
 
+  loadBreakEvenTracker: function(allTxns) {
+    const rent = parseFloat(localStorage.getItem('bd_be_rent') || '20000');
+    const staff = parseFloat(localStorage.getItem('bd_be_staff') || '15000');
+    const utilities = parseFloat(localStorage.getItem('bd_be_utilities') || '5000');
+    const other = parseFloat(localStorage.getItem('bd_be_other') || '2000');
+    const totalMonthlyOverhead = rent + staff + utilities + other;
+
+    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dailyTarget = Math.round(totalMonthlyOverhead / daysInMonth);
+
+    // Today's revenue
+    const todayStr = (typeof today === 'function') ? today() : new Date().toISOString().substring(0, 10);
+    const todayTxns = allTxns.filter(t => t.type === 'income' && t.date === todayStr);
+    const todayRevenue = todayTxns.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const todaySurplus = todayRevenue - dailyTarget;
+
+    // Current month revenue
+    const curMonthTxns = allTxns.filter(t => t.type === 'income' && (typeof isThisMonth === 'function' ? isThisMonth(t.date) : true));
+    const curMonthRevenue = curMonthTxns.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const monthCoveragePct = totalMonthlyOverhead > 0 ? Math.round((curMonthRevenue / totalMonthlyOverhead) * 100) : 100;
+
+    // DOM updates
+    const dtEl = document.getElementById('beDailyTarget');
+    if (dtEl) dtEl.textContent = inr(dailyTarget);
+
+    const trEl = document.getElementById('beTodayRevenue');
+    if (trEl) trEl.textContent = inr(todayRevenue);
+
+    const tcEl = document.getElementById('beTodayCount');
+    if (tcEl) tcEl.textContent = `${todayTxns.length} transactions today`;
+
+    const tsEl = document.getElementById('beTodaySurplus');
+    if (tsEl) {
+      if (todaySurplus >= 0) {
+        tsEl.textContent = `+${inr(todaySurplus)}`;
+        tsEl.style.color = 'var(--income)';
+      } else {
+        tsEl.textContent = `-${inr(Math.abs(todaySurplus))}`;
+        tsEl.style.color = 'var(--expense)';
+      }
+    }
+
+    const tssEl = document.getElementById('beTodaySurplusSub');
+    if (tssEl) {
+      tssEl.textContent = todaySurplus >= 0 ? 'Surplus beyond break-even 🎉' : `₹ ${inrShort(Math.abs(todaySurplus))} needed to break even`;
+    }
+
+    const moEl = document.getElementById('beMonthlyOverhead');
+    if (moEl) moEl.textContent = inr(totalMonthlyOverhead);
+
+    const obEl = document.getElementById('beOverheadBreakdown');
+    if (obEl) obEl.textContent = `Rent: ${inrShort(rent)} · Staff: ${inrShort(staff)} · Util: ${inrShort(utilities)}`;
+
+    // Pacing progress
+    const pacingPct = dailyTarget > 0 ? Math.round((todayRevenue / dailyTarget) * 100) : 100;
+    const bpEl = document.getElementById('bePacingPercent');
+    if (bpEl) bpEl.textContent = `${pacingPct}%`;
+
+    const bfEl = document.getElementById('bePacingFill');
+    if (bfEl) {
+      bfEl.style.width = `${Math.min(pacingPct, 100)}%`;
+      if (pacingPct >= 100) {
+        bfEl.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+      } else if (pacingPct >= 50) {
+        bfEl.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+      } else {
+        bfEl.style.background = 'linear-gradient(90deg, #f43f5e, #e11d48)';
+      }
+    }
+
+    const badgeEl = document.getElementById('beStatusBadge');
+    if (badgeEl) {
+      if (todaySurplus >= 0) {
+        badgeEl.className = 'be-status-badge achieved';
+        badgeEl.textContent = `🎉 Break-Even Achieved (+${inrShort(todaySurplus)})`;
+      } else {
+        badgeEl.className = 'be-status-badge pending';
+        badgeEl.textContent = `⏳ ₹ ${inrShort(Math.abs(todaySurplus))} Needed Today`;
+      }
+    }
+
+    const pnEl = document.getElementById('bePacingNote');
+    if (pnEl) {
+      pnEl.textContent = todaySurplus >= 0 ? `Daily target of ₹ ${inrShort(dailyTarget)} reached today!` : `₹ ${inr(Math.abs(todaySurplus))} remaining to cover today's fixed cost`;
+    }
+
+    const mcEl = document.getElementById('beMonthCoverageNote');
+    if (mcEl) {
+      mcEl.textContent = `Month Overhead Covered: ${monthCoveragePct}% (${inrShort(curMonthRevenue)} / ${inrShort(totalMonthlyOverhead)})`;
+    }
+  },
+
+  loadPlatformAnalysis: function(txns) {
+    const platforms = {
+      swiggy: { name: 'Swiggy', revenue: 0, count: 0, color: '#fc8019' },
+      zomato: { name: 'Zomato', revenue: 0, count: 0, color: '#e23744' },
+      counter: { name: 'Counter & Cash', revenue: 0, count: 0, color: '#10b981' },
+      online: { name: 'Direct Online / UPI', revenue: 0, count: 0, color: '#6366f1' }
+    };
+
+    let totalPlatformRevenue = 0;
+
+    txns.forEach(t => {
+      if (t.type !== 'income') return;
+      const amt = parseFloat(t.amount) || 0;
+      const cat = (t.category || '').toLowerCase();
+      const note = (t.notes || '').toLowerCase();
+      const from = (t.from || '').toLowerCase();
+      const mode = (t.mode || '').toLowerCase();
+      const text = `${cat} ${note} ${from}`;
+
+      let key = 'counter';
+      if (text.includes('swiggy')) key = 'swiggy';
+      else if (text.includes('zomato')) key = 'zomato';
+      else if (mode === 'cash' || cat.includes('cash') || cat.includes('sales') || text.includes('counter') || text.includes('dine')) key = 'counter';
+      else if (mode === 'upi' || mode === 'online' || mode === 'card' || mode === 'bank transfer' || cat.includes('online')) key = 'online';
+
+      platforms[key].revenue += amt;
+      platforms[key].count++;
+      totalPlatformRevenue += amt;
+    });
+
+    const badgeEl = document.getElementById('platformPeriodBadge');
+    if (badgeEl) {
+      const labels = { week: 'This Week', month: 'This Month', year: 'This Year', all: 'All Time' };
+      badgeEl.textContent = labels[this.period] || 'Selected Period';
+    }
+
+    // Update each platform card
+    Object.keys(platforms).forEach(k => {
+      const p = platforms[k];
+      const share = totalPlatformRevenue > 0 ? Math.round((p.revenue / totalPlatformRevenue) * 100) : 0;
+      const avg = p.count > 0 ? Math.round(p.revenue / p.count) : 0;
+
+      const revEl = document.getElementById(`${k}Revenue`);
+      if (revEl) revEl.textContent = inr(p.revenue);
+
+      const shareEl = document.getElementById(`${k}Share`);
+      if (shareEl) shareEl.textContent = `${share}%`;
+
+      const ordEl = document.getElementById(`${k}Orders`);
+      if (ordEl) ordEl.textContent = `${p.count} orders · Avg ${inr(avg)}`;
+
+      const barEl = document.getElementById(`${k}Bar`);
+      if (barEl) barEl.style.width = `${share}%`;
+    });
+
+    // Smart Insights
+    let topKey = 'counter';
+    let maxRev = -1;
+    let highestAovKey = 'counter';
+    let maxAov = -1;
+
+    Object.keys(platforms).forEach(k => {
+      const p = platforms[k];
+      if (p.revenue > maxRev) {
+        maxRev = p.revenue;
+        topKey = k;
+      }
+      const aov = p.count > 0 ? p.revenue / p.count : 0;
+      if (aov > maxAov) {
+        maxAov = aov;
+        highestAovKey = k;
+      }
+    });
+
+    const topNameEl = document.getElementById('topChannelName');
+    if (topNameEl) {
+      if (maxRev > 0) {
+        const share = totalPlatformRevenue > 0 ? Math.round((maxRev / totalPlatformRevenue) * 100) : 0;
+        topNameEl.textContent = `${platforms[topKey].name} (${inr(maxRev)} · ${share}%)`;
+      } else {
+        topNameEl.textContent = 'No income recorded yet';
+      }
+    }
+
+    const aovEl = document.getElementById('highestAovChannel');
+    if (aovEl) {
+      if (maxAov > 0) {
+        aovEl.textContent = `${platforms[highestAovKey].name} (${inr(maxAov)} / order)`;
+      } else {
+        aovEl.textContent = 'Awaiting transactions';
+      }
+    }
+
+    // Build or update Platform Channel Chart
+    this.buildPlatformChart(platforms);
+  },
+
+  buildPlatformChart: function(platforms) {
+    const canvas = document.getElementById('platformChannelChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    if (this.charts.platformChannel) {
+      this.charts.platformChannel.destroy();
+      this.charts.platformChannel = null;
+    }
+
+    const labels = [platforms.swiggy.name, platforms.zomato.name, platforms.counter.name, platforms.online.name];
+    const data = [platforms.swiggy.revenue, platforms.zomato.revenue, platforms.counter.revenue, platforms.online.revenue];
+    const colors = [platforms.swiggy.color, platforms.zomato.color, platforms.counter.color, platforms.online.color];
+
+    this.charts.platformChannel = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderRadius: 6,
+          borderSkipped: false,
+          barThickness: 22
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${inr(ctx.raw)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(15, 23, 42, 0.06)' },
+            ticks: {
+              callback: v => inrShort(v),
+              font: { size: 10, family: "'Plus Jakarta Sans', sans-serif" }
+            }
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 11, weight: '700', family: "'Plus Jakarta Sans', sans-serif" }
+            }
+          }
+        }
+      }
+    });
+  },
+
   animateMetrics: function() {
     setTimeout(() => {
       const targetIds = [
         'avgTxVal', 'burnRateVal', 'healthScoreVal', 
         'projRevenue', 'projExpenses', 'projProfit', 
-        'detExpenseRatio'
+        'detExpenseRatio',
+        'beDailyTarget', 'beTodayRevenue', 'beTodaySurplus', 'beMonthlyOverhead',
+        'swiggyRevenue', 'zomatoRevenue', 'counterRevenue', 'onlineRevenue'
       ];
       targetIds.forEach(id => {
         const el = document.getElementById(id);
@@ -922,6 +1181,73 @@ const AnalyticsPage = {
     }, 200);
   }
 };
+
+// ============================================
+// BREAK-EVEN CONFIGURATION MODAL HANDLERS
+// ============================================
+
+function openBreakEvenModal() {
+  const rent = localStorage.getItem('bd_be_rent') || '20000';
+  const staff = localStorage.getItem('bd_be_staff') || '15000';
+  const util = localStorage.getItem('bd_be_utilities') || '5000';
+  const other = localStorage.getItem('bd_be_other') || '2000';
+
+  const rEl = document.getElementById('beInputRent');
+  const sEl = document.getElementById('beInputStaff');
+  const uEl = document.getElementById('beInputUtilities');
+  const oEl = document.getElementById('beInputOther');
+
+  if (rEl) rEl.value = rent;
+  if (sEl) sEl.value = staff;
+  if (uEl) uEl.value = util;
+  if (oEl) oEl.value = other;
+
+  updateBreakEvenPreview();
+
+  if (typeof openModal === 'function') {
+    openModal('breakEvenModal');
+  } else {
+    const modal = document.getElementById('breakEvenModal');
+    if (modal) modal.classList.add('open');
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function updateBreakEvenPreview() {
+  const r = parseFloat(document.getElementById('beInputRent')?.value || 0);
+  const s = parseFloat(document.getElementById('beInputStaff')?.value || 0);
+  const u = parseFloat(document.getElementById('beInputUtilities')?.value || 0);
+  const o = parseFloat(document.getElementById('beInputOther')?.value || 0);
+  const tot = r + s + u + o;
+  const now = new Date();
+  const days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daily = Math.round(tot / days);
+  const prev = document.getElementById('bePreviewDaily');
+  if (prev) prev.textContent = `${inr(daily)} / day (Total: ${inr(tot)}/mo)`;
+}
+
+function saveBreakEvenConfig() {
+  const r = document.getElementById('beInputRent')?.value || '20000';
+  const s = document.getElementById('beInputStaff')?.value || '15000';
+  const u = document.getElementById('beInputUtilities')?.value || '5000';
+  const o = document.getElementById('beInputOther')?.value || '2000';
+
+  localStorage.setItem('bd_be_rent', r);
+  localStorage.setItem('bd_be_staff', s);
+  localStorage.setItem('bd_be_utilities', u);
+  localStorage.setItem('bd_be_other', o);
+
+  closeModal('breakEvenModal');
+  if (typeof toast === 'function') toast('Fixed overhead updated successfully!', 'success');
+  if (typeof AnalyticsPage !== 'undefined') AnalyticsPage.loadAll();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  ['beInputRent', 'beInputStaff', 'beInputUtilities', 'beInputOther'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateBreakEvenPreview);
+  });
+});
 
 // ============================================
 // QUICK ADD FORM & ACTION LOGIC (REUSED FROM DASHBOARD.JS)
