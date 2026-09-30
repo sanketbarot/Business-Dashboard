@@ -89,6 +89,8 @@ const Dash = {
     try { this.loadVendors(); } catch (e) { console.error('loadVendors err:', e); }
     try { this.loadBills(); } catch (e) { console.error('loadBills err:', e); }
     try { this.renderExpiryAlerts(); } catch (e) { console.error('renderExpiryAlerts err:', e); }
+    try { this.buildSparklines(all); } catch (e) { }
+    if (typeof lucide !== 'undefined') { try { lucide.createIcons(); } catch (e) { } }
 
     // Real-time listener for Stock updates from Expiry Tracker page or storage changes
     if (!this._stockListenersAttached) {
@@ -136,6 +138,7 @@ const Dash = {
         'cashIn', 'cashOut', 'cashBalance',
         'onlineIn', 'onlineOut', 'onlineBalance',
         'msAvgIncome', 'msAvgExpense', 'msSavings',
+        'msAvgIncomeMonth', 'msAvgExpenseMonth', 'msSavingsMonth',
         'cmpLast', 'cmpThis',
         'lineIncomeTotal', 'lineExpenseTotal', 'lineNetTotal',
         'goalRevCurrent', 'goalExpCurrent', 'goalPrfCurrent'
@@ -304,6 +307,12 @@ const Dash = {
       this.setText('msIncomeDays', 'No data yet');
       this.setText('msExpenseDays', 'No data yet');
       this.setText('msSavingsSub', 'Start adding data');
+      this.setText('msAvgIncomeMonth', '₹ 0');
+      this.setText('msAvgExpenseMonth', '₹ 0');
+      this.setText('msSavingsMonth', '0%');
+      this.setText('msIncomeMonths', 'No data yet');
+      this.setText('msExpenseMonths', 'No data yet');
+      this.setText('msSavingsMonthSub', 'Start adding data');
       return;
     }
     const daySet = new Set();
@@ -329,6 +338,30 @@ const Dash = {
     this.setBarWidth('msIncomeBar', (avgIncome / maxAvg) * 100);
     this.setBarWidth('msExpenseBar', (avgExpense / maxAvg) * 100);
     this.setBarWidth('msSavingsBar', Math.max(0, savingsRate));
+
+    // --- MONTHLY ANALYTICS ---
+    const monthSet = new Set();
+    for (let i = 0; i < all.length; i++) {
+      if (all[i].date && typeof all[i].date === 'string') {
+        monthSet.add(all[i].date.substring(0, 7));
+      }
+    }
+    const numMonths = Math.max(monthSet.size, 1);
+    const avgIncomeMonth = tot.income / numMonths;
+    const avgExpenseMonth = tot.expense / numMonths;
+    const monthLabel = numMonths === 1 ? 'month' : 'months';
+
+    this.setText('msAvgIncomeMonth', inr(avgIncomeMonth));
+    this.setText('msAvgExpenseMonth', inr(avgExpenseMonth));
+    this.setText('msSavingsMonth', savingsRate + '%');
+    this.setText('msIncomeMonths', 'Across ' + numMonths + ' active ' + monthLabel);
+    this.setText('msExpenseMonths', 'Across ' + numMonths + ' active ' + monthLabel);
+    this.setText('msSavingsMonthSub', sub);
+
+    const maxAvgMonth = Math.max(avgIncomeMonth, avgExpenseMonth, 1);
+    this.setBarWidth('msIncomeMonthBar', (avgIncomeMonth / maxAvgMonth) * 100);
+    this.setBarWidth('msExpenseMonthBar', (avgExpenseMonth / maxAvgMonth) * 100);
+    this.setBarWidth('msSavingsMonthBar', Math.max(0, savingsRate));
   },
 
   setBarWidth: function (id, percent) {
@@ -1214,12 +1247,7 @@ const Dash = {
   },
 
   buildSparklines: function (all) {
-    const ids = [
-      'sparklineIncome', 'sparklineExpense', 'sparklineProfit', 'sparklineBalance',
-      'sparklineAvgIncome', 'sparklineAvgExpense', 'sparklineSavingsRate'
-    ];
-    const canvases = ids.map(id => document.getElementById(id));
-    if (canvases.some(c => !c) || typeof Chart === 'undefined') return;
+    if (typeof Chart === 'undefined') return;
 
     // Gather last 7 days date strings
     const dateStrings = [];
@@ -1285,18 +1313,63 @@ const Dash = {
       savingsRateData[idx] = Math.max(0, rate);
     });
 
+    // Monthly sparkline data (last 6 months)
+    const monthKeys = [];
+    const monthLabels = [];
+    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth();
+    const mNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(curYear, curMonth - i, 1);
+      const y = d.getFullYear();
+      const m = d.getMonth();
+      const yyyy_mm = `${y}-${String(m + 1).padStart(2, '0')}`;
+      monthKeys.push(yyyy_mm);
+      monthLabels.push(mNames[m]);
+    }
+
+    const monthIncomeData = new Array(6).fill(0);
+    const monthExpenseData = new Array(6).fill(0);
+    const monthSavingsRateData = new Array(6).fill(0);
+
+    const monthMap = {};
+    all.forEach(t => {
+      if (!t.date || typeof t.date !== 'string') return;
+      const key = t.date.substring(0, 7);
+      if (!monthMap[key]) monthMap[key] = { income: 0, expense: 0 };
+      const amt = parseFloat(t.amount || 0);
+      if (t.type === 'income') monthMap[key].income += amt;
+      else if (t.type === 'expense') monthMap[key].expense += amt;
+    });
+
+    monthKeys.forEach((key, idx) => {
+      const mData = monthMap[key] || { income: 0, expense: 0 };
+      monthIncomeData[idx] = mData.income;
+      monthExpenseData[idx] = mData.expense;
+      const inc = mData.income;
+      const exp = mData.expense;
+      const rate = inc > 0 ? Math.round(((inc - exp) / inc) * 100) : 0;
+      monthSavingsRateData[idx] = Math.max(0, rate);
+    });
+
     const sparkConfigs = [
-      { id: 'sparklineIncome', data: incomeData, color: themeColors.getIncome(), label: 'Income', chartKey: 'sparkIncome' },
-      { id: 'sparklineExpense', data: expenseData, color: themeColors.getExpense(), label: 'Expense', chartKey: 'sparkExpense' },
-      { id: 'sparklineProfit', data: profitData, color: themeColors.getProfit(), label: 'Profit', chartKey: 'sparkProfit' },
-      { id: 'sparklineBalance', data: balanceData, color: themeColors.getBrand(), label: 'Balance', chartKey: 'sparkBalance' },
-      { id: 'sparklineAvgIncome', data: incomeData, color: themeColors.getIncome(), label: 'Avg Income', chartKey: 'sparkAvgIncome' },
-      { id: 'sparklineAvgExpense', data: expenseData, color: themeColors.getExpense(), label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
-      { id: 'sparklineSavingsRate', data: savingsRateData, color: themeColors.getPurple(), label: 'Savings Rate', chartKey: 'sparkSavings' }
+      { id: 'sparklineIncome', data: incomeData, labels: dateLabels, color: themeColors.getIncome(), label: 'Income', chartKey: 'sparkIncome' },
+      { id: 'sparklineExpense', data: expenseData, labels: dateLabels, color: themeColors.getExpense(), label: 'Expense', chartKey: 'sparkExpense' },
+      { id: 'sparklineProfit', data: profitData, labels: dateLabels, color: themeColors.getProfit(), label: 'Profit', chartKey: 'sparkProfit' },
+      { id: 'sparklineBalance', data: balanceData, labels: dateLabels, color: themeColors.getBrand(), label: 'Balance', chartKey: 'sparkBalance' },
+      { id: 'sparklineAvgIncome', data: incomeData, labels: dateLabels, color: themeColors.getIncome(), label: 'Avg Income', chartKey: 'sparkAvgIncome' },
+      { id: 'sparklineAvgExpense', data: expenseData, labels: dateLabels, color: themeColors.getExpense(), label: 'Avg Expense', chartKey: 'sparkAvgExpense' },
+      { id: 'sparklineSavingsRate', data: savingsRateData, labels: dateLabels, color: themeColors.getPurple(), label: 'Savings Rate', chartKey: 'sparkSavings' },
+      { id: 'sparklineAvgIncomeMonth', data: monthIncomeData, labels: monthLabels, color: themeColors.getIncome(), label: 'Avg Income / Month', chartKey: 'sparkAvgIncomeMonth' },
+      { id: 'sparklineAvgExpenseMonth', data: monthExpenseData, labels: monthLabels, color: themeColors.getExpense(), label: 'Avg Expense / Month', chartKey: 'sparkAvgExpenseMonth' },
+      { id: 'sparklineSavingsRateMonth', data: monthSavingsRateData, labels: monthLabels, color: themeColors.getPurple(), label: 'Savings Rate / Month', chartKey: 'sparkSavingsMonth' }
     ];
 
     sparkConfigs.forEach(conf => {
       const canvas = document.getElementById(conf.id);
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const gradient = ctx.createLinearGradient(0, 0, 0, 45);
       gradient.addColorStop(0, conf.color + '26');
@@ -1310,7 +1383,7 @@ const Dash = {
       this.charts[conf.chartKey] = new Chart(canvas, {
         type: 'line',
         data: {
-          labels: dateLabels,
+          labels: conf.labels || dateLabels,
           datasets: [{
             data: conf.data,
             borderColor: conf.color,

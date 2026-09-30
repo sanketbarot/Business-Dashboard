@@ -787,6 +787,64 @@
           </div>
         </section>
 
+        <!-- MONTHLY AVERAGE ANALYTICS -->
+        <section class="analytics-grid">
+          <div class="mini-stat">
+            <div class="ms-top">
+              <div class="ms-ic"><i data-lucide="calendar" style="width: 20px; height: 20px;"></i></div>
+              <div class="ms-title">Avg Income / Month</div>
+            </div>
+            <div class="ms-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+              <div>
+                <div class="ms-value" id="msAvgIncomeMonth">₹ 0</div>
+                <div class="ms-sub" id="msIncomeMonths">No data yet</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineAvgIncomeMonth"></canvas></div>
+            </div>
+            <div class="ms-progress">
+              <div class="ms-fill f-income" id="msIncomeMonthBar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-top">
+              <div class="ms-ic"><i data-lucide="credit-card" style="width: 20px; height: 20px;"></i></div>
+              <div class="ms-title">Avg Expense / Month</div>
+            </div>
+            <div class="ms-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+              <div>
+                <div class="ms-value" id="msAvgExpenseMonth">₹ 0</div>
+                <div class="ms-sub" id="msExpenseMonths">No data yet</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineAvgExpenseMonth"></canvas></div>
+            </div>
+            <div class="ms-progress">
+              <div class="ms-fill f-expense" id="msExpenseMonthBar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <div class="ms-top">
+              <div class="ms-ic"><i data-lucide="target" style="width: 20px; height: 20px;"></i></div>
+              <div class="ms-title">Savings Rate / Month</div>
+            </div>
+            <div class="ms-bottom-wrap"
+              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+              <div>
+                <div class="ms-value" id="msSavingsMonth">0%</div>
+                <div class="ms-sub" id="msSavingsMonthSub">Start adding data</div>
+              </div>
+              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
+                  id="sparklineSavingsRateMonth"></canvas></div>
+            </div>
+            <div class="ms-progress">
+              <div class="ms-fill f-brand" id="msSavingsMonthBar" style="width:0%"></div>
+            </div>
+          </div>
+        </section>
+
         <section class="chart-grid">
           <div class="card chart-enhanced">
             <div class="card-hd">
