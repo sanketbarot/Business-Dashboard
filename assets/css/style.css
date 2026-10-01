@@ -134,7 +134,7 @@ body {
   background: var(--gradient-page);
   color: var(--text-body);
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   position: relative;
 }
 
@@ -274,6 +274,7 @@ textarea {
   padding: 32px;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }

@@ -3,7 +3,7 @@
    AI Toolcor Business Dashboard
    ============================================ */
 
-const CACHE_NAME = 'bd-cache-v2.7';
+const CACHE_NAME = 'bd-cache-v3.0';
 const ASSETS = [
   './',
   './index.html',
@@ -14,16 +14,16 @@ const ASSETS = [
   './manifest.json',
   './favicon.svg',
   './firebase-config.js',
-  './assets/css/style.css?v=14.1',
-  './assets/css/dashboard.css?v=14.1',
-  './assets/css/transaction.css?v=14.2',
-  './assets/css/analytics.css?v=14.0',
+  './assets/css/style.css?v=14.4',
+  './assets/css/dashboard.css?v=14.3',
+  './assets/css/transaction.css?v=14.3',
+  './assets/css/analytics.css?v=14.4',
   './assets/css/expiry.css?v=14.0',
-  './assets/css/animations.css?v=14.1',
-  './assets/js/app.js?v=14.1',
+  './assets/css/animations.css?v=14.3',
+  './assets/js/app.js?v=14.4',
   './assets/js/dashboard.js?v=14.1',
   './assets/js/transaction-page.js?v=14.2',
-  './assets/js/analytics-page.js?v=10.0',
+  './assets/js/analytics-page.js?v=14.4',
   './assets/js/expiry-page.js?v=1.0.0',
   './assets/icons/logo.png',
   './assets/icons/icon-72.png',
