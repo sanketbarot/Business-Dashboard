@@ -22,9 +22,9 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="assets/css/style.css?v=1.0.0" />
-  <link rel="stylesheet" href="assets/css/animations.css?v=1.0.0" />
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=1.0.0" />
+  <link rel="stylesheet" href="assets/css/style.css?v=14.1" />
+  <link rel="stylesheet" href="assets/css/animations.css?v=14.1" />
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=14.1" />
 
 
   <!-- Firebase SDKs - MUST BE BEFORE app.js -->
@@ -229,16 +229,6 @@
             <span class="period-title"><i data-lucide="line-chart"
                 style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px; color: var(--brand);"></i>Financial
               Summary</span>
-            <!-- Quick Date Navigator -->
-            <div class="period-nav-group" title="Navigate to previous / next date periods">
-              <button class="period-nav-btn" onclick="Dash.navigatePeriod(-1)" title="Previous Period">
-                <i data-lucide="chevron-left" style="width:14px; height:14px;"></i>
-              </button>
-              <span id="periodNavLabel" style="font-size:0.7rem; font-weight:700; color:var(--text-light); min-width:55px; text-align:center;">Current</span>
-              <button class="period-nav-btn" onclick="Dash.navigatePeriod(1)" title="Next Period">
-                <i data-lucide="chevron-right" style="width:14px; height:14px;"></i>
-              </button>
-            </div>
           </div>
           <div class="period-bar">
             <button class="pb-tab active" data-p="today" onclick="switchPeriod('today',this)">Today</button>
@@ -421,22 +411,36 @@
         </section>
 
         <!-- Cash vs Online Distribution Ratio Bar -->
-        <div class="cash-online-ratio-wrap" style="margin-bottom:26px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:0.75rem; font-weight:800; color:var(--text-head); text-transform:uppercase; letter-spacing:0.5px; display:inline-flex; align-items:center; gap:5px;">
-                <i data-lucide="pie-chart" style="width:14px; height:14px; color:var(--brand);"></i> Cash vs Online Collection Ratio
-              </span>
-              <span id="cashRatioText" style="font-size:0.75rem; font-weight:700; color:var(--text-light);">50% Cash • 50% Online</span>
+        <div class="cash-online-ratio-wrap">
+          <div class="ratio-header-row">
+            <div class="ratio-title-badge">
+              <span class="ratio-title-icon"><i data-lucide="pie-chart"></i></span>
+              <span class="ratio-title-text">Cash vs Online Collection Ratio</span>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="Dash.copyCashReport()" style="padding:4px 10px; font-size:0.72rem; display:inline-flex; align-items:center; gap:5px;" title="Copy or share daily cash closing summary via WhatsApp">
-              <i data-lucide="share-2" style="width:12px; height:12px; color:#25d366;"></i> Share Closing via WhatsApp
-            </button>
           </div>
-          <div class="ratio-track">
-            <div class="ratio-fill-cash" id="ratioFillCash" style="width:50%;" title="Cash Received Share"></div>
-            <div class="ratio-fill-online" id="ratioFillOnline" style="width:50%;" title="Online Received Share"></div>
+          <div class="ratio-track-wrap">
+            <div class="ratio-track" id="ratioTrackBar">
+              <div class="ratio-fill-cash" id="ratioFillCash" style="width:50%;" title="Cash Received Share"></div>
+              <div class="ratio-fill-online" id="ratioFillOnline" style="width:50%;" title="Online Received Share"></div>
+            </div>
           </div>
+          <div class="ratio-metrics-row">
+            <div class="ratio-metric-item cash">
+              <div class="ratio-metric-dot"></div>
+              <div class="ratio-metric-data">
+                <span class="ratio-metric-label">Cash Received</span>
+                <span class="ratio-metric-val" id="ratioCashVal">50% <small>(₹ 0)</small></span>
+              </div>
+            </div>
+            <div class="ratio-metric-item online">
+              <div class="ratio-metric-dot"></div>
+              <div class="ratio-metric-data">
+                <span class="ratio-metric-label">Online / UPI Received</span>
+                <span class="ratio-metric-val" id="ratioOnlineVal">50% <small>(₹ 0)</small></span>
+              </div>
+            </div>
+          </div>
+          <span id="cashRatioText" style="display:none;"></span>
         </div>
 
         <!-- BUSINESS VISION & KPI TARGETS -->
@@ -454,106 +458,82 @@
           </div>
           <div class="card-bd">
             <div class="goals-wrapper-grid"
-              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
 
               <!-- Goal 1: Revenue -->
-              <div class="goal-item-card"
-                style="background:rgba(99,102,241,0.02); border:1px solid rgba(99,102,241,0.06); border-radius:var(--r-md); padding:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span
-                    style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i
-                      data-lucide="trending-up" style="width: 14px; height: 14px; color: var(--income);"></i>MTD REVENUE
-                    TARGET</span>
-                  <span style="font-size:0.85rem; font-weight:800; color:var(--income);" id="goalRevPct">0%</span>
+              <div class="goal-item-card revenue">
+                <div class="goal-card-top">
+                  <span class="goal-card-label">
+                    <i data-lucide="trending-up" style="width: 15px; height: 15px; color: var(--income);"></i>MTD REVENUE TARGET
+                  </span>
+                  <span class="goal-pct-badge income" id="goalRevPct">0%</span>
                 </div>
-                <div style="margin-bottom:12px;">
-                  <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalRevCurrent">₹
-                    0.00</strong>
-                  <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
-                  <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalRevTarget">₹
-                    0.00</span>
+                <div class="goal-metric-row">
+                  <strong class="goal-current-val" id="goalRevCurrent">₹ 0.00</strong>
+                  <span class="goal-slash">/</span>
+                  <span class="goal-target-val" id="goalRevTarget">₹ 0.00</span>
                 </div>
-                <div
-                  style="height:6px; background:rgba(16,185,129,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
-                  <div
-                    style="height:100%; background:var(--income); border-radius:var(--r-full); width:0%; transition:width 1s;"
-                    id="goalRevBar"></div>
+                <div class="goal-progress-track">
+                  <div class="goal-progress-bar income" id="goalRevBar" style="width:0%;"></div>
                 </div>
-                <div style="font-size:0.72rem; color:var(--text-light);" id="goalRevStatus">MTD Revenue status</div>
+                <div class="goal-status-hint" id="goalRevStatus">MTD Revenue status</div>
               </div>
 
               <!-- Goal 2: Expense Cap -->
-              <div class="goal-item-card"
-                style="background:rgba(239,68,68,0.02); border:1px solid rgba(239,68,68,0.06); border-radius:var(--r-md); padding:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span
-                    style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i
-                      data-lucide="trending-down" style="width: 14px; height: 14px; color: var(--expense);"></i>MTD
-                    EXPENSE CAP</span>
-                  <span style="font-size:0.85rem; font-weight:800; color:var(--expense);" id="goalExpPct">0%</span>
+              <div class="goal-item-card expense">
+                <div class="goal-card-top">
+                  <span class="goal-card-label">
+                    <i data-lucide="trending-down" style="width: 15px; height: 15px; color: var(--expense);"></i>MTD EXPENSE CAP
+                  </span>
+                  <span class="goal-pct-badge expense" id="goalExpPct">0%</span>
                 </div>
-                <div style="margin-bottom:12px;">
-                  <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalExpCurrent">₹
-                    0.00</strong>
-                  <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
-                  <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalExpTarget">₹
-                    0.00</span>
+                <div class="goal-metric-row">
+                  <strong class="goal-current-val" id="goalExpCurrent">₹ 0.00</strong>
+                  <span class="goal-slash">/</span>
+                  <span class="goal-target-val" id="goalExpTarget">₹ 0.00</span>
                 </div>
-                <div
-                  style="height:6px; background:rgba(239,68,68,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
-                  <div
-                    style="height:100%; background:var(--expense); border-radius:var(--r-full); width:0%; transition:width 1s;"
-                    id="goalExpBar"></div>
+                <div class="goal-progress-track">
+                  <div class="goal-progress-bar expense" id="goalExpBar" style="width:0%;"></div>
                 </div>
-                <div style="font-size:0.72rem; color:var(--text-light);" id="goalExpStatus">MTD Expense status</div>
+                <div class="goal-status-hint" id="goalExpStatus">MTD Expense status</div>
               </div>
 
               <!-- Goal 3: Annual profit target -->
-              <div class="goal-item-card"
-                style="background:rgba(139,92,246,0.02); border:1px solid rgba(139,92,246,0.06); border-radius:var(--r-md); padding:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <span
-                    style="font-size:0.75rem; font-weight:700; color:var(--text-light); display:inline-flex; align-items:center; gap:6px;"><i
-                      data-lucide="trophy" style="width: 14px; height: 14px; color: var(--purple);"></i>YTD NET PROFIT
-                    MILESTONE</span>
-                  <span style="font-size:0.85rem; font-weight:800; color:var(--purple);" id="goalPrfPct">0%</span>
+              <div class="goal-item-card profit">
+                <div class="goal-card-top">
+                  <span class="goal-card-label">
+                    <i data-lucide="trophy" style="width: 15px; height: 15px; color: #8b5cf6;"></i>YTD NET PROFIT MILESTONE
+                  </span>
+                  <span class="goal-pct-badge purple" id="goalPrfPct">0%</span>
                 </div>
-                <div style="margin-bottom:12px;">
-                  <strong style="font-size:1.35rem; font-weight:800; color:var(--text-head);" id="goalPrfCurrent">₹
-                    0.00</strong>
-                  <span style="color:var(--text-light); font-size:0.85rem; margin:0 4px;">/</span>
-                  <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;" id="goalPrfTarget">₹
-                    0.00</span>
+                <div class="goal-metric-row">
+                  <strong class="goal-current-val" id="goalPrfCurrent">₹ 0.00</strong>
+                  <span class="goal-slash">/</span>
+                  <span class="goal-target-val" id="goalPrfTarget">₹ 0.00</span>
                 </div>
-                <div
-                  style="height:6px; background:rgba(139,92,246,0.08); border-radius:var(--r-full); overflow:hidden; margin-bottom:6px;">
-                  <div
-                    style="height:100%; background:linear-gradient(90deg, var(--brand) 0%, var(--purple) 100%); border-radius:var(--r-full); width:0%; transition:width 1s;"
-                    id="goalPrfBar"></div>
+                <div class="goal-progress-track">
+                  <div class="goal-progress-bar purple" id="goalPrfBar" style="width:0%;"></div>
                 </div>
-                <div style="font-size:0.72rem; color:var(--text-light);" id="goalPrfStatus">YTD Net Profit milestone
-                </div>
+                <div class="goal-status-hint" id="goalPrfStatus">YTD Net Profit milestone</div>
               </div>
 
             </div>
 
             <!-- DAILY REVENUE RUN RATE & PACE METER -->
-            <div class="pace-meter-card"
-              style="margin-top:20px; padding:18px 20px; background:linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(16,185,129,0.04) 100%); border:1.5px solid var(--border); border-radius:var(--r-lg);">
+            <div class="pace-meter-card">
               <div
                 style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
                 <div style="display:flex; align-items:center; gap:8px;">
                   <div
-                    style="width:30px; height:30px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand);">
-                    <i data-lucide="gauge" style="width:16px; height:16px;"></i>
+                    style="width:34px; height:34px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand);">
+                    <i data-lucide="gauge" style="width:17px; height:17px;"></i>
                   </div>
                   <div>
                     <strong
-                      style="font-size:0.88rem; color:var(--text-head); display:flex; align-items:center; gap:6px;">
+                      style="font-size:0.92rem; color:var(--text-head); display:flex; align-items:center; gap:6px;">
                       Daily Revenue Run Rate & Required Pace
                     </strong>
-                    <span style="font-size:0.72rem; color:var(--text-light);" id="paceDaysLeftText">Day 17 of 31 • 14
-                      days remaining</span>
+                    <span style="font-size:0.72rem; color:var(--text-light);" id="paceDaysLeftText">Day 17 of 31 • 14 days remaining</span>
                   </div>
                 </div>
                 <div id="paceStatusBadge">
@@ -567,59 +547,52 @@
               <!-- Pace Stats Grid -->
               <div
                 style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:14px;">
-                <div class="pace-stat-card"
-                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                <div class="pace-stat-card">
+                  <div style="font-size:0.68rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.4px;">
                     Required Daily Pace</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--brand); margin-top:2px;"
+                  <div style="font-size:1.25rem; font-weight:900; color:var(--brand); margin-top:2px;"
                     id="paceRequired">₹ 0.00 / day</div>
-                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">to reach monthly target</div>
+                  <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">to reach monthly target</div>
                 </div>
 
-                <div class="pace-stat-card"
-                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                <div class="pace-stat-card">
+                  <div style="font-size:0.68rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.4px;">
                     Current Average Pace</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--text-head); margin-top:2px;"
+                  <div style="font-size:1.25rem; font-weight:900; color:var(--text-head); margin-top:2px;"
                     id="paceCurrent">₹ 0.00 / day</div>
-                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">actual velocity so far</div>
+                  <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">actual velocity so far</div>
                 </div>
 
-                <div class="pace-stat-card"
-                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                <div class="pace-stat-card">
+                  <div style="font-size:0.68rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.4px;">
                     Today's Revenue</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--income); margin-top:2px;"
+                  <div style="font-size:1.25rem; font-weight:900; color:var(--income); margin-top:2px;"
                     id="paceTodayRev">₹ 0.00</div>
-                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;" id="paceTodayPct">0% of daily
-                    target</div>
+                  <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;" id="paceTodayPct">0% of daily target</div>
                 </div>
 
-                <div class="pace-stat-card"
-                  style="background:var(--bg-card); padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md);">
-                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase;">
+                <div class="pace-stat-card">
+                  <div style="font-size:0.68rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.4px;">
                     Projected Month-End</div>
-                  <div style="font-size:1.15rem; font-weight:800; color:var(--purple); margin-top:2px;"
+                  <div style="font-size:1.25rem; font-weight:900; color:#8b5cf6; margin-top:2px;"
                     id="paceProjected">₹ 0.00</div>
-                  <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">at current pace trajectory
-                  </div>
+                  <div style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">at current pace trajectory</div>
                 </div>
               </div>
 
               <!-- Today's Live Target Progress Bar -->
               <div>
                 <div
-                  style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; margin-bottom:5px;">
-                  <span style="font-weight:700; color:var(--text-head); display:flex; align-items:center; gap:4px;">
-                    <i data-lucide="flame" style="width:13px; height:13px; color:#f59e0b;"></i> Today's Daily Target
-                    Completion
+                  style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; margin-bottom:6px;">
+                  <span style="font-weight:700; color:var(--text-head); display:flex; align-items:center; gap:5px;">
+                    <i data-lucide="flame" style="width:13px; height:13px; color:#f59e0b;"></i> Today's Daily Target Completion
                   </span>
                   <span style="font-weight:800; color:var(--income);" id="paceTodayBarText">₹ 0.00 / ₹ 0.00 (0%)</span>
                 </div>
                 <div
-                  style="height:8px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden;">
+                  style="height:8px; background:rgba(0,0,0,0.06); border-radius:var(--r-full); overflow:hidden;">
                   <div id="paceTodayBar"
-                    style="height:100%; width:0%; background:linear-gradient(90deg, #10b981 0%, #3b82f6 100%); border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);">
+                    style="height:100%; width:0%; background:linear-gradient(90deg, #10b981 0%, #3b82f6 100%); border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
                   </div>
                 </div>
               </div>
@@ -649,38 +622,48 @@
             </div>
           </div>
           <div class="card-bd">
-            <!-- Overall Budget Summary Row -->
-            <div class="budget-summary-bar"
-              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap:16px; margin-bottom:16px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Total Budget Allocated</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--text-head); margin-top:2px;"
-                  id="totalBudgetAllocated">₹ 0.00</div>
-              </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Total Spent in Budgeted</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--expense); margin-top:2px;"
-                  id="totalBudgetSpent">₹ 0.00</div>
-              </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Remaining Allowance</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
-                  id="totalBudgetRemaining">₹ 0.00</div>
-              </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Overall Health</div>
-                <div style="font-size:1.05rem; font-weight:800; margin-top:4px;" id="budgetHealthStatus">
-                  <span style="display:inline-flex; align-items:center; gap:5px; color:var(--income);"><i
-                      data-lucide="shield-check" style="width:16px;height:16px;"></i> On Track</span>
+            <!-- Overall Budget Summary Grid -->
+            <div class="budget-summary-grid">
+              <!-- Total Budget Allocated -->
+              <div class="budget-kpi-card allocated">
+                <div class="budget-kpi-top">
+                  <span class="budget-kpi-label">Total Allocated</span>
+                  <div class="budget-kpi-icon"><i data-lucide="wallet" style="width:15px; height:15px;"></i></div>
                 </div>
+                <div class="budget-kpi-value" style="color:var(--text-head);" id="totalBudgetAllocated">₹ 0.00</div>
+                <div class="budget-kpi-sub">Total monthly limit</div>
+              </div>
+
+              <!-- Total Spent in Budgeted -->
+              <div class="budget-kpi-card spent">
+                <div class="budget-kpi-top">
+                  <span class="budget-kpi-label">Total MTD Spent</span>
+                  <div class="budget-kpi-icon"><i data-lucide="trending-down" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="budget-kpi-value" style="color:var(--expense);" id="totalBudgetSpent">₹ 0.00</div>
+                <div class="budget-kpi-sub">Spent in active categories</div>
+              </div>
+
+              <!-- Remaining Allowance -->
+              <div class="budget-kpi-card remaining">
+                <div class="budget-kpi-top">
+                  <span class="budget-kpi-label">Remaining Allowance</span>
+                  <div class="budget-kpi-icon"><i data-lucide="shield-check" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="budget-kpi-value" style="color:var(--income);" id="totalBudgetRemaining">₹ 0.00</div>
+                <div class="budget-kpi-sub">Available headroom</div>
+              </div>
+
+              <!-- Overall Health -->
+              <div class="budget-kpi-card health">
+                <div class="budget-kpi-top">
+                  <span class="budget-kpi-label">Overall Health</span>
+                  <div class="budget-kpi-icon"><i data-lucide="activity" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="budget-kpi-value" id="budgetHealthStatus">
+                  <span style="display:inline-flex; align-items:center; gap:5px; color:var(--income);"><i data-lucide="shield-check" style="width:16px;height:16px;"></i> On Track</span>
+                </div>
+                <div class="budget-kpi-sub">Real-time spend compliance</div>
               </div>
             </div>
 
@@ -700,7 +683,7 @@
 
             <!-- Category Cards Grid -->
             <div id="categoryBudgetGrid" class="category-budget-grid"
-              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:16px; align-items:stretch;">
               <!-- Dynamic Budget Cards injected by dashboard.js -->
             </div>
           </div>
@@ -729,54 +712,68 @@
           </div>
           <div class="card-bd">
             <!-- Overall Vendor Summary Bar -->
-            <div class="budget-summary-bar"
-              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:16px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Total Outstanding Payable</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--expense); margin-top:2px;"
-                  id="totalVendorPending">₹ 0.00</div>
+            <div class="vendor-summary-grid">
+              <!-- Total Outstanding Payable -->
+              <div class="vendor-kpi-card alert">
+                <div class="vendor-kpi-top">
+                  <span class="vendor-kpi-label">Outstanding Payable</span>
+                  <div class="vendor-kpi-icon"><i data-lucide="alert-triangle" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="vendor-kpi-value" style="color:var(--expense);" id="totalVendorPending">₹ 0.00</div>
+                <div class="vendor-kpi-sub">Total dues across suppliers</div>
               </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Monthly Goods Purchased</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--brand); margin-top:2px;"
-                  id="monthlyVendorBilled">₹ 0.00</div>
+
+              <!-- Monthly Goods Purchased -->
+              <div class="vendor-kpi-card purchased">
+                <div class="vendor-kpi-top">
+                  <span class="vendor-kpi-label">Monthly Sourcing</span>
+                  <div class="vendor-kpi-icon"><i data-lucide="calendar" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="vendor-kpi-value" style="color:var(--brand);" id="monthlyVendorBilled">₹ 0.00</div>
+                <div class="vendor-kpi-sub">Billed this month</div>
               </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Monthly Amount Paid</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
-                  id="monthlyVendorPaid">₹ 0.00</div>
+
+              <!-- Monthly Amount Paid -->
+              <div class="vendor-kpi-card paid">
+                <div class="vendor-kpi-top">
+                  <span class="vendor-kpi-label">Monthly Paid</span>
+                  <div class="vendor-kpi-icon"><i data-lucide="check-circle" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="vendor-kpi-value" style="color:var(--income);" id="monthlyVendorPaid">₹ 0.00</div>
+                <div class="vendor-kpi-sub">Cleared this month</div>
               </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Total Goods Purchased</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--text-head); margin-top:2px;"
-                  id="totalVendorBilled">₹ 0.00</div>
+
+              <!-- Total Goods Purchased (All Time) -->
+              <div class="vendor-kpi-card">
+                <div class="vendor-kpi-top">
+                  <span class="vendor-kpi-label">Total Purchases</span>
+                  <div class="vendor-kpi-icon" style="background:var(--bg-app); color:var(--text-head);"><i data-lucide="shopping-cart" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="vendor-kpi-value" style="color:var(--text-head);" id="totalVendorBilled">₹ 0.00</div>
+                <div class="vendor-kpi-sub">All-time goods billed</div>
               </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
-                  Total Amount Paid</div>
-                <div style="font-size:1.25rem; font-weight:800; color:var(--income); margin-top:2px;"
-                  id="totalVendorPaid">₹ 0.00</div>
+
+              <!-- Total Amount Paid (All Time) -->
+              <div class="vendor-kpi-card paid">
+                <div class="vendor-kpi-top">
+                  <span class="vendor-kpi-label">Total Amount Paid</span>
+                  <div class="vendor-kpi-icon"><i data-lucide="wallet" style="width:15px; height:15px;"></i></div>
+                </div>
+                <div class="vendor-kpi-value" style="color:var(--income);" id="totalVendorPaid">₹ 0.00</div>
+                <div class="vendor-kpi-sub">All-time settled amount</div>
               </div>
-              <div>
-                <div
-                  style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; justify-content:space-between;">
-                  <span>Total Stock Value</span>
+
+              <!-- Total Stock Value -->
+              <div class="vendor-kpi-card stock">
+                <div class="vendor-kpi-top">
+                  <span class="vendor-kpi-label">Inventory Stock</span>
                   <a href="expiry.html" title="View Stock & Expiry Tracker"
-                    style="font-size:0.65rem; color:#8b5cf6; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:2px;">
-                    Stock <i data-lucide="arrow-up-right" style="width:10px; height:10px;"></i>
+                    style="font-size:0.68rem; color:#8b5cf6; text-decoration:none; font-weight:800; display:inline-flex; align-items:center; gap:2px; background:rgba(139,92,246,0.12); padding:2px 6px; border-radius:var(--r-sm);">
+                    Stock <i data-lucide="arrow-up-right" style="width:11px; height:11px;"></i>
                   </a>
                 </div>
-                <div style="font-size:1.25rem; font-weight:800; color:#8b5cf6; margin-top:2px;"
-                  id="totalVendorStockValue">₹ 0.00</div>
+                <div class="vendor-kpi-value" style="color:#8b5cf6;" id="totalVendorStockValue">₹ 0.00</div>
+                <div class="vendor-kpi-sub">Active inventory on hand</div>
               </div>
             </div>
 
@@ -801,8 +798,8 @@
             </div>
 
             <!-- Vendor Cards Grid -->
-            <div id="vendorGrid" class="category-budget-grid"
-              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:16px;">
+            <div id="vendorGrid" class="category-budget-grid vendor-grid"
+              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:16px; align-items:stretch;">
               <!-- Dynamic Vendor Cards injected by dashboard.js -->
             </div>
           </div>
@@ -811,17 +808,18 @@
         <section class="analytics-grid" id="sectionDailyAverages">
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic"><i data-lucide="bar-chart-2" style="width: 20px; height: 20px;"></i></div>
-              <div class="ms-title">Avg Income / Day</div>
+              <div class="ms-header-left">
+                <div class="ms-ic"><i data-lucide="bar-chart-2" style="width: 19px; height: 19px;"></i></div>
+                <div class="ms-title">Avg Income / Day</div>
+              </div>
+              <span class="ms-badge ms-badge-daily">Daily</span>
             </div>
-            <div class="ms-bottom-wrap"
-              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgIncome">₹ 0</div>
                 <div class="ms-sub" id="msIncomeDays">No data yet</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
-                  id="sparklineAvgIncome"></canvas></div>
+              <div class="ms-spark-wrap"><canvas id="sparklineAvgIncome"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-income" id="msIncomeBar" style="width:0%"></div>
@@ -829,17 +827,18 @@
           </div>
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic"><i data-lucide="credit-card" style="width: 20px; height: 20px;"></i></div>
-              <div class="ms-title">Avg Expense / Day</div>
+              <div class="ms-header-left">
+                <div class="ms-ic"><i data-lucide="credit-card" style="width: 19px; height: 19px;"></i></div>
+                <div class="ms-title">Avg Expense / Day</div>
+              </div>
+              <span class="ms-badge ms-badge-daily">Daily</span>
             </div>
-            <div class="ms-bottom-wrap"
-              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgExpense">₹ 0</div>
                 <div class="ms-sub" id="msExpenseDays">No data yet</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
-                  id="sparklineAvgExpense"></canvas></div>
+              <div class="ms-spark-wrap"><canvas id="sparklineAvgExpense"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-expense" id="msExpenseBar" style="width:0%"></div>
@@ -847,17 +846,18 @@
           </div>
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic"><i data-lucide="target" style="width: 20px; height: 20px;"></i></div>
-              <div class="ms-title">Savings Rate</div>
+              <div class="ms-header-left">
+                <div class="ms-ic"><i data-lucide="target" style="width: 19px; height: 19px;"></i></div>
+                <div class="ms-title">Savings Rate</div>
+              </div>
+              <span class="ms-badge ms-badge-daily">Daily</span>
             </div>
-            <div class="ms-bottom-wrap"
-              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msSavings">0%</div>
                 <div class="ms-sub" id="msSavingsSub">Start adding data</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
-                  id="sparklineSavingsRate"></canvas></div>
+              <div class="ms-spark-wrap"><canvas id="sparklineSavingsRate"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-brand" id="msSavingsBar" style="width:0%"></div>
@@ -869,17 +869,18 @@
         <section class="analytics-grid" id="sectionMonthlyAverages">
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic"><i data-lucide="calendar" style="width: 20px; height: 20px;"></i></div>
-              <div class="ms-title">Avg Income / Month</div>
+              <div class="ms-header-left">
+                <div class="ms-ic"><i data-lucide="calendar" style="width: 19px; height: 19px;"></i></div>
+                <div class="ms-title">Avg Income / Month</div>
+              </div>
+              <span class="ms-badge ms-badge-monthly">Monthly</span>
             </div>
-            <div class="ms-bottom-wrap"
-              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgIncomeMonth">₹ 0</div>
                 <div class="ms-sub" id="msIncomeMonths">No data this month</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
-                  id="sparklineAvgIncomeMonth"></canvas></div>
+              <div class="ms-spark-wrap"><canvas id="sparklineAvgIncomeMonth"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-income" id="msIncomeMonthBar" style="width:0%"></div>
@@ -887,17 +888,18 @@
           </div>
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic"><i data-lucide="credit-card" style="width: 20px; height: 20px;"></i></div>
-              <div class="ms-title">Avg Expense / Month</div>
+              <div class="ms-header-left">
+                <div class="ms-ic"><i data-lucide="credit-card" style="width: 19px; height: 19px;"></i></div>
+                <div class="ms-title">Avg Expense / Month</div>
+              </div>
+              <span class="ms-badge ms-badge-monthly">Monthly</span>
             </div>
-            <div class="ms-bottom-wrap"
-              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgExpenseMonth">₹ 0</div>
                 <div class="ms-sub" id="msExpenseMonths">No data this month</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
-                  id="sparklineAvgExpenseMonth"></canvas></div>
+              <div class="ms-spark-wrap"><canvas id="sparklineAvgExpenseMonth"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-expense" id="msExpenseMonthBar" style="width:0%"></div>
@@ -905,17 +907,18 @@
           </div>
           <div class="mini-stat">
             <div class="ms-top">
-              <div class="ms-ic"><i data-lucide="target" style="width: 20px; height: 20px;"></i></div>
-              <div class="ms-title">Savings Rate / Month</div>
+              <div class="ms-header-left">
+                <div class="ms-ic"><i data-lucide="target" style="width: 19px; height: 19px;"></i></div>
+                <div class="ms-title">Savings Rate / Month</div>
+              </div>
+              <span class="ms-badge ms-badge-monthly">Monthly</span>
             </div>
-            <div class="ms-bottom-wrap"
-              style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; width:100%;">
+            <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msSavingsMonth">0%</div>
                 <div class="ms-sub" id="msSavingsMonthSub">Start adding data</div>
               </div>
-              <div style="position:relative; width:90px; height:45px; flex-shrink:0;"><canvas
-                  id="sparklineSavingsRateMonth"></canvas></div>
+              <div class="ms-spark-wrap"><canvas id="sparklineSavingsRateMonth"></canvas></div>
             </div>
             <div class="ms-progress">
               <div class="ms-fill f-brand" id="msSavingsMonthBar" style="width:0%"></div>
@@ -926,8 +929,10 @@
         <section class="chart-grid" id="sectionCharts">
           <div class="card chart-enhanced">
             <div class="card-hd">
-              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="bar-chart-2"
-                  style="width: 18px; height: 18px; color: var(--brand);"></i>Income vs Expense</h4>
+              <h4>
+                <span class="chart-hd-icon"><i data-lucide="bar-chart-2" style="width: 17px; height: 17px;"></i></span>
+                <span>Income vs Expense</span>
+              </h4>
               <div style="display:flex; align-items:center; gap:8px;">
                 <select class="chart-sel" id="chartBarMode" onchange="Dash.switchBarChartMode(this.value)">
                   <option value="grouped">Grouped Bar</option>
@@ -948,8 +953,10 @@
           </div>
           <div class="card chart-enhanced">
             <div class="card-hd">
-              <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="pie-chart"
-                  style="width: 18px; height: 18px; color: var(--brand);"></i>Expense Breakdown</h4>
+              <h4>
+                <span class="chart-hd-icon" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e;"><i data-lucide="pie-chart" style="width: 17px; height: 17px;"></i></span>
+                <span>Expense Breakdown</span>
+              </h4>
               <select class="chart-sel" id="donutPeriod" onchange="buildDonutChart()">
                 <option value="month">This Month</option>
                 <option value="year">This Year</option>
@@ -957,45 +964,53 @@
               </select>
             </div>
             <div class="card-bd">
-              <div style="position:relative;height:220px;"><canvas id="donutChart"></canvas></div>
+              <div class="donut-canvas-wrap"><canvas id="donutChart"></canvas></div>
               <div id="donutLegend" class="donut-legend"></div>
             </div>
           </div>
         </section>
 
         <section class="card chart-enhanced" id="sectionCashflow" style="margin-bottom:26px;">
-          <div class="card-hd"
-            style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div class="card-hd">
             <div class="chart-tab-group">
               <button class="pb-tab active" id="chartTabLine" onclick="switchLineChartTab('historical', this)">
-                <i data-lucide="trending-up" style="width: 18px; height: 18px; color: var(--brand);"></i>
+                <i data-lucide="trending-up" style="width: 15px; height: 15px;"></i>
                 <span>7-Day Cash Flow</span>
               </button>
               <button class="pb-tab" id="chartTabVelocity" onclick="switchLineChartTab('live', this)">
                 <span class="live-pulse"
-                  style="width:8px; height:8px; border-radius:50%; background:var(--expense); display:none; box-shadow: 0 0 6px var(--expense);"></span>
-                <i data-lucide="zap" style="width: 18px; height: 18px; color: #f59e0b;"></i>
+                  style="width:7px; height:7px; border-radius:50%; background:var(--expense); display:none; box-shadow: 0 0 6px var(--expense);"></span>
+                <i data-lucide="zap" style="width: 15px; height: 15px; color: #f59e0b;"></i>
                 <span>Real-Time Sales (Live)</span>
               </button>
             </div>
-            <span style="font-size:0.75rem;color:var(--text-muted);" id="lineChartSubtext">Last 7 days</span>
+            <span class="cashflow-period-tag" id="lineChartSubtext">Last 7 days</span>
           </div>
           <div class="card-bd">
             <div class="chart-info-bar">
-              <div class="chart-info-item">
-                <div class="chart-info-dot" style="background:#059669;"></div><span>Income: <strong
-                    id="lineIncomeTotal">₹ 0</strong></span>
+              <div class="chart-info-item inc">
+                <div class="chart-info-dot inc"></div>
+                <div class="chart-info-text">
+                  <span class="chart-info-lbl">Income</span>
+                  <strong class="chart-info-val" id="lineIncomeTotal">₹ 0</strong>
+                </div>
               </div>
-              <div class="chart-info-item">
-                <div class="chart-info-dot" style="background:#dc2626;"></div><span>Expense: <strong
-                    id="lineExpenseTotal">₹ 0</strong></span>
+              <div class="chart-info-item exp">
+                <div class="chart-info-dot exp"></div>
+                <div class="chart-info-text">
+                  <span class="chart-info-lbl">Expense</span>
+                  <strong class="chart-info-val" id="lineExpenseTotal">₹ 0</strong>
+                </div>
               </div>
-              <div class="chart-info-item" style="margin-left:auto;">
-                <div class="chart-info-dot" style="background:#ad67e6;"></div><span>Net Cash Flow: <strong
-                    id="lineNetTotal" style="color:#ad67e6;">₹ 0</strong></span>
+              <div class="chart-info-item net">
+                <div class="chart-info-dot net"></div>
+                <div class="chart-info-text">
+                  <span class="chart-info-lbl">Net Cash Flow</span>
+                  <strong class="chart-info-val" id="lineNetTotal">₹ 0</strong>
+                </div>
               </div>
             </div>
-            <div style="position:relative;height:280px;"><canvas id="lineChart"></canvas></div>
+            <div class="cashflow-canvas-wrap"><canvas id="lineChart"></canvas></div>
           </div>
         </section>
 
@@ -1065,27 +1080,30 @@
                 <div id="aiAdvisorResponse" class="ai-response-box" style="display:none;"></div>
               </div>
             </div>
-            <div class="card" id="sectionRecent">
+            <div class="card chart-enhanced" id="sectionRecent">
               <div class="card-hd"
-                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div style="display:flex; align-items:center; gap:8px;">
                   <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="history"
                       style="width: 18px; height: 18px; color: var(--brand);"></i>Recent Activity</h4>
                   <span class="badge" id="recentFilterBadge" style="display:none; font-size:0.7rem; padding:2px 8px; border-radius:var(--r-full); background:var(--brand-soft); color:var(--brand); font-weight:700;">Filtered</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                  <div class="card-search-box" style="max-width:180px;">
-                    <i data-lucide="search"></i>
-                    <input type="text" id="recentSearchInput" placeholder="Filter activity..." class="fc" oninput="Dash.searchRecent(this.value)" />
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <div class="recent-search-wrap">
+                    <i data-lucide="search" class="recent-search-icon" style="width: 14px; height: 14px;"></i>
+                    <input type="text" id="recentSearchInput" placeholder="Filter activity..." class="recent-search-input" oninput="Dash.searchRecent(this.value)" />
                   </div>
-                  <div style="display:flex; gap:4px;">
-                    <button class="filter-chip-btn active" data-tx-filter="all" onclick="Dash.filterRecentType('all', this)" style="padding:4px 10px; font-size:0.7rem;">All</button>
-                    <button class="filter-chip-btn" data-tx-filter="income" onclick="Dash.filterRecentType('income', this)" style="padding:4px 10px; font-size:0.7rem; color:var(--income);">In (+)</button>
-                    <button class="filter-chip-btn" data-tx-filter="expense" onclick="Dash.filterRecentType('expense', this)" style="padding:4px 10px; font-size:0.7rem; color:var(--expense);">Out (-)</button>
+                  <div class="recent-type-switcher">
+                    <button class="recent-type-btn active" data-tx-filter="all" onclick="Dash.filterRecentType('all', this)">All</button>
+                    <button class="recent-type-btn" data-tx-filter="income" onclick="Dash.filterRecentType('income', this)">In (+)</button>
+                    <button class="recent-type-btn" data-tx-filter="expense" onclick="Dash.filterRecentType('expense', this)">Out (-)</button>
                   </div>
-                  <button onclick="exportTransactionsCSV()" class="btn btn-outline btn-sm"
-                    style="padding: 6px 12px; font-size: 0.75rem;">📥 CSV</button>
-                  <a href="transaction.html" class="btn btn-outline btn-sm">View All →</a>
+                  <button onclick="exportTransactionsCSV()" class="recent-action-btn">
+                    <i data-lucide="download" style="width: 13px; height: 13px;"></i><span>CSV</span>
+                  </button>
+                  <a href="transaction.html" class="recent-action-btn primary">
+                    <span>View All</span><i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
+                  </a>
                 </div>
               </div>
               <div class="table-wrap">
@@ -1912,8 +1930,8 @@
   <div class="toast-box" id="toastBox"></div>
 
   <!-- JS Files - app.js MUST be before dashboard.js -->
-  <script src="assets/js/app.js?v=1.0.4"></script>
-  <script src="assets/js/dashboard.js?v=1.0.4"></script>
+  <script src="assets/js/app.js?v=14.1"></script>
+  <script src="assets/js/dashboard.js?v=14.1"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

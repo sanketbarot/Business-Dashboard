@@ -261,11 +261,19 @@ const Dash = {
     const ratioCashEl = document.getElementById('ratioFillCash');
     const ratioOnlineEl = document.getElementById('ratioFillOnline');
     const ratioTextEl = document.getElementById('cashRatioText');
+    const ratioCashValEl = document.getElementById('ratioCashVal');
+    const ratioOnlineValEl = document.getElementById('ratioOnlineVal');
 
     if (ratioCashEl) ratioCashEl.style.width = cashPct + '%';
     if (ratioOnlineEl) ratioOnlineEl.style.width = onlinePct + '%';
     if (ratioTextEl) {
       ratioTextEl.textContent = `${cashPct}% Cash (${inr(cashIn)}) • ${onlinePct}% Online (${inr(onlineIn)})`;
+    }
+    if (ratioCashValEl) {
+      ratioCashValEl.innerHTML = `${cashPct}% <small>(${inr(cashIn)})</small>`;
+    }
+    if (ratioOnlineValEl) {
+      ratioOnlineValEl.innerHTML = `${onlinePct}% <small>(${inr(onlineIn)})</small>`;
     }
   },
 
@@ -584,15 +592,34 @@ const Dash = {
     const grouped = {};
     for (let i = 0; i < expenses.length; i++) {
       const t = expenses[i];
-      grouped[t.category] = (grouped[t.category] || 0) + parseFloat(t.amount || 0);
+      const cat = t.category || 'Other';
+      grouped[cat] = (grouped[cat] || 0) + parseFloat(t.amount || 0);
     }
     const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    const max = sorted[0][1];
+    const max = sorted[0][1] || 1;
+
     box.innerHTML = sorted.map((item, i) => {
-      const cat = item[0], amt = item[1];
-      const width = (amt / max) * 100;
-      const rankClass = i < 3 ? 'r' + (i + 1) : '';
-      return '<div class="tc-item"><div class="tc-rank ' + rankClass + '">' + (i + 1) + '</div><div class="tc-info"><div class="tc-name">' + window.getFormattedOptionHtml(cat, 13) + '</div><div class="tc-bar"><div class="tc-fill" style="width:0%"></div></div></div><div class="tc-amt">' + inrShort(amt) + '</div></div>';
+      const cat = item[0] || 'Other';
+      const amt = item[1];
+      const rankClass = 'r' + (i + 1);
+      const cleanName = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim() || cat;
+      const icon = (window.getLucideIconName && window.getLucideIconName(cat)) || 'tag';
+
+      return `<div class="tc-item">
+        <div class="tc-rank ${rankClass}">#${i + 1}</div>
+        <div class="tc-body">
+          <div class="tc-header">
+            <div class="tc-name-wrap">
+              <span class="tc-icon"><i data-lucide="${icon}"></i></span>
+              <span class="tc-name" title="${escapeHtml(cleanName)}">${escapeHtml(cleanName)}</span>
+            </div>
+            <div class="tc-amt">${inrShort(amt)}</div>
+          </div>
+          <div class="tc-bar">
+            <div class="tc-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>`;
     }).join('');
 
     if (typeof lucide !== 'undefined') {
@@ -602,9 +629,9 @@ const Dash = {
     setTimeout(() => {
       const fills = box.querySelectorAll('.tc-fill');
       sorted.forEach((item, i) => {
-        if (fills[i]) fills[i].style.width = ((item[1] / max) * 100) + '%';
+        if (fills[i]) fills[i].style.width = Math.min(100, Math.max(10, (item[1] / max) * 100)) + '%';
       });
-    }, 300);
+    }, 150);
   },
 
   loadPaymentModes: function (all) {
@@ -625,11 +652,29 @@ const Dash = {
     const total = Object.values(grouped).reduce((s, x) => s + x.total, 0);
     const sorted = Object.entries(grouped).sort((a, b) => b[1].total - a[1].total);
     const icons = { 'Cash': 'coins', 'Online': 'smartphone', 'UPI': 'phone-call', 'Bank Transfer': 'landmark', 'Card': 'credit-card', 'Cheque': 'file-text' };
+
     box.innerHTML = sorted.map(item => {
       const mode = item[0], data = item[1];
       const pct = total > 0 ? Math.round((data.total / total) * 100) : 0;
-      const icon = icons[mode] || 'banknote';
-      return '<div class="pm-item"><div class="pm-ic" style="display:flex; align-items:center; justify-content:center;"><i data-lucide="' + icon + '" style="width: 16px; height: 16px; color: var(--brand);"></i></div><div class="pm-info"><div class="pm-name">' + escapeHtml(mode) + '</div><div class="pm-sub">' + data.count + ' transactions</div></div><div><div class="pm-amt">' + inrShort(data.total) + '</div><div class="pm-pct">' + pct + '%</div></div></div>';
+      const icon = icons[mode] || 'wallet';
+      let modeCls = 'mode-cash';
+      const ml = mode.toLowerCase();
+      if (ml.includes('upi') || ml.includes('gpay') || ml.includes('phonepe') || ml.includes('paytm')) modeCls = 'mode-upi';
+      else if (ml.includes('card')) modeCls = 'mode-card';
+      else if (ml.includes('bank') || ml.includes('transfer') || ml.includes('neft')) modeCls = 'mode-bank';
+      else if (ml.includes('online')) modeCls = 'mode-online';
+
+      return `<div class="pm-item">
+        <div class="pm-ic ${modeCls}"><i data-lucide="${icon}"></i></div>
+        <div class="pm-info">
+          <div class="pm-name">${escapeHtml(mode)}</div>
+          <div class="pm-sub">${data.count} transaction${data.count === 1 ? '' : 's'}</div>
+        </div>
+        <div class="pm-stats">
+          <div class="pm-amt">${inrShort(data.total)}</div>
+          <div class="pm-pct-badge ${modeCls}">${pct}%</div>
+        </div>
+      </div>`;
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
   },
@@ -678,12 +723,32 @@ const Dash = {
     tbody.innerHTML = sorted.map(t => {
       const isI = t.type === 'income';
       const safeId = encodeURIComponent(t.id);
+
+      const rawCat = t.category || '-';
+      const catClean = rawCat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim() || rawCat;
+      const catIcon = (window.getLucideIconName && window.getLucideIconName(rawCat)) || (isI ? 'trending-up' : 'tag');
+
+      const rawMode = t.mode || 'Cash';
+      const modeClean = rawMode.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim() || rawMode;
+      const modeIcon = (window.getLucideIconName && window.getLucideIconName(rawMode)) || 'wallet';
+      let modeCls = 'mode-cash';
+      const ml = rawMode.toLowerCase();
+      if (ml.includes('card')) modeCls = 'mode-card';
+      else if (ml.includes('upi') || ml.includes('gpay') || ml.includes('phonepe') || ml.includes('paytm')) modeCls = 'mode-upi';
+      else if (ml.includes('bank') || ml.includes('transfer') || ml.includes('neft')) modeCls = 'mode-bank';
+      else if (ml.includes('online')) modeCls = 'mode-online';
+
       return `<tr onclick="Dash.viewTxnDetails(decodeURIComponent('${safeId}'))" style="cursor:pointer;" title="Click to view transaction receipt & details">
-        <td style="font-size:0.82rem;">${fmtDate(t.date)}</td>
-        <td><span class="badge ${isI ? 'badge-in' : 'badge-out'}" style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="${isI ? 'arrow-down-left' : 'arrow-up-right'}" style="width:12px; height:12px;"></i>${isI ? 'In' : 'Out'}</span></td>
-        <td style="font-size:0.82rem;font-weight:600;">${window.getFormattedOptionHtml(t.category || '-', 13)}</td>
-        <td class="${isI ? 'amt-in' : 'amt-out'}">${isI ? '+' : '-'}${inrShort(t.amount)}</td>
-        <td style="font-size:0.78rem;color:var(--text-muted);">${window.getFormattedOptionHtml(t.mode || 'Cash', 13)}</td>
+        <td class="tx-date">${fmtDate(t.date)}</td>
+        <td class="tx-type"><span class="badge ${isI ? 'badge-in' : 'badge-out'}"><i data-lucide="${isI ? 'arrow-down-left' : 'arrow-up-right'}" style="width:11px; height:11px;"></i>${isI ? 'In' : 'Out'}</span></td>
+        <td class="tx-cat">
+          <div class="tx-cat-wrap">
+            <span class="tx-cat-icon ${isI ? 'cat-in' : 'cat-out'}"><i data-lucide="${catIcon}" style="width:13px; height:13px;"></i></span>
+            <span class="tx-cat-name">${catClean}</span>
+          </div>
+        </td>
+        <td class="tx-amt"><span class="tx-amt-pill ${isI ? 'amt-in' : 'amt-out'}">${isI ? '+' : '-'}${inrShort(t.amount)}</span></td>
+        <td class="tx-mode"><span class="tx-mode-pill ${modeCls}"><i data-lucide="${modeIcon}" style="width:11px; height:11px;"></i><span>${modeClean}</span></span></td>
       </tr>`;
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -932,22 +997,8 @@ const Dash = {
       grouped[mode] = (grouped[mode] || 0) + parseFloat(t.amount || 0);
     }
 
-    const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
-    const labels = sorted.map(x => x[0]);
-    const values = sorted.map(x => x[1]);
-    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#38bdf8', '#ec4899', '#f59e0b'];
-    const total = values.reduce((a, b) => a + b, 0);
-
-    const legend = document.getElementById('payModeBox');
-    if (legend) {
-      if (!labels.length) {
-        legend.innerHTML = '<div class="empty" style="padding:12px; text-align:center; color:var(--text-muted);"><p>No transaction data</p></div>';
-      } else {
-        legend.innerHTML = labels.map((l, i) =>
-          '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i % colors.length] + '"></div><span class="leg-name">' + escapeHtml(l) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
-        ).join('');
-      }
-    }
+    const labels = Object.keys(grouped);
+    const values = Object.values(grouped);
 
     if (!labels.length) {
       if (this.charts.payMode) {
@@ -959,24 +1010,28 @@ const Dash = {
       return;
     }
 
-    const datasets = [];
-    const ringsCount = Math.min(4, labels.length);
-    for (let i = 0; i < ringsCount; i++) {
-      datasets.push({
-        label: labels[i],
-        data: [values[i], total - values[i]],
-        backgroundColor: [colors[i % colors.length], 'rgba(15, 23, 42, 0.04)'],
-        borderWidth: 2,
-        borderColor: '#ffffff',
-        hoverBorderColor: '#ffffff',
-        borderRadius: 4,
-        weight: 0.8
-      });
-    }
+    const modeColorMap = {
+      'upi': '#10b981',
+      'card': '#f43f5e',
+      'bank transfer': '#8b5cf6',
+      'bank': '#8b5cf6',
+      'cash': '#f59e0b',
+      'online': '#06b6d4',
+      'cheque': '#64748b'
+    };
+    const fallbackColors = ['#10b981', '#f43f5e', '#8b5cf6', '#f59e0b', '#06b6d4', '#ec4899'];
+    const sliceColors = labels.map((l, idx) => {
+      const key = String(l).toLowerCase().trim();
+      for (const [k, v] of Object.entries(modeColorMap)) {
+        if (key.includes(k)) return v;
+      }
+      return fallbackColors[idx % fallbackColors.length];
+    });
 
     if (this.charts.payMode) {
-      this.charts.payMode.data.labels = labels.slice(0, ringsCount);
-      this.charts.payMode.data.datasets = datasets;
+      this.charts.payMode.data.labels = labels;
+      this.charts.payMode.data.datasets[0].data = values;
+      this.charts.payMode.data.datasets[0].backgroundColor = sliceColors;
       this.charts.payMode.update();
       return;
     }
@@ -984,22 +1039,38 @@ const Dash = {
     this.charts.payMode = new Chart(canvas, {
       type: 'doughnut',
       data: {
-        labels: labels.slice(0, ringsCount),
-        datasets: datasets
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: sliceColors,
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverBorderColor: '#ffffff',
+          borderRadius: 4,
+          hoverOffset: 6
+        }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '50%',
+        cutout: '72%',
         plugins: {
           legend: { display: false },
           tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+            bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: {
               label: function (ctx) {
-                const datasetLabel = ctx.dataset.label || '';
-                const val = ctx.raw;
-                if (ctx.dataIndex === 1) return null;
-                return ' ' + datasetLabel + ': ' + inr(val);
+                const totalAmt = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = totalAmt > 0 ? Math.round((ctx.parsed / totalAmt) * 100) : 0;
+                return ' ' + ctx.label + ': ' + inr(ctx.parsed) + ' (' + pct + '%)';
               }
             }
           }
@@ -1124,6 +1195,18 @@ const Dash = {
       const subtextEl = document.getElementById('lineChartSubtext');
       if (subtextEl) subtextEl.textContent = 'Last 7 days';
 
+      const gradIncome = ctx.createLinearGradient(0, 0, 0, 260);
+      gradIncome.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+      gradIncome.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+
+      const gradExpense = ctx.createLinearGradient(0, 0, 0, 260);
+      gradExpense.addColorStop(0, 'rgba(244, 63, 94, 0.16)');
+      gradExpense.addColorStop(1, 'rgba(244, 63, 94, 0.00)');
+
+      const gradNet = ctx.createLinearGradient(0, 0, 0, 260);
+      gradNet.addColorStop(0, 'rgba(139, 92, 246, 0.24)');
+      gradNet.addColorStop(1, 'rgba(139, 92, 246, 0.00)');
+
       this.charts.line = new Chart(canvas, {
         type: 'line',
         data: {
@@ -1131,22 +1214,22 @@ const Dash = {
           datasets: [
             {
               label: 'Income', data: income,
-              borderColor: incomeColor, backgroundColor: 'rgba(16, 185, 129, 0.16)',
-              borderWidth: 3, pointRadius: 3, pointHoverRadius: 7,
+              borderColor: incomeColor, backgroundColor: gradIncome,
+              borderWidth: 2.5, pointRadius: 3, pointHoverRadius: 6,
               pointBackgroundColor: incomeColor, pointBorderColor: '#ffffff', pointBorderWidth: 2,
               fill: true, tension: 0.42
             },
             {
               label: 'Expense', data: expense,
-              borderColor: expenseColor, backgroundColor: 'rgba(244, 63, 94, 0.16)',
-              borderWidth: 3, pointRadius: 3, pointHoverRadius: 7,
+              borderColor: expenseColor, backgroundColor: gradExpense,
+              borderWidth: 2.5, pointRadius: 3, pointHoverRadius: 6,
               pointBackgroundColor: expenseColor, pointBorderColor: '#ffffff', pointBorderWidth: 2,
               fill: true, tension: 0.42
             },
             {
               label: 'Net Cash Flow', data: net,
-              borderColor: brandColor, backgroundColor: 'rgba(99, 102, 241, 0.14)',
-              borderWidth: 3, pointRadius: 3, pointHoverRadius: 7,
+              borderColor: brandColor, backgroundColor: gradNet,
+              borderWidth: 3, pointRadius: 3.5, pointHoverRadius: 7,
               pointBackgroundColor: brandColor, pointBorderColor: '#ffffff', pointBorderWidth: 2,
               fill: true, tension: 0.42
             }
@@ -1158,20 +1241,7 @@ const Dash = {
           animation: { duration: 600, easing: 'easeOutQuart' },
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: {
-              display: true,
-              position: 'top',
-              align: 'end',
-              labels: {
-                boxWidth: 8,
-                boxHeight: 8,
-                usePointStyle: true,
-                pointStyle: 'circle',
-                padding: 12,
-                font: { family: "'Plus Jakarta Sans', sans-serif", size: 9, weight: '700' },
-                color: textMutedVal
-              }
-            },
+            legend: { display: false },
             tooltip: {
               backgroundColor: 'rgba(15, 23, 42, 0.94)',
               titleColor: '#ffffff',
@@ -1221,18 +1291,20 @@ const Dash = {
           {
             label: 'Last Month',
             data: [lastM.income, lastM.expense, lastM.profit],
-            backgroundColor: 'rgba(15, 23, 42, 0.08)', // Faint neutral
-            borderColor: textMutedVal,
+            backgroundColor: 'rgba(148, 163, 184, 0.38)',
+            borderColor: '#94a3b8',
             borderWidth: 1.5,
-            borderRadius: 10
+            borderRadius: 8,
+            maxBarThickness: 26
           },
           {
             label: 'This Month',
             data: [thisM.income, thisM.expense, thisM.profit],
-            backgroundColor: brandColor + '40', // brand with 25% opacity
-            borderColor: brandDarkColor,
+            backgroundColor: 'rgba(99, 102, 241, 0.78)',
+            borderColor: '#6366f1',
             borderWidth: 1.5,
-            borderRadius: 10
+            borderRadius: 8,
+            maxBarThickness: 26
           }
         ]
       },
@@ -1243,19 +1315,23 @@ const Dash = {
           legend: {
             display: true,
             position: 'top',
+            align: 'end',
             labels: {
-              boxWidth: 12,
-              font: { size: 9, family: "'Plus Jakarta Sans', sans-serif", weight: '600' },
+              usePointStyle: true,
+              pointStyle: 'circle',
+              boxWidth: 7,
+              boxHeight: 7,
+              font: { size: 10, family: "'Plus Jakarta Sans', sans-serif", weight: '700' },
               color: textMutedVal,
-              padding: 6
+              padding: 10
             }
           },
           tooltip: {
             backgroundColor: 'rgba(15, 23, 42, 0.94)',
             titleColor: '#ffffff',
             bodyColor: '#cbd5e1',
-            padding: 12,
-            cornerRadius: 12,
+            padding: 10,
+            cornerRadius: 10,
             borderColor: borderVal + '33',
             borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
@@ -1264,93 +1340,13 @@ const Dash = {
           }
         },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9, family: "'Plus Jakarta Sans', sans-serif" }, color: textMutedVal } },
-          y: { grid: { color: themeColors.getGridColor(), borderDash: [4, 4], drawTicks: false }, border: { display: false }, ticks: { font: { size: 8, family: "'Plus Jakarta Sans', sans-serif" }, color: textMutedVal, callback: v => inrShort(v) } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10, family: "'Plus Jakarta Sans', sans-serif", weight: '700' }, color: textMutedVal } },
+          y: { beginAtZero: true, grid: { color: themeColors.getGridColor(), borderDash: [3, 3], drawTicks: false }, border: { display: false }, ticks: { font: { size: 9, family: "'Plus Jakarta Sans', sans-serif", weight: '600' }, color: textMutedVal, callback: v => inrShort(v) } }
         }
       }
     });
   },
 
-  buildPayModeChart: function (all) {
-    const canvas = document.getElementById('payModeChart');
-    if (!canvas || typeof Chart === 'undefined') return;
-
-    const grouped = {};
-    for (let i = 0; i < all.length; i++) {
-      const t = all[i];
-      const mode = t.mode || 'Cash';
-      grouped[mode] = (grouped[mode] || 0) + parseFloat(t.amount || 0);
-    }
-
-    const labels = Object.keys(grouped);
-    const values = Object.values(grouped);
-    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#38bdf8', '#ec4899', '#f59e0b'];
-
-    if (this.charts.payMode) {
-      this.charts.payMode.data.labels = labels.length ? labels : ['No Data'];
-      this.charts.payMode.data.datasets[0].data = labels.length ? values : [1];
-      this.charts.payMode.data.datasets[0].backgroundColor = labels.length ? colors.slice(0, labels.length) : ['#e2e8f0'];
-      this.charts.payMode.update();
-      return;
-    }
-
-    if (!labels.length) {
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      return;
-    }
-
-    this.charts.payMode = new Chart(canvas, {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: values,
-          backgroundColor: colors.slice(0, labels.length),
-          borderWidth: 2,
-          borderColor: '#ffffff',
-          hoverBorderColor: '#ffffff',
-          borderRadius: 4,
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '72%',
-        plugins: {
-          legend: {
-            display: true,
-            position: 'right',
-            labels: {
-              boxWidth: 8,
-              font: { size: 9, family: "'Plus Jakarta Sans', sans-serif", weight: '700' },
-              color: '#9aa3b2',
-              padding: 8
-            }
-          },
-          tooltip: {
-            backgroundColor: 'rgba(15, 23, 42, 0.94)',
-            titleColor: '#ffffff',
-            bodyColor: '#cbd5e1',
-            padding: 12,
-            cornerRadius: 12,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1,
-            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
-            bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
-            callbacks: {
-              label: function (ctx) {
-                const totalAmt = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                const pct = totalAmt > 0 ? Math.round((ctx.parsed / totalAmt) * 100) : 0;
-                return ' ' + ctx.label + ': ' + inr(ctx.parsed) + ' (' + pct + '%)';
-              }
-            }
-          }
-        }
-      }
-    });
-  },
 
   buildSparklines: function (all) {
     if (typeof Chart === 'undefined') return;
@@ -1419,45 +1415,48 @@ const Dash = {
       savingsRateData[idx] = Math.max(0, rate);
     });
 
-    // Current month sparkline data (daily trend of current month)
-    const monthTxns = (typeof filterByPeriod === 'function') ? filterByPeriod(all, 'month') : [];
+    // Current month sparkline data (Month-over-Month trend for past 6 months)
     const curNow = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
     const curParts = (typeof getISTDateParts === 'function') ? getISTDateParts(curNow) : { year: curNow.getFullYear(), month: curNow.getMonth() + 1, day: curNow.getDate() };
     const curYear = curParts.year;
     const curMonth = curParts.month;
-    const curDay = Math.max(curParts.day, 1);
 
-    const curMonthDates = [];
+    const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const curMonthLabels = [];
-    const startDay = Math.max(1, curDay - 13);
-    for (let d = startDay; d <= curDay; d++) {
-      const ds = `${curYear}-${String(curMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      curMonthDates.push(ds);
-      curMonthLabels.push(String(d));
+    const curMonthKeys = [];
+    for (let i = 5; i >= 0; i--) {
+      let m = curMonth - i;
+      let y = curYear;
+      if (m <= 0) {
+        m += 12;
+        y -= 1;
+      }
+      curMonthLabels.push(monthShortNames[m - 1]);
+      curMonthKeys.push(`${y}-${String(m).padStart(2, '0')}`);
     }
 
-    const curMonthIncome = new Array(curMonthDates.length).fill(0);
-    const curMonthExpense = new Array(curMonthDates.length).fill(0);
-    const curMonthSavingsRate = new Array(curMonthDates.length).fill(0);
+    const curMonthIncome = new Array(6).fill(0);
+    const curMonthExpense = new Array(6).fill(0);
+    const curMonthSavingsRate = new Array(6).fill(0);
 
-    const curMonthMap = {};
-    monthTxns.forEach(t => {
-      if (!t.date) return;
-      if (!curMonthMap[t.date]) curMonthMap[t.date] = { income: 0, expense: 0 };
-      const amt = parseFloat(t.amount || 0);
-      if (t.type === 'income') curMonthMap[t.date].income += amt;
-      else if (t.type === 'expense') curMonthMap[t.date].expense += amt;
-    });
+    for (let i = 0; i < all.length; i++) {
+      const t = all[i];
+      if (!t.date) continue;
+      const ym = t.date.substring(0, 7);
+      const mIdx = curMonthKeys.indexOf(ym);
+      if (mIdx !== -1) {
+        const amt = parseFloat(t.amount || 0);
+        if (t.type === 'income') curMonthIncome[mIdx] += amt;
+        else if (t.type === 'expense') curMonthExpense[mIdx] += amt;
+      }
+    }
 
-    curMonthDates.forEach((ds, idx) => {
-      const dData = curMonthMap[ds] || { income: 0, expense: 0 };
-      curMonthIncome[idx] = dData.income;
-      curMonthExpense[idx] = dData.expense;
-      const inc = dData.income;
-      const exp = dData.expense;
+    for (let i = 0; i < 6; i++) {
+      const inc = curMonthIncome[i];
+      const exp = curMonthExpense[i];
       const rate = inc > 0 ? Math.round(((inc - exp) / inc) * 100) : 0;
-      curMonthSavingsRate[idx] = Math.max(0, rate);
-    });
+      curMonthSavingsRate[i] = Math.max(0, rate);
+    }
 
     const sparkConfigs = [
       { id: 'sparklineIncome', data: incomeData, labels: dateLabels, color: themeColors.getIncome(), label: 'Income', chartKey: 'sparkIncome' },
@@ -1494,8 +1493,12 @@ const Dash = {
             borderColor: conf.color,
             backgroundColor: gradient,
             borderWidth: 1.8,
-            pointRadius: 0,
-            pointHoverRadius: 3,
+            pointRadius: function(ctx) {
+              const dataArr = (ctx && ctx.chart && ctx.chart.data && ctx.chart.data.datasets && ctx.chart.data.datasets[0]) ? ctx.chart.data.datasets[0].data : [];
+              const countNonZero = dataArr.filter(v => v > 0).length;
+              return countNonZero <= 2 ? 3 : 0;
+            },
+            pointHoverRadius: 4,
             fill: true,
             tension: 0.45
           }]
@@ -1998,21 +2001,22 @@ const Dash = {
         const remaining = Math.max(0, limit - spent);
         const overspentAmt = isOver ? (spent - limit) : 0;
 
-        // Status Badge & Colors
+        // Status Badge & Classes
         let statusHtml = '';
-        let barColor = 'var(--income)';
-        let cardBorder = 'var(--border)';
+        let statusClass = 'status-safe';
+        let barColor = 'linear-gradient(90deg, #10b981 0%, #34d399 100%)';
 
         if (isOver) {
-          barColor = 'var(--expense)';
-          cardBorder = 'rgba(244, 63, 94, 0.4)';
-          statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(244, 63, 94, 0.12); color:var(--expense); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> Over by ${inr(overspentAmt)}</span>`;
+          statusClass = 'status-over';
+          barColor = 'linear-gradient(90deg, #f43f5e 0%, #fb7185 100%)';
+          statusHtml = `<span class="bgt-status-badge over"><i data-lucide="alert-triangle" style="width:11px; height:11px;"></i> Over by ${inr(overspentAmt)}</span>`;
         } else if (isWarn) {
-          barColor = '#f59e0b';
-          cardBorder = 'rgba(245, 158, 11, 0.35)';
-          statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(245, 158, 11, 0.12); color:#d97706; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> ${roundedPct}% Used</span>`;
+          statusClass = 'status-warn';
+          barColor = 'linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)';
+          statusHtml = `<span class="bgt-status-badge warn"><i data-lucide="alert-circle" style="width:11px; height:11px;"></i> ${roundedPct}% Used</span>`;
         } else {
-          statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(16, 185, 129, 0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Safe (${roundedPct}%)</span>`;
+          statusClass = 'status-safe';
+          statusHtml = `<span class="bgt-status-badge safe"><i data-lucide="check-circle" style="width:11px; height:11px;"></i> Safe (${roundedPct}%)</span>`;
         }
 
         const iconName = window.getLucideIconName(cat) || 'package';
@@ -2020,44 +2024,56 @@ const Dash = {
         const safeCat = encodeURIComponent(cat);
 
         return `
-          <div class="category-budget-card" style="background:var(--bg-card); border:1.5px solid ${cardBorder}; border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--sh-card); display:flex; flex-direction:column; justify-content:space-between; transition:var(--tr);">
+          <div class="category-budget-card ${statusClass}">
             <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <div style="width:32px; height:32px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand); flex-shrink:0;">
-                    <i data-lucide="${iconName}" style="width:16px; height:16px;"></i>
+              <!-- Top Header: Category Info & Status -->
+              <div class="bgt-card-header">
+                <div class="bgt-header-info">
+                  <div class="bgt-avatar-icon">
+                    <i data-lucide="${iconName}" style="width:18px; height:18px;"></i>
                   </div>
-                  <div>
-                    <div style="font-size:0.85rem; font-weight:800; color:var(--text-head); line-height:1.2;">${cleanName}</div>
-                    <div style="font-size:0.7rem; color:var(--text-light); font-weight:500;">Monthly Target</div>
+                  <div class="bgt-title-meta">
+                    <div class="bgt-category-name" title="${escapeHtml(cleanName)}">${escapeHtml(cleanName)}</div>
+                    <div class="bgt-target-tag">Monthly Target</div>
                   </div>
                 </div>
                 <div>${statusHtml}</div>
               </div>
 
-              <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
+              <!-- Figures Box -->
+              <div class="bgt-figures-box">
                 <div>
-                  <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Spent</span>
-                  <div style="font-size:1.15rem; font-weight:800; color:${isOver ? 'var(--expense)' : 'var(--text-head)'};">${inr(spent)}</div>
+                  <div class="bgt-fig-label">MTD Spent</div>
+                  <div class="bgt-fig-spent ${isOver ? 'over' : (isWarn ? 'warn' : '')}">${inr(spent)}</div>
                 </div>
-                <div style="text-align:right;">
-                  <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Limit</span>
-                  <div style="font-size:0.95rem; font-weight:700; color:var(--text-muted);">${inr(limit)}</div>
+                <div class="bgt-fig-meta">
+                  <div class="bgt-fig-label">Limit</div>
+                  <div class="bgt-fig-limit">${inr(limit)}</div>
                 </div>
               </div>
 
-              <!-- Progress Bar -->
-              <div style="height:7px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden; margin-bottom:8px;">
-                <div style="height:100%; width:${Math.min(100, Math.max(0, pct))}%; background:${barColor}; border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+              <!-- Progress Track -->
+              <div class="bgt-progress-track">
+                <div class="bgt-progress-bar" style="width:${Math.min(100, Math.max(0, pct))}%; background:${barColor};"></div>
               </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px dashed var(--border); margin-top:6px; font-size:0.74rem;">
-              <span style="color:${isOver ? 'var(--expense)' : 'var(--text-light)'}; font-weight:600;">
-                ${isOver ? `🚨 Exceeded by ${inr(overspentAmt)}` : `✨ ${inr(remaining)} remaining`}
-              </span>
-              <button onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${limit})" style="background:none; border:none; color:var(--brand); font-weight:700; font-size:0.72rem; cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; gap:3px;">
-                <i data-lucide="edit-2" style="width:11px; height:11px;"></i> Edit
+            <!-- Bottom Footer Toolbar -->
+            <div class="bgt-card-footer">
+              <div class="bgt-footer-status">
+                ${isOver ? `
+                  <span style="display:inline-flex; align-items:center; gap:4px; color:var(--expense); font-weight:700;">
+                    <i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> Exceeded by ${inr(overspentAmt)}
+                  </span>
+                ` : `
+                  <span style="display:inline-flex; align-items:center; gap:4px; color:var(--text-light); font-weight:600;">
+                    <i data-lucide="sparkles" style="width:12px; height:12px; color:#10b981;"></i> ${inr(remaining)} remaining
+                  </span>
+                `}
+              </div>
+              <button class="bgt-edit-btn" onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${limit})" title="Adjust Limit for ${escapeHtml(cleanName)}">
+                <i data-lucide="sliders-horizontal" style="width:12px; height:12px;"></i>
+                <span>Adjust</span>
               </button>
             </div>
           </div>
@@ -2266,92 +2282,112 @@ const Dash = {
         .reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * (parseFloat(item.quantity) || 0)), 0);
 
       let statusBadge = '';
-      let cardBorder = 'var(--border)';
+      let statusClass = 'status-settled';
       if (isSettled) {
-        statusBadge = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(16, 185, 129, 0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Settled</span>`;
+        statusBadge = `<span class="v-status-badge settled"><i data-lucide="check-circle" style="width:11px; height:11px;"></i> Settled</span>`;
+        statusClass = 'status-settled';
       } else if (isPartial) {
-        statusBadge = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(245, 158, 11, 0.12); color:#d97706; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="clock" style="width:12px; height:12px;"></i> ${pctPaid}% Paid</span>`;
-        cardBorder = 'rgba(245, 158, 11, 0.35)';
+        statusBadge = `<span class="v-status-badge partial"><i data-lucide="clock" style="width:11px; height:11px;"></i> ${pctPaid}% Paid</span>`;
+        statusClass = 'status-partial';
       } else {
-        statusBadge = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(244, 63, 94, 0.12); color:var(--expense); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Unpaid</span>`;
-        cardBorder = 'rgba(244, 63, 94, 0.35)';
+        statusBadge = `<span class="v-status-badge unpaid"><i data-lucide="alert-circle" style="width:11px; height:11px;"></i> Unpaid</span>`;
+        statusClass = 'status-unpaid';
       }
 
       const iconName = window.getLucideIconName(v.category) || 'package';
       const safeId = encodeURIComponent(v.id);
 
       return `
-        <div class="vendor-card" style="background:var(--bg-card); border:1.5px solid ${cardBorder}; border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--sh-card); display:flex; flex-direction:column; justify-content:space-between; transition:var(--tr);">
+        <div class="vendor-card ${statusClass}">
           <div>
-            <!-- Top Header -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:8px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="width:34px; height:34px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand); flex-shrink:0;">
-                  <i data-lucide="${iconName}" style="width:17px; height:17px;"></i>
+            <!-- Top Header: Vendor Meta & Controls -->
+            <div class="v-header">
+              <div class="v-header-info">
+                <div class="v-avatar-icon">
+                  <i data-lucide="${iconName}" style="width:18px; height:18px;"></i>
                 </div>
-                <div>
-                  <div style="font-size:0.9rem; font-weight:800; color:var(--text-head); line-height:1.2;">${escapeHtml(v.name)}</div>
-                  <div style="font-size:0.7rem; color:var(--text-light); font-weight:600; margin-top:2px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
-                    <span>${escapeHtml(v.category)} ${v.phone ? '• 📞 ' + escapeHtml(v.phone) : ''}</span>
-                    ${vendorStockVal > 0 ? `<span style="font-size:0.68rem; font-weight:800; color:#8b5cf6; background:rgba(139,92,246,0.12); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;" title="Current In-Stock Inventory Value"><i data-lucide="package" style="width:10px; height:10px;"></i> Stock: ${inr(vendorStockVal)}</span>` : ''}
+                <div class="v-title-meta">
+                  <div class="v-supplier-name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</div>
+                  <div class="v-tags-row">
+                    <span class="v-pill-tag">${escapeHtml(v.category)}</span>
+                    ${v.phone ? `<a href="tel:${escapeHtml(v.phone)}" class="v-pill-tag phone" title="Call Supplier"><i data-lucide="phone" style="width:10px; height:10px;"></i> ${escapeHtml(v.phone)}</a>` : ''}
+                    ${vendorStockVal > 0 ? `<span class="v-pill-tag stock" title="Current In-Stock Inventory Value"><i data-lucide="package" style="width:10px; height:10px;"></i> ${inr(vendorStockVal)}</span>` : ''}
                   </div>
                 </div>
               </div>
-              <div>${statusBadge}</div>
+              <div class="v-header-controls">
+                <div>${statusBadge}</div>
+                <div class="v-icon-actions">
+                  <button class="v-icon-btn" onclick="editVendor(decodeURIComponent('${safeId}'))" title="Edit Supplier Details">
+                    <i data-lucide="edit-2" style="width:12px; height:12px;"></i>
+                  </button>
+                  <button class="v-icon-btn delete" onclick="deleteVendor(decodeURIComponent('${safeId}'))" title="Delete Supplier">
+                    <i data-lucide="trash-2" style="width:12px; height:12px;"></i>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- Amount Figures -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px; margin-bottom:12px;">
+            <div class="v-figures-box">
               <div>
-                <span style="font-size:0.68rem; color:var(--text-light); font-weight:700; text-transform:uppercase;">Pending Due</span>
-                <div style="font-size:1.15rem; font-weight:900; color:${isSettled ? 'var(--income)' : 'var(--expense)'}; margin-top:1px;">
-                  ${inr(pending)}
-                </div>
+                <div class="v-fig-due-title">Pending Due</div>
+                <div class="v-fig-due-amt ${isSettled ? 'settled' : ''}">${inr(pending)}</div>
               </div>
-              <div style="text-align:right;">
-                <span style="font-size:0.68rem; color:var(--text-light); font-weight:700; text-transform:uppercase;">Total Bill / Paid</span>
-                <div style="font-size:0.82rem; font-weight:700; color:var(--text-head); margin-top:3px;">
-                  ${inr(billed)} <span style="color:var(--text-muted); font-size:0.75rem;">(${inr(paid)} paid)</span>
-                </div>
+              <div class="v-fig-meta">
+                <div class="v-fig-total-title">Total Bill / Paid</div>
+                <div class="v-fig-total-amt">${inr(billed)}</div>
+                <div class="v-fig-paid-sub">(${inr(paid)} paid)</div>
               </div>
             </div>
 
             <!-- Progress Bar -->
-            <div style="height:6px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden; margin-bottom:8px;">
-              <div style="height:100%; width:${pctPaid}%; background:${isSettled ? 'var(--income)' : (isPartial ? '#f59e0b' : 'var(--expense)')}; border-radius:var(--r-full); transition:width 0.4s ease;"></div>
+            <div class="v-progress-track">
+              <div class="v-progress-bar" style="width:${pctPaid}%; background:${isSettled ? 'var(--income)' : (isPartial ? '#f59e0b' : 'var(--expense)')};"></div>
             </div>
 
+            <!-- Due Date or Status Note -->
             ${v.dueDate ? `
-              <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:4px;">
-                <i data-lucide="calendar" style="width:12px; height:12px;"></i> Due: <strong>${fmtDate(v.dueDate)}</strong>
+              <div class="v-due-pill">
+                <i data-lucide="calendar" style="width:12px; height:12px; color:var(--text-light);"></i>
+                <span>Due: <strong style="color:var(--text-head);">${fmtDate(v.dueDate)}</strong></span>
               </div>
-            ` : ''}
+            ` : `
+              <div class="v-due-pill" style="opacity:0.75;">
+                <i data-lucide="check" style="width:12px; height:12px; color:var(--text-light);"></i>
+                <span>${pctPaid}% settled</span>
+              </div>
+            `}
           </div>
 
-          <!-- Bottom Action Toolbar -->
-          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px dashed var(--border); margin-top:6px; flex-wrap:wrap; gap:6px;">
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${!isSettled ? `
-                <button class="vendor-action-btn pay" onclick="openVendorPayModal(decodeURIComponent('${safeId}'))" title="Record Payment">
-                  <i data-lucide="dollar-sign" style="width:13px; height:13px;"></i> Pay Now
-                </button>
-              ` : ''}
-              <button class="vendor-action-btn bill" onclick="openVendorBillModal(decodeURIComponent('${safeId}'))" title="Add New Goods / Bill">
-                <i data-lucide="plus-circle" style="width:13px; height:13px;"></i> + Add Bill
+          <!-- Bottom Action Toolbar: Standardized 2-Row Layout -->
+          <div class="v-card-footer">
+            ${!isSettled ? `
+              <button class="v-btn-pay-primary" onclick="openVendorPayModal(decodeURIComponent('${safeId}'))" title="Record Payment to ${escapeHtml(v.name)}">
+                <span style="display:inline-flex; align-items:center; gap:5px;">
+                  <i data-lucide="dollar-sign" style="width:14px; height:14px;"></i> Pay Now
+                </span>
+                <span>${inr(pending)}</span>
               </button>
-              <button class="vendor-action-btn history" onclick="openVendorHistoryModal(decodeURIComponent('${safeId}'))" title="View Full Ledger History">
-                <i data-lucide="file-text" style="width:13px; height:13px;"></i> Ledger
+            ` : `
+              <div class="v-banner-settled">
+                <i data-lucide="check-circle" style="width:14px; height:14px;"></i>
+                <span>All Clear • No Dues</span>
+              </div>
+            `}
+
+            <div class="v-actions-grid">
+              <button class="v-sub-btn bill" onclick="openVendorBillModal(decodeURIComponent('${safeId}'))" title="Add New Goods / Bill">
+                <i data-lucide="plus-circle" style="width:12px; height:12px;"></i>
+                <span>+ Bill</span>
               </button>
-              <button class="vendor-action-btn whatsapp" onclick="Dash.sendVendorWhatsApp(decodeURIComponent('${safeId}'))" title="Share Ledger via WhatsApp">
-                <i data-lucide="message-circle" style="width:13px; height:13px;"></i> WhatsApp
+              <button class="v-sub-btn ledger" onclick="openVendorHistoryModal(decodeURIComponent('${safeId}'))" title="View Full Ledger History">
+                <i data-lucide="file-text" style="width:12px; height:12px;"></i>
+                <span>Ledger</span>
               </button>
-            </div>
-            <div style="display:flex; gap:4px;">
-              <button onclick="editVendor(decodeURIComponent('${safeId}'))" title="Edit Vendor Details" style="background:none; border:none; color:var(--text-light); cursor:pointer; padding:4px;">
-                <i data-lucide="edit-2" style="width:13px; height:13px;"></i>
-              </button>
-              <button onclick="deleteVendor(decodeURIComponent('${safeId}'))" title="Delete Vendor" style="background:none; border:none; color:var(--expense); cursor:pointer; padding:4px;">
-                <i data-lucide="trash-2" style="width:13px; height:13px;"></i>
+              <button class="v-sub-btn whatsapp" onclick="Dash.sendVendorWhatsApp(decodeURIComponent('${safeId}'))" title="Share Ledger via WhatsApp">
+                <i data-lucide="message-circle" style="width:12px; height:12px;"></i>
+                <span>WhatsApp</span>
               </button>
             </div>
           </div>
@@ -3180,9 +3216,9 @@ Please acknowledge this statement. Thank you!`;
     this._recentTypeFilter = type;
     this.recentTypeFilter = type;
     if (btn) {
-      const container = btn.parentElement || btn.closest('.filter-chips-toolbar');
+      const container = btn.parentElement || btn.closest('.recent-type-switcher') || btn.closest('.filter-chips-toolbar');
       if (container) {
-        container.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
+        container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       }
     }
@@ -3311,20 +3347,20 @@ function switchLineChartTab(tab, btn) {
 
   Dash.lineChartTab = tab;
 
-  const header = btn.parentElement;
+  const header = btn.closest('.chart-tab-group') || btn.parentElement;
   if (header) {
     const tabs = header.querySelectorAll('.pb-tab');
     tabs.forEach(t => {
       t.classList.remove('active');
-      t.style.color = 'var(--text-light)';
+      t.style.color = '';
     });
   }
   btn.classList.add('active');
-  btn.style.color = 'var(--text-head)';
+  btn.style.color = '';
 
   const pulse = document.querySelector('#chartTabVelocity .live-pulse');
   if (pulse) {
-    pulse.style.display = (tab === 'live' && PizzaCafeSimulator.active) ? 'inline-block' : 'none';
+    pulse.style.display = (tab === 'live' && typeof PizzaCafeSimulator !== 'undefined' && PizzaCafeSimulator.active) ? 'inline-block' : 'none';
   }
 
   Dash.buildLineChart(getTxns());
