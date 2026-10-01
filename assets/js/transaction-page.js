@@ -355,24 +355,29 @@ const TxnPage = {
     cardView.innerHTML = pageData.map(function(t) {
       const isI = t.type === 'income';
       const sel = self.state.selected.has(t.id);
-      const style = sel ? 'background:var(--brand-soft);border-color:var(--brand);' : '';
-      return '<div class="tx-card" style="' + style + '">' +
+      const cardTypeClass = isI ? 'tx-card-in' : 'tx-card-out';
+      const selectedClass = sel ? ' selected' : '';
+      const party = t.from || t.vendor || '';
+      return '<div class="tx-card ' + cardTypeClass + selectedClass + '">' +
         '<div class="tx-card-top">' +
-        '<div style="flex:1;min-width:0;cursor:pointer;" onclick="TxnPage.view(\'' + t.id + '\')">' +
-        '<div class="tx-card-cat">' + window.getFormattedOptionHtml(t.category || '-', 13) + '</div>' +
-        '<div class="tx-card-date">' + fmtDate(t.date) + '</div>' +
+        '<div class="tx-card-meta-left" onclick="TxnPage.view(\'' + t.id + '\')">' +
+        '<div class="tx-card-cat">' + window.getFormattedOptionHtml(t.category || '-', 14) + '</div>' +
+        '<div class="tx-card-date"><i data-lucide="calendar" style="width:12px;height:12px;"></i>' + fmtDate(t.date) + (party ? ' • <span class="tx-card-party" title="' + escapeHtml(party) + '">' + escapeHtml(party) + '</span>' : '') + '</div>' +
         '</div>' +
-        '<span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '" style="display:inline-flex; align-items:center; gap:2px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:10px; height:10px;"></i>' + (isI ? 'In' : 'Out') + '</span>' +
+        '<span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '" style="display:inline-flex; align-items:center; gap:3px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:11px; height:11px;"></i>' + (isI ? 'Income' : 'Expense') + '</span>' +
         '</div>' +
-        '<div class="tx-card-amt ' + (isI ? 'amt-in' : 'amt-out') + '" onclick="TxnPage.view(\'' + t.id + '\')" style="cursor:pointer;">' +
+        '<div class="tx-card-amt ' + (isI ? 'amt-in' : 'amt-out') + '" onclick="TxnPage.view(\'' + t.id + '\')">' +
         (isI ? '+' : '-') + ' ' + inr(t.amount) + '</div>' +
         '<div class="tx-card-foot">' +
-        '<span class="tx-card-mode">' +
-        window.getFormattedOptionHtml(t.mode || 'Cash', 12) + '</span>' +
-        '<span style="display:flex;gap:4px;align-items:center;">' +
-        '<button class="act act-e" onclick="event.stopPropagation();TxnPage.edit(\'' + t.id + '\')">✏️</button>' +
-        '<button class="act act-d" onclick="event.stopPropagation();TxnPage.del(\'' + t.id + '\')">🗑️</button>' +
-        '</span></div></div>';
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<input type="checkbox" ' + (sel ? 'checked' : '') + ' class="tx-card-check" title="Select" onclick="event.stopPropagation();" onchange="TxnPage.select(\'' + t.id + '\', this)"/>' +
+        '<span class="tx-card-mode">' + window.getFormattedOptionHtml(t.mode || 'Cash', 12) + '</span>' +
+        '</div>' +
+        '<div class="tx-card-actions">' +
+        '<button class="act act-v" onclick="event.stopPropagation();TxnPage.view(\'' + t.id + '\')" title="View Details">👁️</button>' +
+        '<button class="act act-e" onclick="event.stopPropagation();TxnPage.edit(\'' + t.id + '\')" title="Edit">✏️</button>' +
+        '<button class="act act-d" onclick="event.stopPropagation();TxnPage.del(\'' + t.id + '\')" title="Delete">🗑️</button>' +
+        '</div></div></div>';
     }).join('');
     if (typeof lucide !== 'undefined') {
       lucide.createIcons();
