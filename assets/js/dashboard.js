@@ -20,13 +20,23 @@ const Dash = {
       this.lineChartTab = 'historical';
       this.simSessionStats = { income: 0, count: 0 };
       this.liveSalesData = [];
-      this.period = 'today';
+      // Load saved preferences & stealth mode
+      this.loadPrivacyMode();
+      this.loadCustomizerPreferences();
 
-      // Enforce default visual tab highlight for Today
-      const todayBtn = document.querySelector('.pb-tab[data-p="today"]');
-      if (todayBtn) {
+      // Check default period preference
+      let savedPeriod = 'today';
+      try {
+        const p = JSON.parse(localStorage.getItem('bd_dash_prefs') || '{}');
+        if (p.defaultPeriod) savedPeriod = p.defaultPeriod;
+      } catch (e) { }
+      this.period = savedPeriod;
+
+      // Enforce default visual tab highlight
+      const activeBtn = document.querySelector(`.pb-tab[data-p="${this.period}"]`) || document.querySelector('.pb-tab[data-p="today"]');
+      if (activeBtn) {
         document.querySelectorAll('.pb-tab').forEach(t => t.classList.remove('active'));
-        todayBtn.classList.add('active');
+        activeBtn.classList.add('active');
       }
 
       // Ensure chart dropdown defaults
@@ -34,11 +44,12 @@ const Dash = {
       const donutSel = document.getElementById('donutPeriod');
       if (donutSel) donutSel.value = 'month';
 
-      // SEED DATA UPGRADE: Ensure dashboard has transactions to display
-      const currentTxns = getTxns();
-      if (!currentTxns || currentTxns.length < 5) {
-        console.log('Seeding rich realistic transactions database...');
-        this.seedRealisticData();
+      // SEED DATA UPGRADE: Only seed realistic demo data if in demo mode or clean local preview
+      let currentTxns = getTxns();
+      const isDemoMode = localStorage.getItem('bd_mode') === 'demo';
+      const hasNoUser = !localStorage.getItem('bd_user_uid');
+      if (isDemoMode || ((!currentTxns || currentTxns.length === 0) && hasNoUser)) {
+        currentTxns = this.seedRealisticData();
       }
 
       this.setupWelcome();
@@ -241,6 +252,21 @@ const Dash = {
     if (cashBalEl) cashBalEl.classList.toggle('negative', cashBalance < 0);
     const onlineBalEl = document.getElementById('onlineBalance');
     if (onlineBalEl) onlineBalEl.classList.toggle('negative', onlineBalance < 0);
+
+    // Update Cash vs Online collection ratio bar
+    const totalReceived = cashIn + onlineIn;
+    const cashPct = totalReceived > 0 ? Math.round((cashIn / totalReceived) * 100) : 50;
+    const onlinePct = totalReceived > 0 ? (100 - cashPct) : 50;
+
+    const ratioCashEl = document.getElementById('ratioFillCash');
+    const ratioOnlineEl = document.getElementById('ratioFillOnline');
+    const ratioTextEl = document.getElementById('cashRatioText');
+
+    if (ratioCashEl) ratioCashEl.style.width = cashPct + '%';
+    if (ratioOnlineEl) ratioOnlineEl.style.width = onlinePct + '%';
+    if (ratioTextEl) {
+      ratioTextEl.textContent = `${cashPct}% Cash (${inr(cashIn)}) • ${onlinePct}% Online (${inr(onlineIn)})`;
+    }
   },
 
   // UPDATED: Better trend logic for Yesterday
@@ -609,6 +635,7 @@ const Dash = {
   },
 
   loadRecent: function (all) {
+    this._recentAll = all || [];
     const tbody = document.getElementById('recentBody');
     if (!tbody) return;
     if (!all.length) {
@@ -616,32 +643,75 @@ const Dash = {
       if (typeof lucide !== 'undefined') lucide.createIcons();
       return;
     }
-    const sorted = all.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
+
+    let filtered = all.slice();
+    const typeFilter = this._recentTypeFilter || this.recentTypeFilter;
+    if (typeFilter && typeFilter !== 'all') {
+      filtered = filtered.filter(t => t.type === typeFilter);
+    }
+    const searchQuery = this._recentSearchQuery || this.recentSearchQuery;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(t => 
+        (t.category && t.category.toLowerCase().includes(q)) ||
+        (t.mode && t.mode.toLowerCase().includes(q)) ||
+        (t.notes && t.notes.toLowerCase().includes(q)) ||
+        (t.from && t.from.toLowerCase().includes(q)) ||
+        (t.vendor && t.vendor.toLowerCase().includes(q)) ||
+        String(t.amount || '').includes(q)
+      );
+    }
+
+    const badge = document.getElementById('recentFilterBadge');
+    if (badge) {
+      const hasFilter = (typeFilter && typeFilter !== 'all') || Boolean(searchQuery);
+      badge.style.display = hasFilter ? 'inline-block' : 'none';
+      if (hasFilter) badge.textContent = `${filtered.length} found`;
+    }
+
+    const sorted = filtered.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+    if (!sorted.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.8rem;">No matching transactions found</td></tr>';
+      return;
+    }
+
     tbody.innerHTML = sorted.map(t => {
       const isI = t.type === 'income';
-      return '<tr><td style="font-size:0.82rem;">' + fmtDate(t.date) + '</td><td><span class="badge ' + (isI ? 'badge-in' : 'badge-out') + '" style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="' + (isI ? 'arrow-down-left' : 'arrow-up-right') + '" style="width:12px; height:12px;"></i>' + (isI ? 'In' : 'Out') + '</span></td><td style="font-size:0.82rem;font-weight:600;">' + window.getFormattedOptionHtml(t.category || '-', 13) + '</td><td class="' + (isI ? 'amt-in' : 'amt-out') + '">' + (isI ? '+' : '-') + inrShort(t.amount) + '</td><td style="font-size:0.78rem;color:var(--text-muted);">' + window.getFormattedOptionHtml(t.mode || 'Cash', 13) + '</td></tr>';
+      const safeId = encodeURIComponent(t.id);
+      return `<tr onclick="Dash.viewTxnDetails(decodeURIComponent('${safeId}'))" style="cursor:pointer;" title="Click to view transaction receipt & details">
+        <td style="font-size:0.82rem;">${fmtDate(t.date)}</td>
+        <td><span class="badge ${isI ? 'badge-in' : 'badge-out'}" style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="${isI ? 'arrow-down-left' : 'arrow-up-right'}" style="width:12px; height:12px;"></i>${isI ? 'In' : 'Out'}</span></td>
+        <td style="font-size:0.82rem;font-weight:600;">${window.getFormattedOptionHtml(t.category || '-', 13)}</td>
+        <td class="${isI ? 'amt-in' : 'amt-out'}">${isI ? '+' : '-'}${inrShort(t.amount)}</td>
+        <td style="font-size:0.78rem;color:var(--text-muted);">${window.getFormattedOptionHtml(t.mode || 'Cash', 13)}</td>
+      </tr>`;
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   setupYearSelector: function () {
     const sel = document.getElementById('chartYear');
-    if (!sel || sel.options.length > 0) return;
+    if (!sel) return;
     const cur = getISTDateParts().year;
-    for (let y = cur; y >= cur - 4; y--) {
-      const o = document.createElement('option');
-      o.value = y;
-      o.textContent = y;
-      if (y === cur) o.selected = true;
-      sel.appendChild(o);
+    if (sel.options.length === 0) {
+      for (let y = cur; y >= cur - 4; y--) {
+        const o = document.createElement('option');
+        o.value = y;
+        o.textContent = y;
+        if (y === cur) o.selected = true;
+        sel.appendChild(o);
+      }
     }
+    if (!sel.value) sel.value = String(cur);
   },
 
   buildBarChart: function (all) {
     const canvas = document.getElementById('barChart');
     if (!canvas || typeof Chart === 'undefined') return;
     try {
-      const year = parseInt(document.getElementById('chartYear') ? document.getElementById('chartYear').value : getISTDateParts().year);
+      const yearEl = document.getElementById('chartYear');
+      let year = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : NaN;
+      if (isNaN(year)) year = getISTDateParts().year;
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const income = new Array(12).fill(0);
       const expense = new Array(12).fill(0);
@@ -667,30 +737,46 @@ const Dash = {
         this.charts.bar = null;
       }
 
+      let datasets = [];
+      if (this.barChartMode === 'profit') {
+        const netProfit = months.map((_, i) => income[i] - expense[i]);
+        datasets = [{
+          label: 'Net Profit / Margin',
+          data: netProfit,
+          backgroundColor: netProfit.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.75)' : 'rgba(244, 63, 94, 0.75)'),
+          borderColor: netProfit.map(v => v >= 0 ? '#10b981' : '#f43f5e'),
+          borderWidth: 1.5,
+          borderRadius: { topLeft: 8, topRight: 8 },
+          maxBarThickness: 36
+        }];
+      } else {
+        datasets = [
+          {
+            label: 'Income',
+            data: income,
+            backgroundColor: 'rgba(16, 185, 129, 0.72)',
+            borderColor: incomeColor,
+            borderWidth: 1.5,
+            borderRadius: { topLeft: 8, topRight: 8 },
+            maxBarThickness: 32
+          },
+          {
+            label: 'Expense',
+            data: expense,
+            backgroundColor: 'rgba(244, 63, 94, 0.72)',
+            borderColor: expenseColor,
+            borderWidth: 1.5,
+            borderRadius: { topLeft: 8, topRight: 8 },
+            maxBarThickness: 32
+          }
+        ];
+      }
+
       this.charts.bar = new Chart(canvas, {
         type: 'bar',
         data: {
           labels: months,
-          datasets: [
-            {
-              label: 'Income',
-              data: income,
-              backgroundColor: 'rgba(16, 185, 129, 0.72)',
-              borderColor: incomeColor,
-              borderWidth: 1.5,
-              borderRadius: { topLeft: 8, topRight: 8 },
-              maxBarThickness: 32
-            },
-            {
-              label: 'Expense',
-              data: expense,
-              backgroundColor: 'rgba(244, 63, 94, 0.72)',
-              borderColor: expenseColor,
-              borderWidth: 1.5,
-              borderRadius: { topLeft: 8, topRight: 8 },
-              maxBarThickness: 32
-            }
-          ]
+          datasets: datasets
         },
         options: {
           responsive: true,
@@ -1613,6 +1699,7 @@ const Dash = {
 
     localStorage.setItem(APP.storageKey, JSON.stringify(txns));
     if (typeof currentTxns !== 'undefined') currentTxns = txns;
+    if (typeof window !== 'undefined') window.currentTxns = txns;
     return txns;
   },
 
@@ -1853,91 +1940,132 @@ const Dash = {
     let anyOverBudget = false;
     let anyWarning = false;
 
-    const cardsHtml = budgets.map(bgt => {
+    // Calculate overall totals first regardless of search or filter
+    budgets.forEach(bgt => {
       const cat = bgt.category;
       const limit = parseFloat(bgt.amount) || 0;
       const clean = stripEmoji(cat);
       const spent = mtdCatSpend[cat] !== undefined ? mtdCatSpend[cat] : (mtdCatSpendClean[clean] || 0);
       totalAllocated += limit;
       totalSpentInBudgets += spent;
+      if (spent > limit) anyOverBudget = true;
+      else if (limit > 0 && (spent / limit) >= 0.75) anyWarning = true;
+    });
 
-      const pct = limit > 0 ? (spent / limit) * 100 : 0;
-      const roundedPct = Math.round(pct);
-      const isOver = spent > limit;
-      const isWarn = !isOver && pct >= 75;
-      const remaining = Math.max(0, limit - spent);
-      const overspentAmt = isOver ? (spent - limit) : 0;
+    // Filter by tab and search
+    let displayBudgets = budgets.slice();
+    if (this.activeBudgetFilter && this.activeBudgetFilter !== 'all') {
+      displayBudgets = displayBudgets.filter(bgt => {
+        const cat = bgt.category;
+        const limit = parseFloat(bgt.amount) || 0;
+        const clean = stripEmoji(cat);
+        const spent = mtdCatSpend[cat] !== undefined ? mtdCatSpend[cat] : (mtdCatSpendClean[clean] || 0);
+        const pct = limit > 0 ? (spent / limit) * 100 : 0;
+        const isOver = spent > limit;
+        const isWarn = !isOver && pct >= 75;
+        if (this.activeBudgetFilter === 'over') return isOver;
+        if (this.activeBudgetFilter === 'warn') return isWarn;
+        if (this.activeBudgetFilter === 'safe') return !isOver && !isWarn;
+        return true;
+      });
+    }
 
-      if (isOver) anyOverBudget = true;
-      if (isWarn) anyWarning = true;
+    if (this.budgetSearchQuery) {
+      const q = this.budgetSearchQuery.toLowerCase();
+      displayBudgets = displayBudgets.filter(bgt => (bgt.category || '').toLowerCase().includes(q));
+    }
 
-      // Status Badge & Colors
-      let statusHtml = '';
-      let barColor = 'var(--income)';
-      let cardBorder = 'var(--border)';
-
-      if (isOver) {
-        barColor = 'var(--expense)';
-        cardBorder = 'rgba(244, 63, 94, 0.4)';
-        statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(244, 63, 94, 0.12); color:var(--expense); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> Over by ${inr(overspentAmt)}</span>`;
-      } else if (isWarn) {
-        barColor = '#f59e0b';
-        cardBorder = 'rgba(245, 158, 11, 0.35)';
-        statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(245, 158, 11, 0.12); color:#d97706; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> ${roundedPct}% Used</span>`;
-      } else {
-        statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(16, 185, 129, 0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Safe (${roundedPct}%)</span>`;
-      }
-
-      const iconName = window.getLucideIconName(cat) || 'package';
-      const cleanName = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
-      const safeCat = encodeURIComponent(cat);
-
-      return `
-        <div class="category-budget-card" style="background:var(--bg-card); border:1.5px solid ${cardBorder}; border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--sh-card); display:flex; flex-direction:column; justify-content:space-between; transition:var(--tr);">
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="width:32px; height:32px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand); flex-shrink:0;">
-                  <i data-lucide="${iconName}" style="width:16px; height:16px;"></i>
-                </div>
-                <div>
-                  <div style="font-size:0.85rem; font-weight:800; color:var(--text-head); line-height:1.2;">${cleanName}</div>
-                  <div style="font-size:0.7rem; color:var(--text-light); font-weight:500;">Monthly Target</div>
-                </div>
-              </div>
-              <div>${statusHtml}</div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
-              <div>
-                <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Spent</span>
-                <div style="font-size:1.15rem; font-weight:800; color:${isOver ? 'var(--expense)' : 'var(--text-head)'};">${inr(spent)}</div>
-              </div>
-              <div style="text-align:right;">
-                <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Limit</span>
-                <div style="font-size:0.95rem; font-weight:700; color:var(--text-muted);">${inr(limit)}</div>
-              </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div style="height:7px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden; margin-bottom:8px;">
-              <div style="height:100%; width:${Math.min(100, Math.max(0, pct))}%; background:${barColor}; border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-            </div>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px dashed var(--border); margin-top:6px; font-size:0.74rem;">
-            <span style="color:${isOver ? 'var(--expense)' : 'var(--text-light)'}; font-weight:600;">
-              ${isOver ? `🚨 Exceeded by ${inr(overspentAmt)}` : `✨ ${inr(remaining)} remaining`}
-            </span>
-            <button onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${limit})" style="background:none; border:none; color:var(--brand); font-weight:700; font-size:0.72rem; cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; gap:3px;">
-              <i data-lucide="edit-2" style="width:11px; height:11px;"></i> Edit
-            </button>
-          </div>
+    if (displayBudgets.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 28px 16px; text-align: center; background: var(--bg-app); border: 1.5px dashed var(--border); border-radius: var(--r-lg);">
+          <div style="font-size:1.6rem; margin-bottom:6px;">🔍</div>
+          <div style="font-size:0.88rem; font-weight:700; color:var(--text-head); margin-bottom:4px;">No matching category budgets</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Try adjusting your search query or reset filter to "All".</div>
+          <button class="btn btn-outline btn-xs" onclick="Dash.filterBudgets('all', document.querySelector('.filter-chip-btn[data-budget-filter=\\'all\\']')); const si = document.getElementById('budgetSearchInput'); if (si) { si.value = ''; Dash.searchBudgets(''); }">Reset Filter</button>
         </div>
       `;
-    }).join('');
+    } else {
+      const cardsHtml = displayBudgets.map(bgt => {
+        const cat = bgt.category;
+        const limit = parseFloat(bgt.amount) || 0;
+        const clean = stripEmoji(cat);
+        const spent = mtdCatSpend[cat] !== undefined ? mtdCatSpend[cat] : (mtdCatSpendClean[clean] || 0);
 
-    grid.innerHTML = cardsHtml;
+        const pct = limit > 0 ? (spent / limit) * 100 : 0;
+        const roundedPct = Math.round(pct);
+        const isOver = spent > limit;
+        const isWarn = !isOver && pct >= 75;
+        const remaining = Math.max(0, limit - spent);
+        const overspentAmt = isOver ? (spent - limit) : 0;
+
+        // Status Badge & Colors
+        let statusHtml = '';
+        let barColor = 'var(--income)';
+        let cardBorder = 'var(--border)';
+
+        if (isOver) {
+          barColor = 'var(--expense)';
+          cardBorder = 'rgba(244, 63, 94, 0.4)';
+          statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(244, 63, 94, 0.12); color:var(--expense); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> Over by ${inr(overspentAmt)}</span>`;
+        } else if (isWarn) {
+          barColor = '#f59e0b';
+          cardBorder = 'rgba(245, 158, 11, 0.35)';
+          statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(245, 158, 11, 0.12); color:#d97706; display:inline-flex; align-items:center; gap:4px;"><i data-lucide="alert-circle" style="width:12px; height:12px;"></i> ${roundedPct}% Used</span>`;
+        } else {
+          statusHtml = `<span style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:var(--r-full); background:rgba(16, 185, 129, 0.12); color:var(--income); display:inline-flex; align-items:center; gap:4px;"><i data-lucide="check-circle" style="width:12px; height:12px;"></i> Safe (${roundedPct}%)</span>`;
+        }
+
+        const iconName = window.getLucideIconName(cat) || 'package';
+        const cleanName = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+        const safeCat = encodeURIComponent(cat);
+
+        return `
+          <div class="category-budget-card" style="background:var(--bg-card); border:1.5px solid ${cardBorder}; border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--sh-card); display:flex; flex-direction:column; justify-content:space-between; transition:var(--tr);">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:32px; height:32px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand); flex-shrink:0;">
+                    <i data-lucide="${iconName}" style="width:16px; height:16px;"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:0.85rem; font-weight:800; color:var(--text-head); line-height:1.2;">${cleanName}</div>
+                    <div style="font-size:0.7rem; color:var(--text-light); font-weight:500;">Monthly Target</div>
+                  </div>
+                </div>
+                <div>${statusHtml}</div>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
+                <div>
+                  <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Spent</span>
+                  <div style="font-size:1.15rem; font-weight:800; color:${isOver ? 'var(--expense)' : 'var(--text-head)'};">${inr(spent)}</div>
+                </div>
+                <div style="text-align:right;">
+                  <span style="font-size:0.7rem; color:var(--text-light); font-weight:600; text-transform:uppercase;">Limit</span>
+                  <div style="font-size:0.95rem; font-weight:700; color:var(--text-muted);">${inr(limit)}</div>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div style="height:7px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-full); overflow:hidden; margin-bottom:8px;">
+                <div style="height:100%; width:${Math.min(100, Math.max(0, pct))}%; background:${barColor}; border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px dashed var(--border); margin-top:6px; font-size:0.74rem;">
+              <span style="color:${isOver ? 'var(--expense)' : 'var(--text-light)'}; font-weight:600;">
+                ${isOver ? `🚨 Exceeded by ${inr(overspentAmt)}` : `✨ ${inr(remaining)} remaining`}
+              </span>
+              <button onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${limit})" style="background:none; border:none; color:var(--brand); font-weight:700; font-size:0.72rem; cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; gap:3px;">
+                <i data-lucide="edit-2" style="width:11px; height:11px;"></i> Edit
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      grid.innerHTML = cardsHtml;
+    }
 
     // Update Summary Row
     const remainingTotal = Math.max(0, totalAllocated - totalSpentInBudgets);
@@ -2058,7 +2186,63 @@ const Dash = {
       return;
     }
 
-    const cardsHtml = vendors.map(v => {
+    // Filter by Tab and Search
+    let displayVendors = vendors.slice();
+    if (this.activeVendorTab && this.activeVendorTab !== 'all') {
+      displayVendors = displayVendors.filter(v => {
+        const billed = parseFloat(v.totalAmount) || 0;
+        const paid = parseFloat(v.paidAmount) || 0;
+        const pending = Math.max(0, billed - paid);
+        if (this.activeVendorTab === 'pending') return pending > 0;
+        if (this.activeVendorTab === 'settled') return pending <= 0;
+        return true;
+      });
+    }
+
+    if (this.vendorSearchQuery) {
+      const q = this.vendorSearchQuery.toLowerCase();
+      displayVendors = displayVendors.filter(v => {
+        return (v.name || '').toLowerCase().includes(q) ||
+               (v.phone || '').toLowerCase().includes(q) ||
+               (v.category || '').toLowerCase().includes(q);
+      });
+    }
+
+    // Sort displayVendors
+    const sortMode = this.vendorSortMode || 'pending-desc';
+    displayVendors.sort((a, b) => {
+      const aBilled = parseFloat(a.totalAmount) || 0;
+      const aPaid = parseFloat(a.paidAmount) || 0;
+      const aPending = Math.max(0, aBilled - aPaid);
+
+      const bBilled = parseFloat(b.totalAmount) || 0;
+      const bPaid = parseFloat(b.paidAmount) || 0;
+      const bPending = Math.max(0, bBilled - bPaid);
+
+      if (sortMode === 'pending-desc') {
+        return bPending - aPending;
+      } else if (sortMode === 'name-asc') {
+        return (a.name || '').localeCompare(b.name || '');
+      } else if (sortMode === 'billed-desc') {
+        return bBilled - aBilled;
+      }
+      return 0;
+    });
+
+    if (displayVendors.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 28px 16px; text-align: center; background: var(--bg-app); border: 1.5px dashed var(--border); border-radius: var(--r-lg);">
+          <div style="font-size:1.6rem; margin-bottom:6px;">🔍</div>
+          <div style="font-size:0.88rem; font-weight:700; color:var(--text-head); margin-bottom:4px;">No matching suppliers found</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Try adjusting your search query or reset filter to "All".</div>
+          <button class="btn btn-outline btn-xs" onclick="Dash.filterVendorsTab('all', document.querySelector('.filter-chip-btn[data-vendor-filter=\\'all\\']')); const vi = document.getElementById('vendorSearchInput'); if (vi) { vi.value = ''; Dash.searchVendors(''); }">Reset Filter</button>
+        </div>
+      `;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      return;
+    }
+
+    const cardsHtml = displayVendors.map(v => {
       const billed = parseFloat(v.totalAmount) || 0;
       const paid = parseFloat(v.paidAmount) || 0;
       const pending = Math.max(0, billed - paid);
@@ -2146,7 +2330,7 @@ const Dash = {
 
           <!-- Bottom Action Toolbar -->
           <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px dashed var(--border); margin-top:6px; flex-wrap:wrap; gap:6px;">
-            <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
               ${!isSettled ? `
                 <button class="vendor-action-btn pay" onclick="openVendorPayModal(decodeURIComponent('${safeId}'))" title="Record Payment">
                   <i data-lucide="dollar-sign" style="width:13px; height:13px;"></i> Pay Now
@@ -2157,6 +2341,9 @@ const Dash = {
               </button>
               <button class="vendor-action-btn history" onclick="openVendorHistoryModal(decodeURIComponent('${safeId}'))" title="View Full Ledger History">
                 <i data-lucide="file-text" style="width:13px; height:13px;"></i> Ledger
+              </button>
+              <button class="vendor-action-btn whatsapp" onclick="Dash.sendVendorWhatsApp(decodeURIComponent('${safeId}'))" title="Share Ledger via WhatsApp">
+                <i data-lucide="message-circle" style="width:13px; height:13px;"></i> WhatsApp
               </button>
             </div>
             <div style="display:flex; gap:4px;">
@@ -2517,6 +2704,604 @@ const Dash = {
     if (hasNewNotification) {
       localStorage.setItem('bd_notified_bills', JSON.stringify(updatedNotified));
     }
+  },
+
+  /* ========================================================
+     POWER FEATURES & CUSTOMIZER SUITE
+     ======================================================== */
+
+  togglePrivacyMode: function (force) {
+    const isPrivate = force !== undefined ? !!force : document.body.getAttribute('data-privacy') !== 'true';
+    if (isPrivate) {
+      document.body.setAttribute('data-privacy', 'true');
+      localStorage.setItem('bd_stealth_mode', 'true');
+    } else {
+      document.body.removeAttribute('data-privacy');
+      localStorage.removeItem('bd_stealth_mode');
+    }
+    const icon = document.getElementById('privacyToggleIcon');
+    const label = document.getElementById('privacyToggleLabel');
+    if (icon) {
+      icon.setAttribute('data-lucide', isPrivate ? 'eye' : 'eye-off');
+    }
+    if (label) {
+      label.textContent = isPrivate ? 'Show Numbers' : 'Stealth Privacy';
+    }
+    const chk = document.getElementById('customizerStealthMode') || document.getElementById('prefStealthMode');
+    if (chk) chk.checked = isPrivate;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (typeof toast === 'function') {
+      toast(isPrivate ? '🔒 Privacy stealth mode enabled (numbers hidden)' : '🔓 Privacy mode disabled', 'info');
+    }
+  },
+
+  loadPrivacyMode: function () {
+    const isPrivate = localStorage.getItem('bd_stealth_mode') === 'true';
+    if (isPrivate) {
+      document.body.setAttribute('data-privacy', 'true');
+      const icon = document.getElementById('privacyToggleIcon');
+      const label = document.getElementById('privacyToggleLabel');
+      if (icon) icon.setAttribute('data-lucide', 'eye');
+      if (label) label.textContent = 'Show Numbers';
+      const chk = document.getElementById('customizerStealthMode') || document.getElementById('prefStealthMode');
+      if (chk) chk.checked = true;
+    }
+  },
+
+  toggleDensity: function (isCompact) {
+    if (isCompact) {
+      document.body.setAttribute('data-density', 'compact');
+    } else {
+      document.body.removeAttribute('data-density');
+    }
+  },
+
+  loadCustomizerPreferences: function () {
+    let prefs = {};
+    try {
+      prefs = JSON.parse(localStorage.getItem('bd_dash_prefs') || '{}');
+    } catch (e) { }
+
+    // Density
+    const isCompact = prefs.density === 'compact';
+    this.toggleDensity(isCompact);
+    const dChk = document.getElementById('customizerDensity') || document.getElementById('prefDensity');
+    if (dChk) dChk.checked = isCompact;
+
+    // Stealth Mode in Customizer
+    const sChk = document.getElementById('customizerPrivacy') || document.getElementById('customizerStealthMode') || document.getElementById('prefStealthMode');
+    if (sChk) sChk.checked = localStorage.getItem('bd_stealth_mode') === 'true';
+
+    // Default Period
+    const pSel = document.getElementById('customizerDefaultPeriod') || document.getElementById('prefDefaultPeriod');
+    if (pSel && prefs.defaultPeriod) pSel.value = prefs.defaultPeriod;
+
+    // Visible Sections mapping
+    const sectionMap = {
+      custSecVision: ['sectionVisionGoals'],
+      custSecBudgets: ['sectionBudgets'],
+      custSecVendors: ['sectionVendors'],
+      custSecAverages: ['sectionDailyAverages', 'sectionMonthlyAverages'],
+      custSecCharts: ['sectionCharts', 'sectionCashflow'],
+      custSecInsights: ['sectionInsights'],
+      custSecRecent: ['sectionRecent'],
+      custSecComparisons: ['sectionComparisons']
+    };
+
+    const hidden = prefs.hiddenSections || [];
+
+    Object.keys(sectionMap).forEach(key => {
+      const chk = document.getElementById(key);
+      const targets = sectionMap[key];
+      const isHidden = targets.some(targetId => hidden.includes(targetId));
+
+      targets.forEach(targetId => {
+        const secEl = document.getElementById(targetId);
+        if (secEl) {
+          secEl.style.display = isHidden ? 'none' : '';
+        }
+      });
+
+      if (chk) {
+        chk.checked = !isHidden;
+      }
+    });
+  },
+
+  saveCustomizerPreferences: function () {
+    const dChk = document.getElementById('customizerDensity') || document.getElementById('prefDensity');
+    const isCompact = dChk ? dChk.checked : false;
+
+    const pSel = document.getElementById('customizerDefaultPeriod') || document.getElementById('prefDefaultPeriod');
+    const defaultPeriod = pSel ? pSel.value : 'today';
+
+    const sChk = document.getElementById('customizerPrivacy') || document.getElementById('customizerStealthMode') || document.getElementById('prefStealthMode');
+    const isStealth = sChk ? sChk.checked : false;
+
+    const sectionMap = {
+      custSecVision: ['sectionVisionGoals'],
+      custSecBudgets: ['sectionBudgets'],
+      custSecVendors: ['sectionVendors'],
+      custSecAverages: ['sectionDailyAverages', 'sectionMonthlyAverages'],
+      custSecCharts: ['sectionCharts', 'sectionCashflow'],
+      custSecInsights: ['sectionInsights'],
+      custSecRecent: ['sectionRecent'],
+      custSecComparisons: ['sectionComparisons']
+    };
+
+    const hiddenSections = [];
+    Object.keys(sectionMap).forEach(key => {
+      const chk = document.getElementById(key);
+      if (chk && !chk.checked) {
+        sectionMap[key].forEach(targetId => hiddenSections.push(targetId));
+      }
+    });
+
+    const prefs = {
+      density: isCompact ? 'compact' : 'comfortable',
+      defaultPeriod: defaultPeriod,
+      hiddenSections: hiddenSections
+    };
+
+    localStorage.setItem('bd_dash_prefs', JSON.stringify(prefs));
+    this.togglePrivacyMode(isStealth);
+    this.loadCustomizerPreferences();
+    if (typeof closeModal === 'function') closeModal('dashCustomizerModal');
+    if (typeof toast === 'function') toast('✨ Dashboard view customized successfully!', 'success');
+  },
+
+  resetCustomizerDefaults: function () {
+    localStorage.removeItem('bd_dash_prefs');
+    localStorage.removeItem('bd_stealth_mode');
+    document.body.removeAttribute('data-density');
+    document.body.removeAttribute('data-privacy');
+    this.loadCustomizerPreferences();
+    const dChk = document.getElementById('customizerDensity') || document.getElementById('prefDensity');
+    if (dChk) dChk.checked = false;
+    const sChk = document.getElementById('customizerPrivacy') || document.getElementById('customizerStealthMode') || document.getElementById('prefStealthMode');
+    if (sChk) sChk.checked = false;
+    const pSel = document.getElementById('customizerDefaultPeriod') || document.getElementById('prefDefaultPeriod');
+    if (pSel) pSel.value = 'today';
+    ['custSecVision', 'custSecBudgets', 'custSecVendors', 'custSecAverages', 'custSecCharts', 'custSecInsights', 'custSecRecent', 'custSecComparisons'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.checked = true;
+    });
+    if (typeof closeModal === 'function') closeModal('dashCustomizerModal');
+    if (typeof toast === 'function') toast('Default layout restored!', 'info');
+    if (typeof toast === 'function') toast('🔄 Reset dashboard preferences to default', 'info');
+  },
+
+  navigatePeriod: function (dir) {
+    const sequence = ['today', 'yesterday', 'week', 'month', 'lastmonth', 'year', 'all'];
+    const curIdx = sequence.indexOf(this.period);
+    let nextIdx = (curIdx === -1 ? 0 : curIdx) + dir;
+    if (nextIdx < 0) nextIdx = 0;
+    if (nextIdx >= sequence.length) nextIdx = sequence.length - 1;
+    const nextPeriod = sequence[nextIdx];
+    if (typeof switchPeriod === 'function') {
+      switchPeriod(nextPeriod);
+    } else {
+      this.switchPeriod(nextPeriod);
+    }
+    const tabBtn = document.querySelector(`.pb-tab[data-p="${nextPeriod}"]`);
+    if (tabBtn) {
+      document.querySelectorAll('.pb-tab').forEach(t => t.classList.remove('active'));
+      tabBtn.classList.add('active');
+    }
+  },
+
+  drilldownSummary: function (type) {
+    if (type === 'income' || type === 'expense') {
+      const recentSec = document.getElementById('sectionRecent');
+      if (recentSec) {
+        recentSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const btn = document.querySelector(`.filter-chip-btn[data-recent-type="${type}"]`);
+        this.filterRecentType(type, btn);
+        if (typeof toast === 'function') {
+          toast(`🔍 Filtered Recent Activity to ${type.toUpperCase()}`, 'info');
+        }
+      }
+    } else if (type === 'profit' || type === 'balance') {
+      const targetSec = document.getElementById('sectionCharts') || document.getElementById('sectionCashflow');
+      if (targetSec) {
+        targetSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (typeof toast === 'function') {
+          toast(`📊 Viewing ${type.toUpperCase()} analytics & cash flow breakdown`, 'info');
+        }
+      }
+    }
+  },
+
+  copyCashReport: function () {
+    const all = getTxns();
+    const periodTxns = typeof filterByPeriod === 'function' ? filterByPeriod(all, this.period || 'today') : all;
+    let cashIn = 0, onlineIn = 0, cashOut = 0, onlineOut = 0;
+
+    periodTxns.forEach(t => {
+      const amt = parseFloat(t.amount) || 0;
+      const isCash = (t.mode || '').toLowerCase() === 'cash';
+      if (t.type === 'income') {
+        if (isCash) cashIn += amt; else onlineIn += amt;
+      } else {
+        if (isCash) cashOut += amt; else onlineOut += amt;
+      }
+    });
+
+    const netCash = cashIn - cashOut;
+    const totalIn = cashIn + onlineIn;
+    const totalOut = cashOut + onlineOut;
+    const netProfit = totalIn - totalOut;
+
+    const reportDate = this.period === 'today' ? 'Today' : (this.period.toUpperCase());
+    const text = `📊 *DAILY BUSINESS CLOSING REPORT* (${reportDate})
+━━━━━━━━━━━━━━━━━━
+💰 *Total Revenue:* ${inr(totalIn)}
+  • 🟢 Cash Sales: ${inr(cashIn)}
+  • 📱 Online/UPI Sales: ${inr(onlineIn)}
+
+💸 *Total Expenses:* ${inr(totalOut)}
+  • Cash Expenses: ${inr(cashOut)}
+  • Online Expenses: ${onlineOut > 0 ? inr(onlineOut) : '₹ 0'}
+
+━━━━━━━━━━━━━━━━━━
+💵 *Physical Cash In Till / Drawer:* ${inr(netCash)}
+📈 *Net Margin / Profit:* ${inr(netProfit)}
+🕒 Generated: ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        if (typeof toast === 'function') toast('📋 Daily Closing Report copied to clipboard!', 'success');
+      }).catch(() => {});
+    }
+
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+  },
+
+  filterBudgets: function (filterType, btn) {
+    this.activeBudgetFilter = filterType;
+    if (btn) {
+      const toolbar = btn.closest('.filter-chips-toolbar');
+      if (toolbar) {
+        toolbar.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+    }
+    const all = getTxns();
+    this.loadCategoryBudgets(all);
+  },
+
+  searchBudgets: function (query) {
+    this.budgetSearchQuery = (query || '').trim();
+    const all = getTxns();
+    this.loadCategoryBudgets(all);
+  },
+
+  applyBudgetPreset: function (category, amount) {
+    const sel = document.getElementById('bCategory');
+    const amt = document.getElementById('bAmount');
+    if (sel) {
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value.includes(category) || sel.options[i].text.includes(category)) {
+          sel.selectedIndex = i;
+          break;
+        }
+      }
+    }
+    if (amt) {
+      amt.value = amount;
+      amt.focus();
+    }
+  },
+
+  filterVendorsTab: function (filterType, btn) {
+    this.activeVendorTab = filterType;
+    if (btn) {
+      const toolbar = btn.closest('.filter-chips-toolbar');
+      if (toolbar) {
+        toolbar.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+    }
+    this.loadVendors();
+  },
+
+  searchVendors: function (query) {
+    this.vendorSearchQuery = (query || '').trim();
+    this.loadVendors();
+  },
+
+  sortVendors: function (sortVal) {
+    this.vendorSortMode = sortVal;
+    this.loadVendors();
+  },
+
+  sendVendorWhatsApp: function (vendorId) {
+    const vendors = getVendors();
+    const v = vendors.find(item => String(item.id) === String(vendorId));
+    if (!v) {
+      if (typeof toast === 'function') toast('Vendor not found', 'danger');
+      return;
+    }
+
+    const billed = parseFloat(v.totalAmount) || 0;
+    const paid = parseFloat(v.paidAmount) || 0;
+    const pending = Math.max(0, billed - paid);
+
+    let phone = (v.phone || '').replace(/\D/g, '');
+    if (phone.length === 10) phone = '91' + phone;
+
+    const msg = `Namaste *${v.name}* ji,
+This is a ledger statement update from our business:
+━━━━━━━━━━━━━━━━━━
+📋 Total Goods Billed: ${inr(billed)}
+✅ Amount Paid So Far: ${inr(paid)}
+⚠️ Current Balance Due: *${inr(pending)}*
+${v.dueDate ? `📅 Agreed Payment Due Date: ${fmtDate(v.dueDate)}` : ''}
+━━━━━━━━━━━━━━━━━━
+Please acknowledge this statement. Thank you!`;
+
+    const encoded = encodeURIComponent(msg);
+    const waUrl = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+    window.open(waUrl, '_blank');
+    if (typeof toast === 'function') toast(`💬 Opened WhatsApp ledger statement for ${v.name}`, 'success');
+  },
+
+  askAiAdvisor: function (topic) {
+    const respBox = document.getElementById('aiAdvisorResponse');
+    if (!respBox) return;
+
+    document.querySelectorAll('.ai-prompt-chip').forEach(c => c.classList.remove('active'));
+    const clickedChip = document.querySelector(`.ai-prompt-chip[onclick*="${topic}"]`);
+    if (clickedChip) clickedChip.classList.add('active');
+
+    const all = getTxns();
+    const monthTxns = (typeof filterByPeriod === 'function') ? filterByPeriod(all, 'month') : all;
+    const workingSet = monthTxns.length ? monthTxns : all;
+    const totMonth = calcTotals(workingSet);
+    const vendors = getVendors();
+    let totalPendingVendors = 0;
+    vendors.forEach(v => {
+      totalPendingVendors += Math.max(0, (parseFloat(v.totalAmount) || 0) - (parseFloat(v.paidAmount) || 0));
+    });
+
+    let html = '';
+    if (topic === 'expenses' || topic === 'cut_expense') {
+      const catTotals = {};
+      workingSet.filter(t => t.type === 'expense').forEach(t => {
+        catTotals[t.category] = (catTotals[t.category] || 0) + (parseFloat(t.amount) || 0);
+      });
+      const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      const topCat = sortedCats[0] ? sortedCats[0][0] : 'Supplies';
+      const topAmt = sortedCats[0] ? inr(sortedCats[0][1]) : '₹ 0';
+      const topCat2 = sortedCats[1] ? sortedCats[1][0] : null;
+      const topAmt2 = sortedCats[1] ? inr(sortedCats[1][1]) : null;
+
+      html = `
+        <div style="font-weight:800; font-size:0.95rem; color:var(--text-head); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+          <i data-lucide="alert-triangle" style="width:16px; height:16px; color:#f43f5e;"></i> Top Expense Leaks & Savings Audit
+        </div>
+        <div style="font-size:0.84rem; line-height:1.5; color:var(--text-body); margin-bottom:8px;">
+          Your #1 largest expense drain is <strong>${topCat}</strong> at <strong style="color:var(--expense);">${topAmt}</strong>${topCat2 ? ` followed by <strong>${topCat2}</strong> (${topAmt2})` : ''} this period.
+        </div>
+        <div style="font-size:0.82rem; line-height:1.6; background:var(--bg-card); padding:10px 14px; border-radius:var(--r-md); border:1px solid var(--border);">
+          💡 <strong>Actionable Steps to Plug the Leaks:</strong><br>
+          1. <strong>Set Budget Limits:</strong> Open the <em>Category Budgets</em> section above and set a strict monthly limit on <strong>${topCat}</strong>.<br>
+          2. <strong>Supplier Renegotiation:</strong> Request a 5–8% wholesale discount or bulk delivery credit from your primary supplier.<br>
+          3. <strong>Track Expiry Losses:</strong> Keep ingredients in the Expiry Tracker to eliminate silent food spoilage.
+        </div>
+      `;
+    } else if (topic === 'profit' || topic === 'margin') {
+      const margin = totMonth.income > 0 ? Math.round((totMonth.profit / totMonth.income) * 100) : 0;
+      let advice = '';
+      if (margin >= 30) {
+        advice = '✨ <strong>Outstanding Profitability (30%+):</strong> Your business is operating with exceptional health. You have safe headroom to invest in targeted marketing or promotional combo discounts to expand customer footfall.';
+      } else if (margin >= 15) {
+        advice = '👍 <strong>Healthy Margin (15%–29%):</strong> Steady performance. To push your margin above 25%, focus on upselling high-margin beverages, sides, and signature desserts.';
+      } else {
+        advice = '⚠️ <strong>Margin Squeeze Alert (&lt;15%):</strong> Expenses are absorbing too much revenue. Conduct an immediate cost review on raw supplies and revise prices on low-margin items.';
+      }
+      html = `
+        <div style="font-weight:800; font-size:0.95rem; color:var(--text-head); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+          <i data-lucide="trending-up" style="width:16px; height:16px; color:var(--brand);"></i> Profit Margin Optimization
+        </div>
+        <div style="font-size:0.84rem; line-height:1.5; color:var(--text-body); margin-bottom:8px;">
+          Net Profit Margin: <strong style="color:${margin >= 20 ? 'var(--income)' : 'var(--expense)'}; font-size:0.95rem;">${margin}%</strong> (${inr(totMonth.profit)} profit on ${inr(totMonth.income)} revenue).
+        </div>
+        <div style="font-size:0.82rem; line-height:1.6; background:var(--bg-card); padding:10px 14px; border-radius:var(--r-md); border:1px solid var(--border);">
+          ${advice}
+        </div>
+      `;
+    } else if (topic === 'cash' || topic === 'cashflow') {
+      let cashIn = 0, onlineIn = 0;
+      workingSet.filter(t => t.type === 'income').forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if ((t.mode || 'Cash') === 'Cash') cashIn += amt;
+        else onlineIn += amt;
+      });
+      const totRec = cashIn + onlineIn;
+      const cashPct = totRec > 0 ? Math.round((cashIn / totRec) * 100) : 50;
+      const onlinePct = 100 - cashPct;
+
+      html = `
+        <div style="font-weight:800; font-size:0.95rem; color:var(--text-head); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+          <i data-lucide="coins" style="width:16px; height:16px; color:#10b981;"></i> Cash vs Online Working Capital Health
+        </div>
+        <div style="font-size:0.84rem; line-height:1.5; color:var(--text-body); margin-bottom:8px;">
+          Collection Ratio: <strong>${cashPct}% Cash</strong> (${inr(cashIn)}) vs <strong>${onlinePct}% Online</strong> (${inr(onlineIn)}). Supplier Khata Dues: <strong style="color:var(--expense);">${inr(totalPendingVendors)}</strong>.
+        </div>
+        <div style="font-size:0.82rem; line-height:1.6; background:var(--bg-card); padding:10px 14px; border-radius:var(--r-md); border:1px solid var(--border);">
+          ${totMonth.profit >= totalPendingVendors ?
+            '✅ <strong>Strong Liquidity:</strong> Your operating surplus comfortably covers all supplier liabilities. Maintain at least 40% in liquid bank/UPI balance for seamless vendor settlements.' :
+            '⚠️ <strong>Working Capital Watch:</strong> Supplier dues are near or exceeding monthly profit. Use the <em>WhatsApp Closing</em> button above to balance physical register cash daily and prioritize clearing high-priority supplier dues.'}
+        </div>
+      `;
+    } else if (topic === 'pace' || topic === 'peak_days') {
+      const revTarget = parseFloat(localStorage.getItem('vision_revenue_target') || '150000');
+      const parts = getISTDateParts();
+      const daysInMonth = new Date(parts.year, parts.month, 0).getDate();
+      const dayNow = parts.day || 1;
+      const daysRemaining = Math.max(1, daysInMonth - dayNow);
+      const remainingTarget = Math.max(0, revTarget - totMonth.income);
+      const requiredDailyPace = remainingTarget / daysRemaining;
+      const currentAvgPace = dayNow > 0 ? totMonth.income / dayNow : 0;
+
+      html = `
+        <div style="font-weight:800; font-size:0.95rem; color:var(--text-head); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+          <i data-lucide="gauge" style="width:16px; height:16px; color:#8b5cf6;"></i> Target Pace & Growth Velocity
+        </div>
+        <div style="font-size:0.84rem; line-height:1.5; color:var(--text-body); margin-bottom:8px;">
+          Revenue Target: <strong>${inr(revTarget)}</strong> | Current MTD: <strong>${inr(totMonth.income)}</strong> (${Math.round((totMonth.income / (revTarget || 1)) * 100)}%).
+        </div>
+        <div style="font-size:0.82rem; line-height:1.6; background:var(--bg-card); padding:10px 14px; border-radius:var(--r-md); border:1px solid var(--border);">
+          🎯 <strong>Velocity Calculation:</strong><br>
+          • <strong>Required Run Rate:</strong> <strong>${inr(requiredDailyPace)}/day</strong> across remaining ${daysRemaining} days.<br>
+          • <strong>Current Velocity:</strong> <strong>${inr(currentAvgPace)}/day</strong>.<br>
+          • <strong>Strategy:</strong> ${currentAvgPace >= requiredDailyPace ?
+            '🚀 <em>You are on track to exceed monthly targets! Maintain current momentum and upsell weekend specials.</em>' :
+            '⚡ <em>Slight acceleration needed. Introduce a daily combo special or launch an evening social media push to bridge the pace gap.</em>'}
+        </div>
+      `;
+    }
+
+    respBox.innerHTML = html;
+    respBox.style.display = 'block';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  searchRecent: function (query) {
+    this._recentSearchQuery = (query || '').trim();
+    this.recentSearchQuery = this._recentSearchQuery;
+    const all = getTxns();
+    this.loadRecent(all);
+  },
+
+  filterRecentType: function (type, btn) {
+    this._recentTypeFilter = type;
+    this.recentTypeFilter = type;
+    if (btn) {
+      const container = btn.parentElement || btn.closest('.filter-chips-toolbar');
+      if (container) {
+        container.querySelectorAll('.filter-chip-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+    }
+    const all = getTxns();
+    this.loadRecent(all);
+  },
+
+  viewTxnDetails: function (txnId) {
+    const all = getTxns();
+    const t = all.find(item => String(item.id) === String(txnId));
+    if (!t) {
+      if (typeof toast === 'function') toast('Transaction not found', 'danger');
+      return;
+    }
+
+    const isInc = t.type === 'income';
+    const modal = document.getElementById('txnDetailModal');
+    if (!modal) return;
+
+    const badgeEl = document.getElementById('txnDetailBadge');
+    if (badgeEl) {
+      badgeEl.innerHTML = `<span class="badge" style="background:${isInc ? 'rgba(16,185,129,0.14)' : 'rgba(244,63,94,0.14)'}; color:${isInc ? 'var(--income)' : 'var(--expense)'}; font-weight:800; font-size:0.75rem; letter-spacing:0.5px;">${isInc ? '🟢 INCOME / REVENUE' : '🔴 EXPENSE / OUTFLOW'}</span>`;
+    }
+
+    const amtEl = document.getElementById('txnDetailAmount');
+    if (amtEl) {
+      amtEl.textContent = (isInc ? '+' : '-') + inr(t.amount);
+      amtEl.style.color = isInc ? 'var(--income)' : 'var(--expense)';
+    }
+
+    const catEl = document.getElementById('txnDetailCategory');
+    if (catEl) {
+      catEl.textContent = `${t.category || 'General'}  •  Ref: #${t.id}`;
+    }
+
+    const dateEl = document.getElementById('txnDetailDate');
+    if (dateEl) {
+      dateEl.textContent = typeof fmtDate === 'function' ? fmtDate(t.date || today()) : (t.date || '--');
+    }
+
+    const modeEl = document.getElementById('txnDetailMode');
+    if (modeEl) {
+      modeEl.textContent = t.mode === 'Cash' ? '💵 Cash' : (t.mode === 'Card' ? '💳 Card' : '📱 ' + (t.mode || 'UPI'));
+    }
+
+    const partyLabelEl = document.getElementById('txnDetailPartyLabel');
+    if (partyLabelEl) {
+      partyLabelEl.textContent = isInc ? 'Received From:' : 'Paid To / Supplier:';
+    }
+
+    const partyEl = document.getElementById('txnDetailParty');
+    if (partyEl) {
+      partyEl.textContent = t.from || t.vendor || (isInc ? 'Direct Walk-in Customer' : 'General Operational');
+    }
+
+    const notesEl = document.getElementById('txnDetailNotes');
+    if (notesEl) {
+      notesEl.textContent = t.notes ? `"${t.notes}"` : 'None recorded';
+    }
+
+    const delBtn = document.getElementById('txnDetailDeleteBtn');
+    if (delBtn) {
+      delBtn.onclick = () => {
+        if (confirm('Are you sure you want to delete this transaction permanently?')) {
+          if (typeof deleteTxn === 'function') {
+            deleteTxn(t.id);
+          } else {
+            let txns = getTxns().filter(x => String(x.id) !== String(t.id));
+            localStorage.setItem(APP.storageKey, JSON.stringify(txns));
+            if (typeof triggerUIUpdate === 'function') triggerUIUpdate();
+            else Dash.loadAll();
+          }
+          if (typeof closeModal === 'function') closeModal('txnDetailModal');
+          if (typeof toast === 'function') toast('🗑️ Transaction removed', 'info');
+        }
+      };
+    }
+
+    modal.classList.add('open');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  applyGoalPreset: function (type) {
+    const revInput = document.getElementById('vRevTarget');
+    const expInput = document.getElementById('vExpCap');
+    const all = getTxns();
+    const monthTxns = typeof filterByPeriod === 'function' ? filterByPeriod(all, 'month') : all;
+    const curTot = calcTotals(monthTxns.length ? monthTxns : all);
+    const curIncome = curTot.income || 100000;
+
+    if (type === 'growth15') {
+      const targetRev = Math.round(curIncome * 1.15);
+      const targetExp = Math.round(targetRev * 0.45);
+      if (revInput) revInput.value = targetRev;
+      if (expInput) expInput.value = targetExp;
+    } else if (type === 'growth25') {
+      const targetRev = Math.round(curIncome * 1.25);
+      const targetExp = Math.round(targetRev * 0.42);
+      if (revInput) revInput.value = targetRev;
+      if (expInput) expInput.value = targetExp;
+    } else if (type === 'cafe_standard') {
+      if (revInput) revInput.value = 180000;
+      if (expInput) expInput.value = 65000;
+    } else if (type === 'conservative') {
+      if (revInput) revInput.value = 120000;
+      if (expInput) expInput.value = 45000;
+    }
+    if (typeof toast === 'function') toast(`🎯 Applied "${type}" goal template`, 'info');
+  },
+
+  renderExpiryAlerts: function () {
+    const banner = document.getElementById('dashExpiryBanner');
+    if (banner) banner.style.display = 'none';
+  },
+
+  switchBarChartMode: function (mode) {
+    this.barChartMode = mode;
+    const all = getTxns();
+    this.buildBarChart(all);
   }
 };
 
@@ -3428,65 +4213,6 @@ const PizzaCafeSimulator = {
     }
   },
 
-  renderExpiryAlerts: function () {
-    const banner = document.getElementById('dashExpiryBanner');
-    if (!banner) return;
-
-    const items = (typeof getExpiryItems === 'function' ? getExpiryItems() : []).map(item => ({
-      ...item,
-      meta: typeof calculateExpiryMeta === 'function' ? calculateExpiryMeta(item.expiryDate) : { isExpiringSoon: false, isExpired: false }
-    }));
-
-    const urgentItems = items.filter(i => i.meta.isExpiringSoon || i.meta.isExpired);
-
-    if (!urgentItems.length) {
-      banner.style.display = 'none';
-      return;
-    }
-
-    banner.style.display = 'block';
-    const hasExpired = urgentItems.some(i => i.meta.isExpired);
-    const bgGrad = hasExpired ? 'linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%)' : 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(244, 63, 94, 0.06) 100%)';
-    const borderColor = hasExpired ? 'rgba(244, 63, 94, 0.4)' : 'rgba(245, 158, 11, 0.4)';
-
-    const chipsHtml = urgentItems.slice(0, 4).map(item => {
-      return `<span style="background:rgba(255,255,255,0.85); border:1px solid ${borderColor}; padding:3px 10px; border-radius:100px; font-size:0.78rem; font-weight:700; color:var(--text-head); display:inline-flex; align-items:center; gap:4px;">
-        ${item.meta.isExpired ? '🔴' : '⏳'} ${item.name} (${item.meta.shortLabel})
-      </span>`;
-    }).join('');
-
-    const atRiskVal = urgentItems.reduce((sum, i) => sum + ((parseFloat(i.cost) || 0) * (parseFloat(i.quantity) || 0)), 0);
-    const totalStockVal = items.reduce((sum, i) => sum + ((parseFloat(i.cost) || 0) * (parseFloat(i.quantity) || 0)), 0);
-
-    banner.innerHTML = `
-      <div style="background:${bgGrad}; border:1.5px solid ${borderColor}; border-radius:var(--r-xl); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; box-shadow:0 4px 18px rgba(0,0,0,0.04);">
-        <div style="display:flex; align-items:center; gap:14px;">
-          <div style="width:40px; height:40px; border-radius:12px; background:${hasExpired ? '#f43f5e' : '#f59e0b'}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">
-            ${hasExpired ? '⚠️' : '⏳'}
-          </div>
-          <div>
-            <div style="font-weight:800; font-size:0.98rem; color:var(--text-head); margin-bottom:2px; display:flex; align-items:center; gap:8px;">
-              <span>${hasExpired ? '⚠️ Stock Expiry Alert: Action Required' : '⏳ 15-Day Stock Expiry Notice'}</span>
-              ${atRiskVal > 0 ? `<span style="font-size:0.75rem; background:${hasExpired ? 'rgba(244,63,94,0.2)' : 'rgba(245,158,11,0.2)'}; color:${hasExpired ? '#e11d48' : '#b45309'}; padding:2px 8px; border-radius:100px; font-weight:800;">Risk: ₹ ${atRiskVal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>` : ''}
-            </div>
-            <div style="font-size:0.84rem; color:var(--text-body); margin-bottom:6px;">
-              A total of <strong>${urgentItems.length} products</strong> have expired or are expiring within the next 15 days (Total Active Stock: <strong>₹ ${totalStockVal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong>).
-            </div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${chipsHtml}
-              ${urgentItems.length > 4 ? `<span style="font-size:0.78rem; font-weight:700; color:var(--text-muted); align-self:center;">+${urgentItems.length - 4} more</span>` : ''}
-            </div>
-          </div>
-        </div>
-        <div>
-          <a href="expiry.html" class="btn btn-outline btn-sm" style="background:var(--bg-card); font-weight:750; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
-            Open Expiry Tracker →
-          </a>
-        </div>
-      </div>
-    `;
-  },
-
   saveSimTxn: function (txn) {
     let txns = [];
     try {
@@ -3494,6 +4220,8 @@ const PizzaCafeSimulator = {
     } catch (e) { }
     txns.push(txn);
     localStorage.setItem(APP.storageKey, JSON.stringify(txns));
+    if (typeof currentTxns !== 'undefined') currentTxns = txns;
+    if (typeof window !== 'undefined') window.currentTxns = txns;
 
     if (typeof triggerUIUpdate === 'function') {
       triggerUIUpdate();
@@ -3501,6 +4229,26 @@ const PizzaCafeSimulator = {
       Dash.loadAll();
     }
   }
+};
+
+window.openDashCustomizerModal = function () {
+  if (typeof Dash !== 'undefined' && typeof Dash.loadCustomizerPreferences === 'function') {
+    Dash.loadCustomizerPreferences();
+  }
+  if (typeof openModal === 'function') {
+    openModal('dashCustomizerModal');
+  } else {
+    const modal = document.getElementById('dashCustomizerModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+};
+
+window.openTxnDetailModal = function (txnId) {
+  if (typeof Dash !== 'undefined' && Dash.viewTxnDetails) Dash.viewTxnDetails(txnId);
 };
 
 if (document.readyState === 'loading') {

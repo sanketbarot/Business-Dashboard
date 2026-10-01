@@ -34,7 +34,7 @@
   <script src="firebase-config.js"></script>
 
   <!-- Chart & Export Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js" defer></script>
@@ -110,6 +110,20 @@
           </div>
         </div>
         <div class="hd-right" style="display:flex; align-items:center; gap:16px;">
+          <!-- Privacy Mode Toggle Button -->
+          <button class="privacy-toggle-btn" id="privacyToggleBtn" onclick="Dash.togglePrivacyMode()"
+            style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr); border-radius:var(--r-md);"
+            title="Privacy Mode (Mask/Unmask Numbers)">
+            <i data-lucide="eye" id="privacyIcon" style="width: 20px; height: 20px;"></i>
+          </button>
+
+          <!-- Dashboard Customizer Button -->
+          <button class="dash-customizer-btn" onclick="openDashCustomizerModal()"
+            style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr); border-radius:var(--r-md);"
+            title="Customize Dashboard Layout & Widgets">
+            <i data-lucide="sliders-horizontal" style="width: 20px; height: 20px;"></i>
+          </button>
+
           <!-- Theme Picker Toggle Button -->
           <div class="theme-picker-wrapper">
             <button class="theme-picker-btn" onclick="APP_THEME.toggleMenu(event)"
@@ -204,17 +218,28 @@
               Income</button>
             <button class="btn btn-expense" onclick="openExpenseModal()"><i data-lucide="minus-circle"></i>Add
               Expense</button>
+            <button class="btn btn-outline" onclick="openDashCustomizerModal()" title="Customize Dashboard Widgets"><i data-lucide="sliders-horizontal"></i>Customize</button>
             <button class="btn btn-outline" onclick="exportPDF()"><i data-lucide="file-text"></i>Report</button>
           </div>
         </section>
 
-        <!-- Dynamic Stock Expiry 15-Day Notice Banner -->
-        <div id="dashExpiryBanner" style="display:none; margin-bottom:22px;"></div>
 
         <div class="period-wrap">
-          <span class="period-title"><i data-lucide="line-chart"
-              style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px; color: var(--brand);"></i>Financial
-            Summary</span>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <span class="period-title"><i data-lucide="line-chart"
+                style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px; color: var(--brand);"></i>Financial
+              Summary</span>
+            <!-- Quick Date Navigator -->
+            <div class="period-nav-group" title="Navigate to previous / next date periods">
+              <button class="period-nav-btn" onclick="Dash.navigatePeriod(-1)" title="Previous Period">
+                <i data-lucide="chevron-left" style="width:14px; height:14px;"></i>
+              </button>
+              <span id="periodNavLabel" style="font-size:0.7rem; font-weight:700; color:var(--text-light); min-width:55px; text-align:center;">Current</span>
+              <button class="period-nav-btn" onclick="Dash.navigatePeriod(1)" title="Next Period">
+                <i data-lucide="chevron-right" style="width:14px; height:14px;"></i>
+              </button>
+            </div>
+          </div>
           <div class="period-bar">
             <button class="pb-tab active" data-p="today" onclick="switchPeriod('today',this)">Today</button>
             <button class="pb-tab" data-p="yesterday" onclick="switchPeriod('yesterday',this)">Yesterday</button>
@@ -259,7 +284,7 @@
         </div>
 
         <section class="sum-grid">
-          <div class="sum-card income-card">
+          <div class="sum-card income-card" id="cardIncome" onclick="Dash.drilldownSummary('income')" title="Click to filter Recent Activity by Income">
             <div class="sc-top">
               <div class="sc-icon"><i data-lucide="trending-up"></i></div><span class="sc-trend" id="incomeTrend">→
                 0%</span>
@@ -267,7 +292,7 @@
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
               <div>
-                <div class="sc-label">Total Income</div>
+                <div class="sc-label" style="display:flex; align-items:center; gap:4px;">Total Income <i data-lucide="external-link" style="width:11px; height:11px; opacity:0.6;"></i></div>
                 <div class="sc-value" id="pIncome">₹ 0.00</div>
                 <div class="sc-sub" id="pIncomeCount">0 records</div>
               </div>
@@ -275,7 +300,7 @@
                   id="sparklineIncome"></canvas></div>
             </div>
           </div>
-          <div class="sum-card expense-card">
+          <div class="sum-card expense-card" id="cardExpense" onclick="Dash.drilldownSummary('expense')" title="Click to filter Recent Activity by Expense">
             <div class="sc-top">
               <div class="sc-icon"><i data-lucide="trending-down"></i></div><span class="sc-trend" id="expenseTrend">→
                 0%</span>
@@ -283,7 +308,7 @@
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
               <div>
-                <div class="sc-label">Total Expense</div>
+                <div class="sc-label" style="display:flex; align-items:center; gap:4px;">Total Expense <i data-lucide="external-link" style="width:11px; height:11px; opacity:0.6;"></i></div>
                 <div class="sc-value" id="pExpense">₹ 0.00</div>
                 <div class="sc-sub" id="pExpenseCount">0 records</div>
               </div>
@@ -291,7 +316,7 @@
                   id="sparklineExpense"></canvas></div>
             </div>
           </div>
-          <div class="sum-card profit-card">
+          <div class="sum-card profit-card" id="cardProfit" onclick="Dash.drilldownSummary('profit')" title="Click to view profit summary">
             <div class="sc-top">
               <div class="sc-icon"><i data-lucide="dollar-sign"></i></div><span class="sc-trend" id="profitTrend">→
                 0%</span>
@@ -299,7 +324,7 @@
             <div class="sc-bottom-wrap"
               style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; width:100%;">
               <div>
-                <div class="sc-label">Net Profit</div>
+                <div class="sc-label" style="display:flex; align-items:center; gap:4px;">Net Profit <i data-lucide="sparkles" style="width:11px; height:11px; opacity:0.6;"></i></div>
                 <div class="sc-value" id="pProfit">₹ 0.00</div>
                 <div class="sc-sub" id="pMargin">0% margin</div>
               </div>
@@ -307,7 +332,7 @@
                   id="sparklineProfit"></canvas></div>
             </div>
           </div>
-          <div class="sum-card balance-card">
+          <div class="sum-card balance-card" id="cardBalance" onclick="Dash.drilldownSummary('all')" title="Click to reset filters">
             <div class="sc-top">
               <div class="sc-icon"><i data-lucide="landmark"></i></div><span class="sc-trend">All Time</span>
             </div>
@@ -395,8 +420,27 @@
           </div>
         </section>
 
+        <!-- Cash vs Online Distribution Ratio Bar -->
+        <div class="cash-online-ratio-wrap" style="margin-bottom:26px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:0.75rem; font-weight:800; color:var(--text-head); text-transform:uppercase; letter-spacing:0.5px; display:inline-flex; align-items:center; gap:5px;">
+                <i data-lucide="pie-chart" style="width:14px; height:14px; color:var(--brand);"></i> Cash vs Online Collection Ratio
+              </span>
+              <span id="cashRatioText" style="font-size:0.75rem; font-weight:700; color:var(--text-light);">50% Cash • 50% Online</span>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="Dash.copyCashReport()" style="padding:4px 10px; font-size:0.72rem; display:inline-flex; align-items:center; gap:5px;" title="Copy or share daily cash closing summary via WhatsApp">
+              <i data-lucide="share-2" style="width:12px; height:12px; color:#25d366;"></i> Share Closing via WhatsApp
+            </button>
+          </div>
+          <div class="ratio-track">
+            <div class="ratio-fill-cash" id="ratioFillCash" style="width:50%;" title="Cash Received Share"></div>
+            <div class="ratio-fill-online" id="ratioFillOnline" style="width:50%;" title="Online Received Share"></div>
+          </div>
+        </div>
+
         <!-- BUSINESS VISION & KPI TARGETS -->
-        <section class="card" style="margin-bottom:26px;">
+        <section class="card" id="sectionVisionGoals" style="margin-bottom:26px;">
           <div class="card-hd">
             <div style="display:flex; align-items:center; gap:10px;">
               <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="target"
@@ -584,7 +628,7 @@
         </section>
 
         <!-- CATEGORY BUDGETS & SPENDING LIMITS -->
-        <section class="card budget-section" style="margin-bottom:26px;">
+        <section class="card budget-section" id="sectionBudgets" style="margin-bottom:26px;">
           <div class="card-hd"
             style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -607,7 +651,7 @@
           <div class="card-bd">
             <!-- Overall Budget Summary Row -->
             <div class="budget-summary-bar"
-              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
+              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap:16px; margin-bottom:16px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
               <div>
                 <div
                   style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
@@ -640,6 +684,20 @@
               </div>
             </div>
 
+            <!-- Budget Filter & Search Toolbar -->
+            <div class="filter-chips-toolbar" style="justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <button class="filter-chip-btn active" data-bgt-filter="all" onclick="Dash.filterBudgets('all', this)">All Budgets</button>
+                <button class="filter-chip-btn" data-bgt-filter="warn" onclick="Dash.filterBudgets('warn', this)">⚠️ Warning (≥75%)</button>
+                <button class="filter-chip-btn" data-bgt-filter="over" onclick="Dash.filterBudgets('over', this)">🚨 Exceeded</button>
+                <button class="filter-chip-btn" data-bgt-filter="safe" onclick="Dash.filterBudgets('safe', this)">✅ Safe</button>
+              </div>
+              <div class="card-search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="budgetSearchInput" placeholder="Search category..." class="fc" oninput="Dash.searchBudgets(this.value)" />
+              </div>
+            </div>
+
             <!-- Category Cards Grid -->
             <div id="categoryBudgetGrid" class="category-budget-grid"
               style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
@@ -649,7 +707,7 @@
         </section>
 
         <!-- VENDOR OUTSTANDINGS & SUPPLIER KHATA -->
-        <section class="card vendor-khata-section" style="margin-bottom:26px;">
+        <section class="card vendor-khata-section" id="sectionVendors" style="margin-bottom:26px;">
           <div class="card-hd"
             style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -672,7 +730,7 @@
           <div class="card-bd">
             <!-- Overall Vendor Summary Bar -->
             <div class="budget-summary-bar"
-              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:20px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
+              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:16px; padding:14px 18px; background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-lg);">
               <div>
                 <div
                   style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px;">
@@ -722,15 +780,35 @@
               </div>
             </div>
 
+            <!-- Vendor Filter & Search Toolbar -->
+            <div class="filter-chips-toolbar" style="justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <button class="filter-chip-btn active" data-vnd-filter="all" onclick="Dash.filterVendorsTab('all', this)">All Suppliers</button>
+                <button class="filter-chip-btn" data-vnd-filter="pending" onclick="Dash.filterVendorsTab('pending', this)">⚠️ Due Pending</button>
+                <button class="filter-chip-btn" data-vnd-filter="settled" onclick="Dash.filterVendorsTab('settled', this)">✅ Settled</button>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div class="card-search-box">
+                  <i data-lucide="search"></i>
+                  <input type="text" id="vendorSearchInput" placeholder="Search supplier or phone..." class="fc" oninput="Dash.searchVendors(this.value)" />
+                </div>
+                <select class="chart-sel" id="vendorSortSel" onchange="Dash.sortVendors(this.value)" style="height:36px; padding:4px 10px; font-size:0.74rem;">
+                  <option value="pending-desc">Pending Due (High to Low)</option>
+                  <option value="name-asc">Name (A-Z)</option>
+                  <option value="billed-desc">Total Purchases (High)</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Vendor Cards Grid -->
             <div id="vendorGrid" class="category-budget-grid"
-              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+              style="display:grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap:16px;">
               <!-- Dynamic Vendor Cards injected by dashboard.js -->
             </div>
           </div>
         </section>
 
-        <section class="analytics-grid">
+        <section class="analytics-grid" id="sectionDailyAverages">
           <div class="mini-stat">
             <div class="ms-top">
               <div class="ms-ic"><i data-lucide="bar-chart-2" style="width: 20px; height: 20px;"></i></div>
@@ -788,7 +866,7 @@
         </section>
 
         <!-- MONTHLY AVERAGE ANALYTICS -->
-        <section class="analytics-grid">
+        <section class="analytics-grid" id="sectionMonthlyAverages">
           <div class="mini-stat">
             <div class="ms-top">
               <div class="ms-ic"><i data-lucide="calendar" style="width: 20px; height: 20px;"></i></div>
@@ -845,12 +923,24 @@
           </div>
         </section>
 
-        <section class="chart-grid">
+        <section class="chart-grid" id="sectionCharts">
           <div class="card chart-enhanced">
             <div class="card-hd">
               <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="bar-chart-2"
-                  style="width: 18px; height: 18px; color: var(--brand);"></i>Income vs Expense</h4><select
-                class="chart-sel" id="chartYear" onchange="buildBarChart()"></select>
+                  style="width: 18px; height: 18px; color: var(--brand);"></i>Income vs Expense</h4>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select class="chart-sel" id="chartBarMode" onchange="Dash.switchBarChartMode(this.value)">
+                  <option value="grouped">Grouped Bar</option>
+                  <option value="profit">Net Margin View</option>
+                </select>
+                <select class="chart-sel" id="chartYear" onchange="buildBarChart()">
+                  <option value="2026" selected>2026</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                  <option value="2022">2022</option>
+                </select>
+              </div>
             </div>
             <div class="card-bd">
               <div class="chart-wrap-lg"><canvas id="barChart"></canvas></div>
@@ -873,7 +963,7 @@
           </div>
         </section>
 
-        <section class="card chart-enhanced" style="margin-bottom:26px;">
+        <section class="card chart-enhanced" id="sectionCashflow" style="margin-bottom:26px;">
           <div class="card-hd"
             style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div class="chart-tab-group">
@@ -911,7 +1001,7 @@
 
         <section class="bottom-grid">
           <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
-            <div class="card chart-enhanced">
+            <div class="card chart-enhanced" id="sectionInsights">
               <div class="card-hd">
                 <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="sparkles"
                     style="width: 18px; height: 18px; color: var(--brand);"></i>Smart Insights & AI Copilot</h4>
@@ -939,7 +1029,7 @@
                   <div style="flex:1; min-width:180px;">
                     <div id="healthStatusText"
                       style="font-size:0.85rem; font-weight:800; color:var(--text-head); margin-bottom:4px;">Calculating
-                      Health Score...</div>
+                       Health Score...</div>
                     <div id="healthScoreDesc" style="font-size:0.75rem; color:var(--text-light); line-height:1.4;">Based
                       on MTD savings rate, expense cap margin, and revenue goals velocity.</div>
                   </div>
@@ -953,16 +1043,48 @@
                     <div class="insight-text">Add transactions to see insights</div>
                   </div>
                 </div>
+
+                <!-- AI Copilot Interactive Advisor Prompts -->
+                <div class="ai-advisor-chips">
+                  <span style="font-size:0.7rem; font-weight:800; color:var(--text-light); text-transform:uppercase; letter-spacing:0.5px; width:100%; display:flex; align-items:center; gap:5px;">
+                    <i data-lucide="bot" style="width:13px; height:13px; color:var(--brand);"></i> Ask Business Copilot:
+                  </span>
+                  <button class="ai-prompt-chip" onclick="Dash.askAiAdvisor('expenses')">
+                    <i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> Top Expense Leaks
+                  </button>
+                  <button class="ai-prompt-chip" onclick="Dash.askAiAdvisor('profit')">
+                    <i data-lucide="trending-up" style="width:12px; height:12px;"></i> Boost Net Profit
+                  </button>
+                  <button class="ai-prompt-chip" onclick="Dash.askAiAdvisor('cash')">
+                    <i data-lucide="coins" style="width:12px; height:12px;"></i> Cash vs Online Health
+                  </button>
+                  <button class="ai-prompt-chip" onclick="Dash.askAiAdvisor('pace')">
+                    <i data-lucide="gauge" style="width:12px; height:12px;"></i> Target Pace Strategy
+                  </button>
+                </div>
+                <div id="aiAdvisorResponse" class="ai-response-box" style="display:none;"></div>
               </div>
             </div>
-            <div class="card">
+            <div class="card" id="sectionRecent">
               <div class="card-hd"
-                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="history"
-                    style="width: 18px; height: 18px; color: var(--brand);"></i>Recent Activity</h4>
-                <div style="display:flex; gap:8px;">
+                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="history"
+                      style="width: 18px; height: 18px; color: var(--brand);"></i>Recent Activity</h4>
+                  <span class="badge" id="recentFilterBadge" style="display:none; font-size:0.7rem; padding:2px 8px; border-radius:var(--r-full); background:var(--brand-soft); color:var(--brand); font-weight:700;">Filtered</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <div class="card-search-box" style="max-width:180px;">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="recentSearchInput" placeholder="Filter activity..." class="fc" oninput="Dash.searchRecent(this.value)" />
+                  </div>
+                  <div style="display:flex; gap:4px;">
+                    <button class="filter-chip-btn active" data-tx-filter="all" onclick="Dash.filterRecentType('all', this)" style="padding:4px 10px; font-size:0.7rem;">All</button>
+                    <button class="filter-chip-btn" data-tx-filter="income" onclick="Dash.filterRecentType('income', this)" style="padding:4px 10px; font-size:0.7rem; color:var(--income);">In (+)</button>
+                    <button class="filter-chip-btn" data-tx-filter="expense" onclick="Dash.filterRecentType('expense', this)" style="padding:4px 10px; font-size:0.7rem; color:var(--expense);">Out (-)</button>
+                  </div>
                   <button onclick="exportTransactionsCSV()" class="btn btn-outline btn-sm"
-                    style="padding: 6px 12px; font-size: 0.75rem;">📥 Export CSV</button>
+                    style="padding: 6px 12px; font-size: 0.75rem;">📥 CSV</button>
                   <a href="transaction.html" class="btn btn-outline btn-sm">View All →</a>
                 </div>
               </div>
@@ -993,7 +1115,7 @@
               </div>
             </div>
           </div>
-          <div class="right-col">
+          <div class="right-col" id="sectionComparisons">
             <div class="card chart-enhanced">
               <div class="card-hd">
                 <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-compare"
@@ -1184,6 +1306,19 @@
         <button class="modal-x" onclick="closeModal('goalSettingsModal')">✕</button>
       </div>
       <div class="modal-bd">
+        <!-- Goal Quick Presets -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:0.72rem; font-weight:700; color:var(--text-light); text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:5px;">
+            <i data-lucide="sparkles" style="width:12px; height:12px; color:var(--brand);"></i> Quick Presets / Auto-Calculate
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button type="button" class="goal-preset-chip" onclick="Dash.applyGoalPreset('growth15')">🚀 +15% Growth</button>
+            <button type="button" class="goal-preset-chip" onclick="Dash.applyGoalPreset('growth25')">⚡ +25% High Growth</button>
+            <button type="button" class="goal-preset-chip" onclick="Dash.applyGoalPreset('cafe')">🍕 Cafe Standard</button>
+            <button type="button" class="goal-preset-chip" onclick="Dash.applyGoalPreset('conservative')">🛡️ Conservative</button>
+          </div>
+        </div>
+
         <div class="fg">
           <label class="fl">MONTHLY REVENUE TARGET (₹) <span class="req">*</span></label>
           <input type="number" class="fc" id="targetMonthlyRev" placeholder="150000" min="0" step="1000" />
@@ -1218,10 +1353,26 @@
         <div
           style="background: var(--bg-app); border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px; margin-bottom: 20px;">
           <div
-            style="font-weight: 700; font-size: 0.82rem; color: var(--text-head); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            style="font-weight: 700; font-size: 0.82rem; color: var(--text-head); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
             <i data-lucide="plus-circle" style="width: 15px; height: 15px; color: var(--brand);"></i> Set / Update
             Category Limit
           </div>
+
+          <!-- Quick Category Limit Presets -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:0.7rem; font-weight:700; color:var(--text-light); text-transform:uppercase; margin-bottom:6px;">
+              Popular Restaurant Presets:
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="goal-preset-chip" onclick="Dash.applyBudgetPreset('🛒 Grocery', 20000)">🛒 Grocery ₹20k</button>
+              <button type="button" class="goal-preset-chip" onclick="Dash.applyBudgetPreset('🥦 Vegetables', 10000)">🥦 Veggies ₹10k</button>
+              <button type="button" class="goal-preset-chip" onclick="Dash.applyBudgetPreset('🍞 Bread / Bakery', 12000)">🍞 Bakery ₹12k</button>
+              <button type="button" class="goal-preset-chip" onclick="Dash.applyBudgetPreset('👥 Salary', 35000)">👥 Staff ₹35k</button>
+              <button type="button" class="goal-preset-chip" onclick="Dash.applyBudgetPreset('🧾 Electricity Bill', 6000)">🧾 Power ₹6k</button>
+              <button type="button" class="goal-preset-chip" onclick="Dash.applyBudgetPreset('📦 Supplies', 8000)">📦 Packaging ₹8k</button>
+            </div>
+          </div>
+
           <div class="form-row">
             <div class="fg" style="flex: 1.3;">
               <label class="fl">EXPENSE CATEGORY <span class="req">*</span></label>
@@ -1518,6 +1669,242 @@
       </div>
       <div class="modal-ft">
         <button class="btn btn-outline" onclick="closeModal('vendorHistoryModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD CUSTOMIZER MODAL (વિજેટ્સ અને લેઆઉટ કસ્ટમાઇઝ કરો) -->
+  <div class="modal-bg" id="dashCustomizerModal">
+    <div class="modal" style="max-width: 540px;">
+      <div class="modal-hd"
+        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
+        <h3 style="display:flex; align-items:center; gap:8px; color:var(--brand);">
+          <i data-lucide="sliders-horizontal" style="width: 20px; height: 20px;"></i>
+          <span>Customize Dashboard</span>
+        </h3>
+        <button class="modal-x" onclick="closeModal('dashCustomizerModal')">✕</button>
+      </div>
+      <div class="modal-bd" style="max-height: calc(85vh - 140px); overflow-y: auto; padding: 20px 24px;">
+
+        <!-- Section 1: Display Preferences -->
+        <div style="margin-bottom: 20px;">
+          <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <i data-lucide="eye" style="width: 14px; height: 14px;"></i> Display & Privacy Controls
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div style="width:30px; height:30px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand);">
+                <i data-lucide="shield" style="width:16px; height:16px;"></i>
+              </div>
+              <div>
+                <div class="customizer-row-title">Privacy Stealth Mode</div>
+                <div class="customizer-row-desc">Blurs financial figures when showing screen to others</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="customizerPrivacy" onchange="Dash.togglePrivacyMode(this.checked)" />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div style="width:30px; height:30px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand);">
+                <i data-lucide="minimize-2" style="width:16px; height:16px;"></i>
+              </div>
+              <div>
+                <div class="customizer-row-title">Compact View Density</div>
+                <div class="customizer-row-desc">Fit more data on screen with denser spacing</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="customizerDensity" onchange="Dash.toggleDensity(this.checked)" />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div style="width:30px; height:30px; border-radius:var(--r-md); background:var(--brand-soft); display:flex; align-items:center; justify-content:center; color:var(--brand);">
+                <i data-lucide="calendar" style="width:16px; height:16px;"></i>
+              </div>
+              <div>
+                <div class="customizer-row-title">Default Launch Period</div>
+                <div class="customizer-row-desc">Period selected when dashboard opens</div>
+              </div>
+            </div>
+            <select class="chart-sel" id="customizerDefaultPeriod" style="height:34px; padding:4px 8px; font-size:0.75rem;">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="week">Weekly</option>
+              <option value="month">Monthly</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section 2: Visible Dashboard Sections -->
+        <div>
+          <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+            <i data-lucide="layout-grid" style="width: 14px; height: 14px;"></i> Visible Dashboard Sections
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Business Targets & Vision Roadmap</div>
+                <div class="customizer-row-desc">Revenue target, expense cap & daily pace run rate</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecVision" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Category Budgets & Spending Limits</div>
+                <div class="customizer-row-desc">Category limit cards and threshold alerts</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecBudgets" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Vendor Outstandings & Supplier Khata</div>
+                <div class="customizer-row-desc">Payable dues, bills, stock link & WhatsApp reminder</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecVendors" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Daily & Monthly Averages</div>
+                <div class="customizer-row-desc">Mini statistics with sparkline trends</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecAverages" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Financial Charts & Visualizations</div>
+                <div class="customizer-row-desc">Income vs Expense bar, Donut & 7-Day cash flow</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecCharts" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Smart Insights & AI Copilot</div>
+                <div class="customizer-row-desc">Health score circular gauge & business advice</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecInsights" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Recent Activity Ledger</div>
+                <div class="customizer-row-desc">Recent transactions table with live search</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecRecent" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+
+          <div class="customizer-row">
+            <div class="customizer-row-info">
+              <div>
+                <div class="customizer-row-title">Month Comparison & Payment Breakdown</div>
+                <div class="customizer-row-desc">Right sidebar comparative analytics</div>
+              </div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="custSecComparisons" checked />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-ft" style="display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn btn-outline" onclick="Dash.resetCustomizerDefaults()">Reset Defaults</button>
+        <button class="btn btn-primary" onclick="Dash.saveCustomizerPreferences()">
+          <i data-lucide="check" style="width:16px; height:16px; margin-right:6px;"></i>Apply Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSACTION DETAIL / RECEIPT PREVIEW MODAL -->
+  <div class="modal-bg" id="txnDetailModal">
+    <div class="modal" style="max-width: 440px;">
+      <div class="modal-hd" style="background:linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(139,92,246,0.03) 100%) !important;">
+        <h3 id="txnDetailTitle" style="display:flex; align-items:center; gap:8px;">
+          <i data-lucide="receipt" style="width:20px; height:20px; color:var(--brand);"></i>
+          <span>Transaction Details</span>
+        </h3>
+        <button class="modal-x" onclick="closeModal('txnDetailModal')">✕</button>
+      </div>
+      <div class="modal-bd" style="padding:20px;">
+        <div class="receipt-box">
+          <div class="receipt-header">
+            <div id="txnDetailBadge" style="margin-bottom:6px;"></div>
+            <div class="receipt-amount-large" id="txnDetailAmount">₹ 0.00</div>
+            <div id="txnDetailCategory" style="font-weight:700; color:var(--text-head); font-size:0.9rem;">--</div>
+          </div>
+          <div class="receipt-detail-row">
+            <span class="receipt-detail-label">Date:</span>
+            <span class="receipt-detail-val" id="txnDetailDate">--</span>
+          </div>
+          <div class="receipt-detail-row">
+            <span class="receipt-detail-label">Payment Mode:</span>
+            <span class="receipt-detail-val" id="txnDetailMode">--</span>
+          </div>
+          <div class="receipt-detail-row" id="txnDetailPartyRow">
+            <span class="receipt-detail-label" id="txnDetailPartyLabel">Customer / Vendor:</span>
+            <span class="receipt-detail-val" id="txnDetailParty">--</span>
+          </div>
+          <div class="receipt-detail-row" id="txnDetailNotesRow">
+            <span class="receipt-detail-label">Notes:</span>
+            <span class="receipt-detail-val" id="txnDetailNotes">--</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft" style="display:flex; justify-content:space-between;">
+        <button class="btn btn-outline" style="color:var(--expense);" id="txnDetailDeleteBtn">
+          <i data-lucide="trash-2" style="width:14px; height:14px; margin-right:4px;"></i>Delete
+        </button>
+        <button class="btn btn-primary" onclick="closeModal('txnDetailModal')">Done</button>
       </div>
     </div>
   </div>

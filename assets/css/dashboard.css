@@ -3288,4 +3288,530 @@ canvas:hover {
 [data-theme="glass"] .recent-row:hover,
 [data-theme="glass"] .table tbody tr:hover {
   background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ============================================================
+   POWER-UP & CUSTOMIZATION UPGRADES — V3.0
+   ============================================================ */
+
+/* Privacy Mode (Stealth Mode) */
+body[data-privacy="true"] .sc-value,
+body[data-privacy="true"] .co-balance-amt,
+body[data-privacy="true"] .co-row-amt,
+body[data-privacy="true"] .ms-value,
+body[data-privacy="true"] #goalRevCurrent,
+body[data-privacy="true"] #goalRevTarget,
+body[data-privacy="true"] #goalExpCurrent,
+body[data-privacy="true"] #goalExpTarget,
+body[data-privacy="true"] #goalPrfCurrent,
+body[data-privacy="true"] #goalPrfTarget,
+body[data-privacy="true"] #paceRequired,
+body[data-privacy="true"] #paceCurrent,
+body[data-privacy="true"] #paceTodayRev,
+body[data-privacy="true"] #paceProjected,
+body[data-privacy="true"] #totalBudgetAllocated,
+body[data-privacy="true"] #totalBudgetSpent,
+body[data-privacy="true"] #totalBudgetRemaining,
+body[data-privacy="true"] #totalVendorPending,
+body[data-privacy="true"] #monthlyVendorBilled,
+body[data-privacy="true"] #monthlyVendorPaid,
+body[data-privacy="true"] #totalVendorBilled,
+body[data-privacy="true"] #totalVendorPaid,
+body[data-privacy="true"] #totalVendorStockValue,
+body[data-privacy="true"] .amt-in,
+body[data-privacy="true"] .amt-out,
+body[data-privacy="true"] .cb-val,
+body[data-privacy="true"] .tc-amt,
+body[data-privacy="true"] .pm-amt,
+body[data-privacy="true"] .line-chart-stat,
+body[data-privacy="true"] .vendor-card [style*="font-size:1.15rem"],
+body[data-privacy="true"] .category-budget-card [style*="font-size:1.15rem"] {
+  filter: blur(6px) !important;
+  user-select: none !important;
+  transition: filter 0.25s ease !important;
+}
+
+body[data-privacy="true"] #privacyToggleBtn {
+  color: var(--brand) !important;
+  background: var(--brand-soft) !important;
+  border-radius: var(--r-md) !important;
+}
+
+/* Compact Density Mode */
+body[data-density="compact"] .content {
+  gap: 16px !important;
+}
+body[data-density="compact"] .hero {
+  padding: 18px 24px !important;
+  margin-bottom: 16px !important;
+}
+body[data-density="compact"] .card {
+  margin-bottom: 16px !important;
+}
+body[data-density="compact"] .card-hd {
+  padding: 12px 18px !important;
+}
+body[data-density="compact"] .card-bd {
+  padding: 14px 18px !important;
+}
+body[data-density="compact"] .sum-grid {
+  gap: 12px !important;
+  margin-bottom: 16px !important;
+}
+body[data-density="compact"] .sum-card {
+  padding: 14px 16px !important;
+}
+body[data-density="compact"] .cash-online-grid {
+  gap: 12px !important;
+  margin-bottom: 16px !important;
+}
+body[data-density="compact"] .co-card {
+  padding: 16px 18px !important;
+}
+
+/* Enhanced Summary Cards Hover & Glow */
+.sum-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease !important;
+  cursor: pointer;
+}
+.sum-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(139, 92, 246, 0.08) !important;
+}
+.sum-card.active-drilldown {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 2px var(--brand-soft), 0 12px 30px rgba(139, 92, 246, 0.15) !important;
+}
+
+.sum-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transform: skewX(-25deg);
+  transition: left 0.75s ease;
+  pointer-events: none;
+}
+.sum-card:hover::after {
+  left: 140%;
+}
+
+/* Period Navigator Bar */
+.period-nav-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-app);
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.period-nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--r-full);
+  color: var(--text-head);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.period-nav-btn:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+  transform: scale(1.1);
+}
+.period-nav-btn:active {
+  transform: scale(0.95);
+}
+
+/* Cash vs Online Split Ratio Bar */
+.cash-online-ratio-wrap {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-xs);
+}
+.ratio-track {
+  height: 10px;
+  width: 100%;
+  background: rgba(244, 63, 94, 0.1);
+  border-radius: var(--r-full);
+  overflow: hidden;
+  display: flex;
+  margin: 8px 0;
+}
+.ratio-fill-cash {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: var(--r-full) 0 0 var(--r-full);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ratio-fill-online {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 0 var(--r-full) var(--r-full) 0;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Filter Chips Toolbar */
+.filter-chips-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 0 16px 0;
+}
+.filter-chip-btn {
+  background: var(--bg-app);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 5px 14px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-light);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+.filter-chip-btn:hover {
+  border-color: var(--brand);
+  color: var(--text-head);
+  transform: translateY(-1px);
+}
+.filter-chip-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(139, 92, 246, 0.3);
+}
+
+/* Card Search Input */
+.card-search-box {
+  position: relative;
+  min-width: 220px;
+  flex: 1;
+  max-width: 340px;
+}
+.card-search-box input {
+  padding-left: 32px !important;
+  min-height: 36px !important;
+  font-size: 0.78rem !important;
+  border-radius: var(--r-full) !important;
+}
+.card-search-box i,
+.card-search-box svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+/* WhatsApp Reminder Button on Vendors */
+.vendor-action-btn.whatsapp {
+  background: rgba(37, 211, 102, 0.12) !important;
+  color: #16a34a !important;
+  border: 1px solid rgba(37, 211, 102, 0.25) !important;
+  border-radius: var(--r-md);
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+.vendor-action-btn.whatsapp:hover {
+  background: #25d366 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(37, 211, 102, 0.35);
+}
+
+/* AI Copilot Interactive Advisor Chips */
+.ai-advisor-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.ai-prompt-chip {
+  background: rgba(139, 92, 246, 0.07);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--r-full);
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brand);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+.ai-prompt-chip:hover {
+  background: var(--brand);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.ai-response-box {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.03) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--r-md);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-head);
+  animation: themeDropdownSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Customizer Switch Rows */
+.customizer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  margin-bottom: 8px;
+  transition: background 0.2s ease;
+}
+.customizer-row:hover {
+  background: var(--bg-hover);
+}
+.customizer-row-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.customizer-row-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-head);
+}
+.customizer-row-desc {
+  font-size: 0.7rem;
+  color: var(--text-light);
+}
+
+/* Toggle Switch Component */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.ios-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border);
+  transition: .3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 24px;
+}
+.ios-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.ios-switch input:checked + .ios-slider {
+  background-color: var(--brand);
+}
+.ios-switch input:checked + .ios-slider:before {
+  transform: translateX(18px);
+}
+
+/* Goal Preset Buttons in Goal Settings Modal */
+.goal-preset-chip {
+  padding: 6px 12px;
+  border-radius: var(--r-full);
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-head);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.goal-preset-chip:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+/* Receipt / Txn Detail Modal Styling */
+.receipt-box {
+  background: var(--bg-app);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  position: relative;
+}
+.receipt-header {
+  text-align: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.receipt-amount-large {
+  font-size: 1.75rem;
+  font-weight: 900;
+  margin: 6px 0;
+}
+.receipt-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.8rem;
+}
+.receipt-detail-label {
+  color: var(--text-light);
+  font-weight: 600;
+}
+.receipt-detail-val {
+  color: var(--text-head);
+  font-weight: 700;
+}
+
+/* ========================================================
+   MOBILE & TABLET RESPONSIVENESS ENHANCEMENTS (ALL VIEWPORTS)
+   ======================================================== */
+@media (max-width: 768px) {
+  /* Search Bars Full Width when Wrapped */
+  .card-search-box {
+    min-width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 6px;
+  }
+
+  /* Filter Chips Bar */
+  .filter-chips-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  /* Cash vs Online Ratio Box */
+  .cash-online-ratio-wrap > div {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+  .cash-online-ratio-wrap button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* AI Copilot Prompt Chips */
+  .ai-advisor-chips {
+    gap: 6px;
+  }
+  .ai-prompt-chip {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+
+  /* Period Navigator Bar */
+  .period-wrap > div:first-child {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* Customizer Modal on Mobile */
+  #dashCustomizerModal .modal,
+  #txnDetailModal .modal {
+    max-width: 95% !important;
+    width: 95% !important;
+    margin: 16px auto;
+  }
+  #dashCustomizerModal .modal-bd {
+    padding: 16px 14px !important;
+  }
+
+  /* Fluid Category & Vendor Grids */
+  .category-budget-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)) !important;
+  }
+
+  /* Horizontal scrolling tables */
+  .table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: var(--r-md);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Smaller screens (iPhone, Android) */
+  .customizer-row {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .customizer-row-title {
+    font-size: 0.78rem;
+  }
+  .customizer-row-desc {
+    font-size: 0.66rem;
+  }
+
+  /* Hero Actions on Small Devices */
+  .hero-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .hero-actions .btn {
+    font-size: 0.74rem !important;
+    padding: 8px 6px !important;
+    min-height: 38px !important;
+  }
+
+  /* Receipt Modal */
+  .receipt-box {
+    padding: 14px;
+  }
+  .receipt-amount-large {
+    font-size: 1.45rem;
+  }
 }

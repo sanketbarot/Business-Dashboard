@@ -114,6 +114,8 @@ function setupFirebaseSync() {
   // Cleanup old listener
   if (firebaseListener) firebaseListener();
 
+  let txnsInitialSyncDone = false;
+
   // Setup new listener
   firebaseListener = ref.orderBy('savedAt', 'desc').onSnapshot(
     (snapshot) => {
@@ -122,9 +124,29 @@ function setupFirebaseSync() {
         txns.push({ ...doc.data(), id: doc.id });
       });
 
-      currentTxns = txns;
-      // Also save to localStorage as backup
-      localStorage.setItem(APP.storageKey, JSON.stringify(txns));
+      if (txns.length > 0) {
+        txnsInitialSyncDone = true;
+        currentTxns = txns;
+        if (typeof window !== 'undefined') window.currentTxns = txns;
+        localStorage.setItem(APP.storageKey, JSON.stringify(txns));
+      } else {
+        // If Firestore has 0 documents (empty account or clean cloud database)
+        let local = [];
+        try {
+          local = JSON.parse(localStorage.getItem(APP.storageKey) || '[]');
+        } catch (e) { local = []; }
+
+        const isDemo = localStorage.getItem('bd_mode') === 'demo';
+        if (isDemo && (!Array.isArray(local) || local.length === 0)) {
+          if (typeof Dash !== 'undefined' && typeof Dash.seedRealisticData === 'function') {
+            local = Dash.seedRealisticData();
+          }
+        }
+
+        currentTxns = local || [];
+        if (typeof window !== 'undefined') window.currentTxns = currentTxns;
+        localStorage.setItem(APP.storageKey, JSON.stringify(currentTxns));
+      }
 
       firebaseReady = true;
       showSyncIndicator('synced');
@@ -140,7 +162,7 @@ function setupFirebaseSync() {
         AnalyticsPage.loadAll();
       }
 
-      console.log('✅ Synced ' + txns.length + ' transactions from Firebase');
+      console.log('✅ Synced ' + currentTxns.length + ' transactions');
     },
     (error) => {
       console.error('Firebase sync error:', error);
