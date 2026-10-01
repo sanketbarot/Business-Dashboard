@@ -8,12 +8,32 @@
 /* ==========================================================================
    SIDEBAR FIX — Keep Sidebar Sticky & Static Like Dashboard
    ========================================================================== */
-.sidebar {
-  position: sticky !important;
-  top: 24px !important;
-  height: calc(100vh - 48px) !important;
-  flex-shrink: 0 !important;
-  z-index: 100 !important;
+@media (min-width: 901px) {
+  .sidebar {
+    position: sticky !important;
+    top: 24px !important;
+    height: calc(100vh - 48px) !important;
+    flex-shrink: 0 !important;
+    z-index: 100 !important;
+  }
+}
+
+.sidebar,
+.sidebar *,
+.sb-nav,
+.sb-nav * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.sidebar::-webkit-scrollbar,
+.sb-nav::-webkit-scrollbar,
+.sidebar *::-webkit-scrollbar,
+.sb-nav *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+  background: transparent !important;
 }
 
 .main {

@@ -286,7 +286,7 @@ textarea {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: var(--r-3xl);
-  padding: 28px 20px;
+  padding: 24px 18px;
   display: flex;
   flex-direction: column;
   box-shadow: var(--sh-md);
@@ -294,21 +294,39 @@ textarea {
   position: sticky;
   top: 24px;
   height: calc(100vh - 48px);
+  flex-shrink: 0;
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), var(--tr);
   z-index: 100;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-.sidebar::-webkit-scrollbar {
-  width: 0;
+.sidebar,
+.sidebar *,
+.sb-nav,
+.sb-nav * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.sidebar::-webkit-scrollbar,
+.sb-nav::-webkit-scrollbar,
+.sidebar *::-webkit-scrollbar,
+.sb-nav *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+  background: transparent !important;
 }
 
 .sb-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px 24px;
-  margin-bottom: 20px;
+  padding: 6px 10px 20px;
+  margin-bottom: 16px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .sb-logo-icon-wrap {
@@ -359,39 +377,40 @@ textarea {
 .sb-nav {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   scroll-behavior: smooth;
-}
-
-.sb-nav::-webkit-scrollbar {
-  width: 0;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .sb-section {
-  padding: 14px 12px 6px;
-  font-size: 0.65rem;
+  padding: 12px 12px 5px;
+  font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--text-light);
+  flex-shrink: 0;
 }
 
 .sb-link {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 11px 14px;
   color: var(--text-body);
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--tr);
   border-radius: 12px;
-  min-height: 44px;
+  min-height: 42px;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sb-link:hover {
@@ -433,20 +452,84 @@ textarea {
   transition: transform 0.3s;
 }
 
+/* Elegant Cloud Sync Status Card to fill space gracefully */
+.sb-cloud-card {
+  margin-top: auto;
+  margin-bottom: 6px;
+  padding: 11px 14px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.05));
+  border: 1px solid rgba(99, 102, 241, 0.16);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: var(--tr);
+  flex-shrink: 0;
+}
+
+.sb-cloud-card:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.09));
+  border-color: rgba(99, 102, 241, 0.28);
+  transform: translateY(-1px);
+}
+
+.sb-cloud-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sb-cloud-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  display: inline-block;
+  animation: pulse-dot 2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1);
+  }
+}
+
+.sb-cloud-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-head);
+  letter-spacing: 0.02em;
+}
+
+.sb-cloud-desc {
+  font-size: 0.67rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 .sb-footer {
-  padding-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .sb-user {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
   border-radius: 12px;
   background: var(--bg-hover);
   transition: var(--tr);
+  flex-shrink: 0;
 }
 
 .sb-user:hover {
@@ -455,8 +538,8 @@ textarea {
 }
 
 .sb-avatar {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   background: var(--brand);
   border-radius: 50%;
   display: flex;
@@ -494,7 +577,7 @@ textarea {
 
 .sb-logout {
   width: 100%;
-  padding: 11px;
+  padding: 10px 12px;
   background: var(--bg-hover);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -503,11 +586,12 @@ textarea {
   font-weight: 600;
   cursor: pointer;
   transition: var(--tr);
-  min-height: 42px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .sb-logout:hover {

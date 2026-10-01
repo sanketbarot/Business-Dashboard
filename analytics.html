@@ -22,10 +22,10 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="assets/css/style.css?v=14.4" />
-  <link rel="stylesheet" href="assets/css/animations.css?v=14.4" />
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=14.3" />
-  <link rel="stylesheet" href="assets/css/analytics.css?v=14.4" />
+  <link rel="stylesheet" href="assets/css/style.css?v=14.6" />
+  <link rel="stylesheet" href="assets/css/animations.css?v=14.6" />
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=14.6" />
+  <link rel="stylesheet" href="assets/css/analytics.css?v=14.6" />
 
   <!-- Firebase SDKs - MUST BE BEFORE app.js -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -83,6 +83,15 @@
               data-lucide="database"></i></span><span>Backup Data</span></div>
         <div class="sb-link" id="pwaInstallBtn" style="display: none;" onclick="triggerPwaInstall()"><span
             class="sb-icon"><i data-lucide="smartphone"></i></span><span>Install App</span></div>
+
+        <!-- Cloud Status Card to elegantly fill sidebar base -->
+        <div class="sb-cloud-card">
+          <div class="sb-cloud-top">
+            <span class="sb-cloud-dot"></span>
+            <span class="sb-cloud-title">Cloud Sync Online</span>
+          </div>
+          <div class="sb-cloud-desc">Crust & Chilly Business Suite</div>
+        </div>
       </nav>
 
       <div class="sb-footer">
