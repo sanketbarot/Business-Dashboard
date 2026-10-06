@@ -22,9 +22,9 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="assets/css/style.css?v=15.3" />
-  <link rel="stylesheet" href="assets/css/animations.css?v=15.3" />
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=15.3" />
+  <link rel="stylesheet" href="assets/css/style.css?v=16.0" />
+  <link rel="stylesheet" href="assets/css/animations.css?v=16.0" />
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=16.0" />
 
 
   <!-- Firebase SDKs - MUST BE BEFORE app.js -->
@@ -840,19 +840,24 @@
           </div>
         </section>
 
+        <!-- DAILY BENCHMARK ANALYTICS -->
         <section class="analytics-grid" id="sectionDailyAverages">
           <div class="mini-stat">
             <div class="ms-top">
               <div class="ms-header-left">
                 <div class="ms-ic"><i data-lucide="bar-chart-2" style="width: 19px; height: 19px;"></i></div>
-                <div class="ms-title">Avg Income / Day</div>
+                <div>
+                  <div class="ms-title">Avg Daily Income</div>
+                  <div class="ms-caption">All-Time Benchmark</div>
+                </div>
               </div>
-              <span class="ms-badge ms-badge-daily">Daily</span>
+              <span class="ms-badge ms-badge-daily">Benchmark</span>
             </div>
             <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgIncome">₹ 0</div>
                 <div class="ms-sub" id="msIncomeDays">No data yet</div>
+                <div class="ms-extra-tag" id="msIncomeExtraTag">⚡ Intake benchmark</div>
               </div>
               <div class="ms-spark-wrap"><canvas id="sparklineAvgIncome"></canvas></div>
             </div>
@@ -864,14 +869,18 @@
             <div class="ms-top">
               <div class="ms-header-left">
                 <div class="ms-ic"><i data-lucide="credit-card" style="width: 19px; height: 19px;"></i></div>
-                <div class="ms-title">Avg Expense / Day</div>
+                <div>
+                  <div class="ms-title">Avg Daily Expense</div>
+                  <div class="ms-caption">All-Time Benchmark</div>
+                </div>
               </div>
-              <span class="ms-badge ms-badge-daily">Daily</span>
+              <span class="ms-badge ms-badge-daily">Benchmark</span>
             </div>
             <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgExpense">₹ 0</div>
                 <div class="ms-sub" id="msExpenseDays">No data yet</div>
+                <div class="ms-extra-tag" id="msExpenseExtraTag">💸 Daily outflow</div>
               </div>
               <div class="ms-spark-wrap"><canvas id="sparklineAvgExpense"></canvas></div>
             </div>
@@ -883,14 +892,18 @@
             <div class="ms-top">
               <div class="ms-header-left">
                 <div class="ms-ic"><i data-lucide="target" style="width: 19px; height: 19px;"></i></div>
-                <div class="ms-title">Savings Rate</div>
+                <div>
+                  <div class="ms-title">All-Time Margin</div>
+                  <div class="ms-caption">Profit & Savings</div>
+                </div>
               </div>
-              <span class="ms-badge ms-badge-daily">Daily</span>
+              <span class="ms-badge ms-badge-daily">Benchmark</span>
             </div>
             <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msSavings">0%</div>
                 <div class="ms-sub" id="msSavingsSub">Start adding data</div>
+                <div class="ms-extra-tag" id="msSavingsExtraTag">🛡️ Net retention</div>
               </div>
               <div class="ms-spark-wrap"><canvas id="sparklineSavingsRate"></canvas></div>
             </div>
@@ -900,20 +913,26 @@
           </div>
         </section>
 
-        <!-- MONTHLY AVERAGE ANALYTICS -->
+        <!-- MONTHLY AVERAGE & RUN-RATE ANALYTICS -->
         <section class="analytics-grid" id="sectionMonthlyAverages">
           <div class="mini-stat">
             <div class="ms-top">
               <div class="ms-header-left">
                 <div class="ms-ic"><i data-lucide="calendar" style="width: 19px; height: 19px;"></i></div>
-                <div class="ms-title">Avg Income / Month</div>
+                <div>
+                  <div class="ms-title">This Month Daily Pace</div>
+                  <div class="ms-caption">Current Run-Rate</div>
+                </div>
               </div>
-              <span class="ms-badge ms-badge-monthly">Monthly</span>
+              <span class="ms-badge ms-badge-monthly" id="msIncomeMonthPaceBadge">Run-Rate</span>
             </div>
             <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgIncomeMonth">₹ 0</div>
                 <div class="ms-sub" id="msIncomeMonths">No data this month</div>
+                <div class="ms-projected-chip" id="msIncomeProjectedChip" title="Estimated month-end income at current pace">
+                  <i data-lucide="trending-up" style="width:12px; height:12px;"></i> Est. Month: <strong>₹ 0</strong>
+                </div>
               </div>
               <div class="ms-spark-wrap"><canvas id="sparklineAvgIncomeMonth"></canvas></div>
             </div>
@@ -925,14 +944,20 @@
             <div class="ms-top">
               <div class="ms-header-left">
                 <div class="ms-ic"><i data-lucide="credit-card" style="width: 19px; height: 19px;"></i></div>
-                <div class="ms-title">Avg Expense / Month</div>
+                <div>
+                  <div class="ms-title">This Month Daily Expense</div>
+                  <div class="ms-caption">Current Burn-Rate</div>
+                </div>
               </div>
-              <span class="ms-badge ms-badge-monthly">Monthly</span>
+              <span class="ms-badge ms-badge-monthly" id="msExpenseMonthPaceBadge">Burn-Rate</span>
             </div>
             <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msAvgExpenseMonth">₹ 0</div>
                 <div class="ms-sub" id="msExpenseMonths">No data this month</div>
+                <div class="ms-projected-chip expense" id="msExpenseProjectedChip" title="Estimated month-end expense at current pace">
+                  <i data-lucide="trending-down" style="width:12px; height:12px;"></i> Est. Month: <strong>₹ 0</strong>
+                </div>
               </div>
               <div class="ms-spark-wrap"><canvas id="sparklineAvgExpenseMonth"></canvas></div>
             </div>
@@ -944,14 +969,20 @@
             <div class="ms-top">
               <div class="ms-header-left">
                 <div class="ms-ic"><i data-lucide="target" style="width: 19px; height: 19px;"></i></div>
-                <div class="ms-title">Savings Rate / Month</div>
+                <div>
+                  <div class="ms-title">This Month Savings Rate</div>
+                  <div class="ms-caption">Profit & Surplus</div>
+                </div>
               </div>
-              <span class="ms-badge ms-badge-monthly">Monthly</span>
+              <span class="ms-badge ms-badge-monthly" id="msSavingsMonthDeltaBadge">Pace</span>
             </div>
             <div class="ms-bottom-wrap">
               <div>
                 <div class="ms-value" id="msSavingsMonth">0%</div>
                 <div class="ms-sub" id="msSavingsMonthSub">Start adding data</div>
+                <div class="ms-projected-chip margin" id="msNetProfitProjectedChip" title="Average net profit generated per active day">
+                  <i data-lucide="sparkles" style="width:12px; height:12px;"></i> Daily Net: <strong>₹ 0/day</strong>
+                </div>
               </div>
               <div class="ms-spark-wrap"><canvas id="sparklineSavingsRateMonth"></canvas></div>
             </div>
@@ -968,21 +999,42 @@
                 <span class="chart-hd-icon"><i data-lucide="bar-chart-2" style="width: 17px; height: 17px;"></i></span>
                 <span>Income vs Expense</span>
               </h4>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <select class="chart-sel" id="chartBarMode" onchange="Dash.switchBarChartMode(this.value)">
-                  <option value="grouped">Grouped Bar</option>
-                  <option value="profit">Net Margin View</option>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <select class="chart-sel" id="chartRangeMode" onchange="buildBarChart()" title="Time Range">
+                  <option value="recent" selected>Recent (Last 6 Mos)</option>
+                  <option value="all-year">Full Year (12 Mos)</option>
                 </select>
-                <select class="chart-sel" id="chartYear" onchange="buildBarChart()">
+                <select class="chart-sel" id="chartBarMode" onchange="Dash.switchBarChartMode(this.value)" title="Chart Type">
+                  <option value="grouped">Grouped Bar</option>
+                  <option value="area">Smooth Wave</option>
+                  <option value="profit">Net Margin</option>
+                </select>
+                <select class="chart-sel" id="chartYear" onchange="buildBarChart()" title="Financial Year">
                   <option value="2026" selected>2026</option>
                   <option value="2025">2025</option>
                   <option value="2024">2024</option>
-                  <option value="2023">2023</option>
-                  <option value="2022">2022</option>
                 </select>
               </div>
             </div>
             <div class="card-bd">
+              <!-- KPI Sub Summary Row -->
+              <div class="chart-sub-kpi-bar" id="chartKpiSubBar">
+                <div class="c-kpi-item in">
+                  <span class="c-kpi-dot"></span>
+                  <span class="c-kpi-lbl">Total Income</span>
+                  <span class="c-kpi-val" id="barKpiIncome">₹ 0</span>
+                </div>
+                <div class="c-kpi-item out">
+                  <span class="c-kpi-dot"></span>
+                  <span class="c-kpi-lbl">Total Expense</span>
+                  <span class="c-kpi-val" id="barKpiExpense">₹ 0</span>
+                </div>
+                <div class="c-kpi-item net">
+                  <span class="c-kpi-dot"></span>
+                  <span class="c-kpi-lbl">Net Surplus</span>
+                  <span class="c-kpi-val" id="barKpiNet">₹ 0</span>
+                </div>
+              </div>
               <div class="chart-wrap-lg"><canvas id="barChart"></canvas></div>
             </div>
           </div>
@@ -999,7 +1051,13 @@
               </select>
             </div>
             <div class="card-bd">
-              <div class="donut-canvas-wrap"><canvas id="donutChart"></canvas></div>
+              <div class="donut-canvas-wrap">
+                <canvas id="donutChart"></canvas>
+                <div class="donut-center-info" id="donutCenterInfo">
+                  <div class="donut-center-val" id="donutCenterVal">₹ 0</div>
+                  <div class="donut-center-lbl" id="donutCenterLbl">Total Spent</div>
+                </div>
+              </div>
               <div id="donutLegend" class="donut-legend"></div>
             </div>
           </div>
@@ -1019,7 +1077,14 @@
                 <span>Real-Time Sales (Live)</span>
               </button>
             </div>
-            <span class="cashflow-period-tag" id="lineChartSubtext">Last 7 days</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <select class="chart-sel" id="cashflowDaysSel" onchange="Dash.switchCashflowDays(this.value)" title="Cash Flow Period">
+                <option value="7" selected>Last 7 Days</option>
+                <option value="14">Last 14 Days</option>
+                <option value="30">Last 30 Days</option>
+              </select>
+              <span class="cashflow-period-tag" id="lineChartSubtext" style="display:none;">Last 7 days</span>
+            </div>
           </div>
           <div class="card-bd">
             <div class="chart-info-bar">
@@ -1136,8 +1201,8 @@
                   <button onclick="exportTransactionsCSV()" class="recent-action-btn">
                     <i data-lucide="download" style="width: 13px; height: 13px;"></i><span>CSV</span>
                   </button>
-                  <a href="transaction.html" class="recent-action-btn primary">
-                    <span>View All</span><i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
+                  <a href="transaction.html" class="recent-action-btn primary" title="View all transactions">
+                    <span style="color:#ffffff !important;">View All</span><i data-lucide="arrow-right" style="width: 13px; height: 13px; color:#ffffff !important;"></i>
                   </a>
                 </div>
               </div>
@@ -1147,14 +1212,15 @@
                     <tr>
                       <th>Date</th>
                       <th>Type</th>
-                      <th>Category</th>
-                      <th>Amount</th>
+                      <th>Category & Notes</th>
+                      <th style="text-align:right;">Amount</th>
                       <th>Mode</th>
+                      <th style="text-align:center; width:54px;">Action</th>
                     </tr>
                   </thead>
                   <tbody id="recentBody">
                     <tr>
-                      <td colspan="5">
+                      <td colspan="6">
                         <div class="empty">
                           <div class="empty-icon" style="display:flex; justify-content:center;"><i
                               data-lucide="clipboard-list"
@@ -1173,28 +1239,42 @@
               <div class="card-hd">
                 <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="git-compare"
                     style="width: 18px; height: 18px; color: var(--brand);"></i>Month Comparison</h4>
+                <span class="compare-metric-tag" id="cmpMetricTag">Net Profit</span>
               </div>
               <div class="card-bd">
-                <div class="compare-grid" style="margin-bottom:10px;">
+                <div class="compare-grid" style="margin-bottom:12px;">
                   <div class="compare-box">
-                    <div class="cb-lbl">Last Month</div>
+                    <div class="cb-header">
+                      <span class="cb-lbl">Last Month</span>
+                      <span class="cb-month-sub" id="cmpLastMonthName">Prev</span>
+                    </div>
                     <div class="cb-val" id="cmpLast">₹ 0</div>
+                    <div class="cb-footer-tag">Net Surplus</div>
                   </div>
-                  <div class="compare-box">
-                    <div class="cb-lbl">This Month</div>
+                  <div class="compare-box current">
+                    <div class="cb-header">
+                      <span class="cb-lbl">This Month</span>
+                      <span class="cb-month-sub" id="cmpThisMonthName">Current</span>
+                    </div>
                     <div class="cb-val" id="cmpThis">₹ 0</div>
+                    <div class="cb-footer-tag">Net Surplus</div>
                   </div>
                 </div>
-                <div style="position:relative;height:120px;margin-bottom:10px;"><canvas id="compareChart"></canvas>
+                <div style="position:relative;height:148px;margin-bottom:12px;"><canvas id="compareChart"></canvas>
                 </div>
                 <div class="compare-arrow neutral" id="cmpArrow">→ No data</div>
               </div>
             </div>
 
-            <div class="card">
+            <div class="card chart-enhanced">
               <div class="card-hd">
                 <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up"
                     style="width: 18px; height: 18px; color: var(--expense);"></i>Top Expenses</h4>
+                <select class="chart-sel" id="topExpPeriod" onchange="Dash.switchTopExpPeriod(this.value)" title="Expense Period">
+                  <option value="month" selected>This Month</option>
+                  <option value="all">All Time</option>
+                  <option value="year">This Year</option>
+                </select>
               </div>
               <div class="card-bd" id="topCatBox">
                 <div class="empty">
@@ -1206,9 +1286,19 @@
               <div class="card-hd">
                 <h4 style="display:flex; align-items:center; gap:8px;"><i data-lucide="credit-card"
                     style="width: 18px; height: 18px; color: var(--brand);"></i>Payment Modes</h4>
+                <select class="chart-sel" id="payModePeriod" onchange="Dash.switchPayModePeriod(this.value)" title="Payment Mode Period">
+                  <option value="month" selected>This Month</option>
+                  <option value="all">All Time</option>
+                  <option value="year">This Year</option>
+                </select>
               </div>
               <div class="card-bd">
-                <div style="position:relative;height:150px;margin-bottom:12px;"><canvas id="payModeChart"></canvas>
+                <div class="donut-canvas-wrap" style="height:165px; margin-bottom:12px;">
+                  <canvas id="payModeChart"></canvas>
+                  <div class="donut-center-info" id="payModeCenterInfo">
+                    <div class="donut-center-val" id="payModeCenterVal">₹ 0</div>
+                    <div class="donut-center-lbl" id="payModeCenterLbl">Total Flow</div>
+                  </div>
                 </div>
                 <div id="payModeBox">
                   <div class="empty">
@@ -1964,9 +2054,8 @@
 
   <div class="toast-box" id="toastBox"></div>
 
-  <!-- JS Files - app.js MUST be before dashboard.js -->
-  <script src="assets/js/app.js?v=14.1"></script>
-  <script src="assets/js/dashboard.js?v=14.1"></script>
+  <script src="assets/js/app.js?v=16.5"></script>
+  <script src="assets/js/dashboard.js?v=16.5"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

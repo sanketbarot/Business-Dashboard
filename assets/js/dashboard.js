@@ -350,24 +350,43 @@ const Dash = {
       return;
     }
     const daySet = new Set();
-    for (let i = 0; i < all.length; i++) daySet.add(all[i].date);
+    for (let i = 0; i < all.length; i++) {
+      if (all[i].date) daySet.add(all[i].date);
+    }
     const numDays = Math.max(daySet.size, 1);
     const tot = calcTotals(all);
     const avgIncome = tot.income / numDays;
     const avgExpense = tot.expense / numDays;
     const savingsRate = tot.income > 0 ? Math.round((tot.profit / tot.income) * 100) : 0;
+    const allNetDaily = avgIncome - avgExpense;
+
     this.setText('msAvgIncome', inr(avgIncome));
     this.setText('msAvgExpense', inr(avgExpense));
     this.setText('msSavings', savingsRate + '%');
     const dayLabel = numDays === 1 ? 'day' : 'days';
     this.setText('msIncomeDays', 'Across ' + numDays + ' active ' + dayLabel);
     this.setText('msExpenseDays', 'Across ' + numDays + ' active ' + dayLabel);
+
     let sub = '❌ Loss';
     if (savingsRate >= 30) sub = '🎉 Excellent!';
     else if (savingsRate >= 20) sub = '💪 Great!';
     else if (savingsRate >= 10) sub = '👍 Good';
     else if (savingsRate > 0) sub = '⚠️ Improve';
     this.setText('msSavingsSub', sub);
+
+    // Row 1 Extra helper tags
+    const incomeExtra = document.getElementById('msIncomeExtraTag');
+    if (incomeExtra) incomeExtra.textContent = '⚡ Daily intake benchmark';
+    const expenseExtra = document.getElementById('msExpenseExtraTag');
+    if (expenseExtra) {
+      const expRatio = avgIncome > 0 ? Math.round((avgExpense / avgIncome) * 100) : 0;
+      expenseExtra.textContent = `💸 ${expRatio}% of daily intake`;
+    }
+    const savingsExtra = document.getElementById('msSavingsExtraTag');
+    if (savingsExtra) {
+      savingsExtra.textContent = `🛡️ Net ${inr(Math.max(0, allNetDaily))}/day`;
+    }
+
     const maxAvg = Math.max(avgIncome, avgExpense, 1);
     this.setBarWidth('msIncomeBar', (avgIncome / maxAvg) * 100);
     this.setBarWidth('msExpenseBar', (avgExpense / maxAvg) * 100);
@@ -375,6 +394,11 @@ const Dash = {
 
     // --- CURRENT MONTH ANALYTICS (Active days in current month) ---
     const monthTxns = (typeof filterByPeriod === 'function') ? filterByPeriod(all, 'month') : [];
+    const todayObj = new Date();
+    const curYear = todayObj.getFullYear();
+    const curMonth = todayObj.getMonth();
+    const daysInCurrentMonth = new Date(curYear, curMonth + 1, 0).getDate();
+
     if (!monthTxns.length) {
       this.setText('msAvgIncomeMonth', '₹ 0');
       this.setText('msAvgExpenseMonth', '₹ 0');
@@ -395,6 +419,7 @@ const Dash = {
       const mAvgIncome = mTot.income / mNumDays;
       const mAvgExpense = mTot.expense / mNumDays;
       const mSavingsRate = mTot.income > 0 ? Math.round((mTot.profit / mTot.income) * 100) : 0;
+      const mNetDaily = mAvgIncome - mAvgExpense;
 
       this.setText('msAvgIncomeMonth', inr(mAvgIncome));
       this.setText('msAvgExpenseMonth', inr(mAvgExpense));
@@ -415,6 +440,74 @@ const Dash = {
       this.setBarWidth('msIncomeMonthBar', (mAvgIncome / maxAvgMonth) * 100);
       this.setBarWidth('msExpenseMonthBar', (mAvgExpense / maxAvgMonth) * 100);
       this.setBarWidth('msSavingsMonthBar', Math.max(0, mSavingsRate));
+
+      // Month-End Run-rate projections
+      const projectedIncome = Math.round(mAvgIncome * daysInCurrentMonth);
+      const projectedExpense = Math.round(mAvgExpense * daysInCurrentMonth);
+
+      // Delta comparisons vs All-Time Baseline
+      const incomeDelta = avgIncome > 0 ? Math.round(((mAvgIncome - avgIncome) / avgIncome) * 100) : 0;
+      const expenseDelta = avgExpense > 0 ? Math.round(((mAvgExpense - avgExpense) / avgExpense) * 100) : 0;
+      const marginDelta = mSavingsRate - savingsRate;
+
+      // Update Badges with delta
+      const incBadge = document.getElementById('msIncomeMonthPaceBadge');
+      if (incBadge) {
+        if (incomeDelta > 0) {
+          incBadge.className = 'ms-badge ms-badge-growth';
+          incBadge.textContent = `↑ +${incomeDelta}% Pace`;
+        } else if (incomeDelta < 0) {
+          incBadge.className = 'ms-badge ms-badge-drop';
+          incBadge.textContent = `↓ ${incomeDelta}% Pace`;
+        } else {
+          incBadge.className = 'ms-badge ms-badge-monthly';
+          incBadge.textContent = 'Run-Rate';
+        }
+      }
+
+      const expBadge = document.getElementById('msExpenseMonthPaceBadge');
+      if (expBadge) {
+        if (expenseDelta > 0) {
+          expBadge.className = 'ms-badge ms-badge-alert';
+          expBadge.textContent = `↑ +${expenseDelta}% Burn`;
+        } else if (expenseDelta < 0) {
+          expBadge.className = 'ms-badge ms-badge-growth';
+          expBadge.textContent = `↓ ${Math.abs(expenseDelta)}% Thrifty`;
+        } else {
+          expBadge.className = 'ms-badge ms-badge-monthly';
+          expBadge.textContent = 'Burn-Rate';
+        }
+      }
+
+      const savBadge = document.getElementById('msSavingsMonthDeltaBadge');
+      if (savBadge) {
+        if (marginDelta > 0) {
+          savBadge.className = 'ms-badge ms-badge-growth';
+          savBadge.textContent = `+${marginDelta}% vs Base`;
+        } else if (marginDelta < 0) {
+          savBadge.className = 'ms-badge ms-badge-drop';
+          savBadge.textContent = `${marginDelta}% vs Base`;
+        } else {
+          savBadge.className = 'ms-badge ms-badge-monthly';
+          savBadge.textContent = 'Pace';
+        }
+      }
+
+      // Projected chips update
+      const incProj = document.getElementById('msIncomeProjectedChip');
+      if (incProj) {
+        incProj.innerHTML = `<i data-lucide="trending-up" style="width:12px;height:12px;"></i> Est. Month: <strong>${inr(projectedIncome)}</strong>`;
+      }
+      const expProj = document.getElementById('msExpenseProjectedChip');
+      if (expProj) {
+        expProj.innerHTML = `<i data-lucide="trending-down" style="width:12px;height:12px;"></i> Est. Month: <strong>${inr(projectedExpense)}</strong>`;
+      }
+      const netProj = document.getElementById('msNetProfitProjectedChip');
+      if (netProj) {
+        netProj.innerHTML = `<i data-lucide="sparkles" style="width:12px;height:12px;"></i> Daily Net: <strong>${inr(mNetDaily)}/day</strong>`;
+      }
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
   },
 
@@ -564,31 +657,64 @@ const Dash = {
     const lastM = calcTotals(filterByPeriod(all, 'lastmonth'));
     this.setText('cmpLast', inr(lastM.profit));
     this.setText('cmpThis', inr(thisM.profit));
+
+    const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const curParts = (typeof getISTDateParts === 'function') ? getISTDateParts() : { month: new Date().getMonth() + 1 };
+    const curMIdx = (curParts.month || 1) - 1;
+    const lastMIdx = (curMIdx + 11) % 12;
+    const curMonthName = monthNamesShort[curMIdx];
+    const lastMonthName = monthNamesShort[lastMIdx];
+
+    const lastMonthEl = document.getElementById('cmpLastMonthName');
+    if (lastMonthEl) lastMonthEl.textContent = lastMonthName;
+    const thisMonthEl = document.getElementById('cmpThisMonthName');
+    if (thisMonthEl) thisMonthEl.textContent = curMonthName;
+
     const arrow = document.getElementById('cmpArrow');
     if (!arrow) return;
     if (lastM.profit === 0 && thisM.profit === 0) {
       arrow.className = 'compare-arrow neutral';
-      arrow.textContent = '→ No data';
+      arrow.innerHTML = '<span>→ No data yet</span>';
     } else if (lastM.profit === 0) {
       arrow.className = 'compare-arrow up';
-      arrow.textContent = '↑ New this month';
+      arrow.innerHTML = `<i data-lucide="trending-up" style="width:14px;height:14px;"></i><span>New this month (+${inr(thisM.profit)})</span>`;
     } else {
       const diff = thisM.profit - lastM.profit;
       const pct = Math.round((diff / Math.abs(lastM.profit)) * 100);
       const isUp = diff >= 0;
       arrow.className = 'compare-arrow ' + (isUp ? 'up' : 'down');
-      arrow.textContent = (isUp ? '↑' : '↓') + ' ' + Math.abs(pct) + '% vs last month';
+      const diffSign = diff >= 0 ? '+' : '-';
+      const icon = isUp ? 'trending-up' : 'trending-down';
+      arrow.innerHTML = `<i data-lucide="${icon}" style="width:14px;height:14px;"></i><span>${isUp ? '↑' : '↓'} ${Math.abs(pct)}% (${diffSign}${inrShort(Math.abs(diff))}) vs ${lastMonthName}</span>`;
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   loadTopCategories: function (all) {
     const box = document.getElementById('topCatBox');
     if (!box) return;
-    const expenses = all.filter(t => t.type === 'expense');
+
+    if (!Array.isArray(all) || all.length === 0) {
+      all = getTxns();
+    }
+
+    const periodSel = document.getElementById('topExpPeriod');
+    const period = this.topExpPeriod || (periodSel ? periodSel.value : 'month');
+    if (periodSel && periodSel.value !== period) {
+      periodSel.value = period;
+    }
+
+    const filtered = (period === 'all') ? all : filterByPeriod(all, period);
+    const expenses = filtered.filter(t => t.type === 'expense');
+
     if (!expenses.length) {
-      box.innerHTML = '<div class="empty"><p>No expense data yet</p></div>';
+      const periodLabel = period === 'month' ? 'this month' : period === 'year' ? 'this year' : 'in total';
+      box.innerHTML = `<div class="empty"><p>No expense data for ${periodLabel}</p></div>`;
       return;
     }
+
+    const totalExpensePeriod = expenses.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
     const grouped = {};
     for (let i = 0; i < expenses.length; i++) {
       const t = expenses[i];
@@ -601,22 +727,25 @@ const Dash = {
     box.innerHTML = sorted.map((item, i) => {
       const cat = item[0] || 'Other';
       const amt = item[1];
-      const rankClass = 'r' + (i + 1);
+      const rankNum = i + 1;
+      const rankClass = 'r' + rankNum;
       const cleanName = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim() || cat;
       const icon = (window.getLucideIconName && window.getLucideIconName(cat)) || 'tag';
+      const pct = totalExpensePeriod > 0 ? ((amt / totalExpensePeriod) * 100).toFixed(1) : '0';
 
       return `<div class="tc-item">
-        <div class="tc-rank ${rankClass}">#${i + 1}</div>
+        <div class="tc-rank ${rankClass}">#${rankNum}</div>
         <div class="tc-body">
           <div class="tc-header">
             <div class="tc-name-wrap">
               <span class="tc-icon"><i data-lucide="${icon}"></i></span>
               <span class="tc-name" title="${escapeHtml(cleanName)}">${escapeHtml(cleanName)}</span>
+              <span class="tc-pct-badge">${pct}%</span>
             </div>
-            <div class="tc-amt">${inrShort(amt)}</div>
+            <div class="tc-amt" title="${inr(amt)}">${inrShort(amt)}</div>
           </div>
           <div class="tc-bar">
-            <div class="tc-fill" style="width:0%"></div>
+            <div class="tc-fill ${rankClass}" style="width:0%"></div>
           </div>
         </div>
       </div>`;
@@ -629,7 +758,7 @@ const Dash = {
     setTimeout(() => {
       const fills = box.querySelectorAll('.tc-fill');
       sorted.forEach((item, i) => {
-        if (fills[i]) fills[i].style.width = Math.min(100, Math.max(10, (item[1] / max) * 100)) + '%';
+        if (fills[i]) fills[i].style.width = Math.min(100, Math.max(8, (item[1] / max) * 100)) + '%';
       });
     }, 150);
   },
@@ -637,23 +766,44 @@ const Dash = {
   loadPaymentModes: function (all) {
     const box = document.getElementById('payModeBox');
     if (!box) return;
-    if (!all.length) {
-      box.innerHTML = '<div class="empty"><p>No data yet</p></div>';
+
+    if (!Array.isArray(all) || all.length === 0) {
+      all = getTxns();
+    }
+
+    const periodSel = document.getElementById('payModePeriod');
+    const period = this.payModePeriod || (periodSel ? periodSel.value : 'month');
+    if (periodSel && periodSel.value !== period) {
+      periodSel.value = period;
+    }
+
+    const filtered = (period === 'all') ? all : filterByPeriod(all, period);
+    if (!filtered.length) {
+      box.innerHTML = '<div class="empty"><p>No payment data for this period</p></div>';
+      this.setText('payModeCenterVal', '₹ 0');
+      this.setText('payModeCenterLbl', '0 Txns');
       return;
     }
+
     const grouped = {};
-    for (let i = 0; i < all.length; i++) {
-      const t = all[i];
+    for (let i = 0; i < filtered.length; i++) {
+      const t = filtered[i];
       const mode = t.mode || 'Cash';
       if (!grouped[mode]) grouped[mode] = { total: 0, count: 0 };
       grouped[mode].total += parseFloat(t.amount || 0);
       grouped[mode].count++;
     }
+
     const total = Object.values(grouped).reduce((s, x) => s + x.total, 0);
+    const totalCount = Object.values(grouped).reduce((s, x) => s + x.count, 0);
+
+    this.setText('payModeCenterVal', inrShort(total));
+    this.setText('payModeCenterLbl', totalCount + ' Txns');
+
     const sorted = Object.entries(grouped).sort((a, b) => b[1].total - a[1].total);
     const icons = { 'Cash': 'coins', 'Online': 'smartphone', 'UPI': 'phone-call', 'Bank Transfer': 'landmark', 'Card': 'credit-card', 'Cheque': 'file-text' };
 
-    box.innerHTML = sorted.map(item => {
+    box.innerHTML = sorted.map((item, idx) => {
       const mode = item[0], data = item[1];
       const pct = total > 0 ? Math.round((data.total / total) * 100) : 0;
       const icon = icons[mode] || 'wallet';
@@ -664,19 +814,33 @@ const Dash = {
       else if (ml.includes('bank') || ml.includes('transfer') || ml.includes('neft')) modeCls = 'mode-bank';
       else if (ml.includes('online')) modeCls = 'mode-online';
 
-      return `<div class="pm-item">
-        <div class="pm-ic ${modeCls}"><i data-lucide="${icon}"></i></div>
-        <div class="pm-info">
-          <div class="pm-name">${escapeHtml(mode)}</div>
-          <div class="pm-sub">${data.count} transaction${data.count === 1 ? '' : 's'}</div>
+      return `<div class="pm-item" onmouseenter="Dash.highlightPayModeSegment(${idx})" onmouseleave="Dash.unhighlightPayModeSegment()">
+        <div class="pm-row-top">
+          <div class="pm-ic ${modeCls}"><i data-lucide="${icon}"></i></div>
+          <div class="pm-info">
+            <div class="pm-name">${escapeHtml(mode)}</div>
+            <div class="pm-sub">${data.count} transaction${data.count === 1 ? '' : 's'}</div>
+          </div>
+          <div class="pm-stats">
+            <div class="pm-amt" title="${inr(data.total)}">${inrShort(data.total)}</div>
+            <div class="pm-pct-badge ${modeCls}">${pct}%</div>
+          </div>
         </div>
-        <div class="pm-stats">
-          <div class="pm-amt">${inrShort(data.total)}</div>
-          <div class="pm-pct-badge ${modeCls}">${pct}%</div>
+        <div class="pm-bar">
+          <div class="pm-fill ${modeCls}" style="width:0%"></div>
         </div>
       </div>`;
     }).join('');
+
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    setTimeout(() => {
+      const fills = box.querySelectorAll('.pm-fill');
+      sorted.forEach((item, i) => {
+        const pct = total > 0 ? Math.round((item[1].total / total) * 100) : 0;
+        if (fills[i]) fills[i].style.width = Math.min(100, Math.max(6, pct)) + '%';
+      });
+    }, 150);
   },
 
   loadRecent: function (all) {
@@ -684,7 +848,7 @@ const Dash = {
     const tbody = document.getElementById('recentBody');
     if (!tbody) return;
     if (!all.length) {
-      tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon" style="display:flex; justify-content:center;"><i data-lucide="clipboard-list" style="width: 32px; height: 32px;"></i></div><h4>No transactions yet</h4></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon" style="display:flex; justify-content:center;"><i data-lucide="clipboard-list" style="width: 32px; height: 32px;"></i></div><h4>No transactions yet</h4></div></td></tr>';
       if (typeof lucide !== 'undefined') lucide.createIcons();
       return;
     }
@@ -716,7 +880,7 @@ const Dash = {
 
     const sorted = filtered.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
     if (!sorted.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.8rem;">No matching transactions found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.8rem;">No matching transactions found</td></tr>';
       return;
     }
 
@@ -738,17 +902,46 @@ const Dash = {
       else if (ml.includes('bank') || ml.includes('transfer') || ml.includes('neft')) modeCls = 'mode-bank';
       else if (ml.includes('online')) modeCls = 'mode-online';
 
+      let noteHtml = '';
+      if (t.notes && t.notes.trim()) {
+        noteHtml = `<span class="tx-cat-note" title="${escapeHtml(t.notes)}">${escapeHtml(t.notes)}</span>`;
+      } else if (t.vendor && t.vendor.trim()) {
+        noteHtml = `<span class="tx-cat-note" title="${escapeHtml(t.vendor)}">${escapeHtml(t.vendor)}</span>`;
+      } else if (t.from && t.from.trim()) {
+        noteHtml = `<span class="tx-cat-note" title="${escapeHtml(t.from)}">${escapeHtml(t.from)}</span>`;
+      }
+
+      const rawDate = t.date;
+      const todayStr = (typeof today === 'function') ? today() : '';
+      let dateBadge = '';
+      if (todayStr && rawDate === todayStr) {
+        dateBadge = '<span class="tx-date-badge">Today</span>';
+      }
+
       return `<tr onclick="Dash.viewTxnDetails(decodeURIComponent('${safeId}'))" style="cursor:pointer;" title="Click to view transaction receipt & details">
-        <td class="tx-date">${fmtDate(t.date)}</td>
+        <td class="tx-date">
+          <div class="tx-date-wrap">
+            <span>${fmtDate(t.date)}</span>
+            ${dateBadge}
+          </div>
+        </td>
         <td class="tx-type"><span class="badge ${isI ? 'badge-in' : 'badge-out'}"><i data-lucide="${isI ? 'arrow-down-left' : 'arrow-up-right'}" style="width:11px; height:11px;"></i>${isI ? 'In' : 'Out'}</span></td>
         <td class="tx-cat">
           <div class="tx-cat-wrap">
             <span class="tx-cat-icon ${isI ? 'cat-in' : 'cat-out'}"><i data-lucide="${catIcon}" style="width:13px; height:13px;"></i></span>
-            <span class="tx-cat-name">${catClean}</span>
+            <div class="tx-cat-meta">
+              <span class="tx-cat-name">${escapeHtml(catClean)}</span>
+              ${noteHtml}
+            </div>
           </div>
         </td>
-        <td class="tx-amt"><span class="tx-amt-pill ${isI ? 'amt-in' : 'amt-out'}">${isI ? '+' : '-'}${inrShort(t.amount)}</span></td>
+        <td class="tx-amt" style="text-align:right;"><span class="tx-amt-pill ${isI ? 'amt-in' : 'amt-out'}">${isI ? '+' : '-'}${inr(t.amount)}</span></td>
         <td class="tx-mode"><span class="tx-mode-pill ${modeCls}"><i data-lucide="${modeIcon}" style="width:11px; height:11px;"></i><span>${modeClean}</span></span></td>
+        <td class="tx-action" style="text-align:center;">
+          <button class="tx-view-btn" onclick="event.stopPropagation(); Dash.viewTxnDetails(decodeURIComponent('${safeId}'))" title="View Receipt & Details">
+            <i data-lucide="eye" style="width:13px; height:13px;"></i>
+          </button>
+        </td>
       </tr>`;
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -774,22 +967,59 @@ const Dash = {
     const canvas = document.getElementById('barChart');
     if (!canvas || typeof Chart === 'undefined') return;
     try {
+      if (!Array.isArray(all) || all.length === 0) {
+        all = getTxns();
+      }
       const yearEl = document.getElementById('chartYear');
       let year = yearEl && yearEl.value ? parseInt(yearEl.value, 10) : NaN;
       if (isNaN(year)) year = getISTDateParts().year;
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const income = new Array(12).fill(0);
-      const expense = new Array(12).fill(0);
+
+      const rangeMode = document.getElementById('chartRangeMode') ? document.getElementById('chartRangeMode').value : 'recent';
+      const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const income12 = new Array(12).fill(0);
+      const expense12 = new Array(12).fill(0);
+
       for (let i = 0; i < all.length; i++) {
         const t = all[i];
         if (!t.date) continue;
         const parts = t.date.split('-');
-        const y = parseInt(parts[0]);
+        const y = parseInt(parts[0], 10);
         if (y !== year) continue;
-        const m = parseInt(parts[1]) - 1;
-        const a = parseFloat(t.amount) || 0;
-        if (t.type === 'income') income[m] += a;
-        else if (t.type === 'expense') expense[m] += a;
+        const m = parseInt(parts[1], 10) - 1;
+        if (m >= 0 && m < 12) {
+          const a = parseFloat(t.amount) || 0;
+          if (t.type === 'income') income12[m] += a;
+          else if (t.type === 'expense') expense12[m] += a;
+        }
+      }
+
+      // Compute Total Year KPI Figures
+      const totIncYear = income12.reduce((a, b) => a + b, 0);
+      const totExpYear = expense12.reduce((a, b) => a + b, 0);
+      const netSurplus = totIncYear - totExpYear;
+
+      const kpiInc = document.getElementById('barKpiIncome');
+      if (kpiInc) kpiInc.textContent = inr(totIncYear);
+      const kpiExp = document.getElementById('barKpiExpense');
+      if (kpiExp) kpiExp.textContent = inr(totExpYear);
+      const kpiNet = document.getElementById('barKpiNet');
+      if (kpiNet) {
+        kpiNet.textContent = `${netSurplus >= 0 ? '+' : ''}${inr(netSurplus)}`;
+        kpiNet.style.color = netSurplus >= 0 ? '#10b981' : '#f43f5e';
+      }
+
+      // Slice for display
+      let displayMonths = allMonths;
+      let displayIncome = income12;
+      let displayExpense = expense12;
+
+      if (rangeMode === 'recent') {
+        const curM = (getISTDateParts().month || 1) - 1; // 0 to 11
+        let startM = Math.max(0, curM - 5);
+        let endM = Math.min(11, startM + 5);
+        displayMonths = allMonths.slice(startM, endM + 1);
+        displayIncome = income12.slice(startM, endM + 1);
+        displayExpense = expense12.slice(startM, endM + 1);
       }
 
       const incomeColor = themeColors.getIncome();
@@ -802,45 +1032,73 @@ const Dash = {
         this.charts.bar = null;
       }
 
+      let chartType = 'bar';
       let datasets = [];
-      if (this.barChartMode === 'profit') {
-        const netProfit = months.map((_, i) => income[i] - expense[i]);
+
+      if (this.barChartMode === 'area') {
+        chartType = 'line';
+        datasets = [
+          {
+            label: 'Income',
+            data: displayIncome,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.16)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#10b981'
+          },
+          {
+            label: 'Expense',
+            data: displayExpense,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.12)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#f43f5e'
+          }
+        ];
+      } else if (this.barChartMode === 'profit') {
+        const netProfit = displayMonths.map((_, i) => displayIncome[i] - displayExpense[i]);
         datasets = [{
           label: 'Net Profit / Margin',
           data: netProfit,
-          backgroundColor: netProfit.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.75)' : 'rgba(244, 63, 94, 0.75)'),
+          backgroundColor: netProfit.map(v => v >= 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(244, 63, 94, 0.85)'),
           borderColor: netProfit.map(v => v >= 0 ? '#10b981' : '#f43f5e'),
           borderWidth: 1.5,
-          borderRadius: { topLeft: 8, topRight: 8 },
-          maxBarThickness: 36
+          borderRadius: 8,
+          maxBarThickness: 42
         }];
       } else {
         datasets = [
           {
             label: 'Income',
-            data: income,
-            backgroundColor: 'rgba(16, 185, 129, 0.72)',
+            data: displayIncome,
+            backgroundColor: 'rgba(16, 185, 129, 0.82)',
             borderColor: incomeColor,
             borderWidth: 1.5,
-            borderRadius: { topLeft: 8, topRight: 8 },
-            maxBarThickness: 32
+            borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
+            maxBarThickness: 36
           },
           {
             label: 'Expense',
-            data: expense,
-            backgroundColor: 'rgba(244, 63, 94, 0.72)',
+            data: displayExpense,
+            backgroundColor: 'rgba(244, 63, 94, 0.82)',
             borderColor: expenseColor,
             borderWidth: 1.5,
-            borderRadius: { topLeft: 8, topRight: 8 },
-            maxBarThickness: 32
+            borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
+            maxBarThickness: 36
           }
         ];
       }
 
       this.charts.bar = new Chart(canvas, {
-        type: 'bar',
+        type: chartType,
         data: {
-          labels: months,
+          labels: displayMonths,
           datasets: datasets
         },
         options: {
@@ -852,7 +1110,7 @@ const Dash = {
             legend: {
               position: 'top',
               align: 'end',
-              labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' }, padding: 16, color: textMutedVal }
+              labels: { usePointStyle: true, pointStyle: 'circle', font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '700' }, padding: 14, color: textMutedVal }
             },
             tooltip: {
               backgroundColor: 'rgba(15, 23, 42, 0.94)',
@@ -881,6 +1139,9 @@ const Dash = {
   buildDonutChart: function (all) {
     const canvas = document.getElementById('donutChart');
     if (!canvas || typeof Chart === 'undefined') return;
+    if (!Array.isArray(all) || all.length === 0) {
+      all = getTxns();
+    }
     const period = document.getElementById('donutPeriod') ? document.getElementById('donutPeriod').value : 'month';
     const txns = filterByPeriod(all, period).filter(t => t.type === 'expense');
     const grouped = {};
@@ -892,28 +1153,50 @@ const Dash = {
     const sorted = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
     const labels = sorted.map(x => x[0]);
     const values = sorted.map(x => x[1]);
-    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#0ea5e9'];
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#14b8a6', '#84cc16'];
     const total = values.reduce((a, b) => a + b, 0);
+
+    // Update Donut Center Info
+    const centerValEl = document.getElementById('donutCenterVal');
+    const centerLblEl = document.getElementById('donutCenterLbl');
+    if (centerValEl) {
+      centerValEl.textContent = total > 0 ? inrShort(total) : '₹ 0';
+      centerValEl.title = inr(total);
+    }
+    if (centerLblEl) {
+      centerLblEl.textContent = total > 0 ? 'Total Spent' : 'No Expense';
+    }
 
     const legend = document.getElementById('donutLegend');
     if (legend) {
       if (!labels.length) {
-        legend.innerHTML = '<div class="empty" style="padding:24px; text-align:center; color:var(--text-muted);"><p>No expense records</p></div>';
+        legend.innerHTML = '<div class="empty" style="padding:24px; text-align:center; color:var(--text-muted);"><p>No expense records for selected period</p></div>';
       } else {
-        legend.innerHTML = labels.map((l, i) =>
-          '<div class="leg-row"><div class="leg-dot" style="background:' + colors[i % colors.length] + '"></div><span class="leg-name">' + window.getFormattedOptionHtml(l, 13) + '</span><span class="leg-val">' + inrShort(values[i]) + '</span><span class="leg-pct">' + Math.round((values[i] / total) * 100) + '%</span></div>'
-        ).join('');
+        legend.innerHTML = labels.map((l, i) => {
+          const color = colors[i % colors.length];
+          const pct = total > 0 ? Math.round((values[i] / total) * 100) : 0;
+          return `
+            <div class="leg-row" data-index="${i}" onmouseenter="Dash.highlightDonutSegment(${i})" onmouseleave="Dash.unhighlightDonutSegment()">
+              <div class="leg-bar-fill" style="width:${pct}%; background:${color}18;"></div>
+              <div class="leg-dot" style="background:${color};"></div>
+              <span class="leg-name">${window.getFormattedOptionHtml(l, 13)}</span>
+              <span class="leg-val">${inr(values[i])}</span>
+              <span class="leg-pct" style="color:${color}; background:${color}12; border-color:${color}30;">${pct}%</span>
+            </div>
+          `;
+        }).join('');
         if (typeof lucide !== 'undefined') {
           lucide.createIcons();
         }
       }
     }
 
+    if (this.charts.donut) {
+      this.charts.donut.destroy();
+      this.charts.donut = null;
+    }
+
     if (!labels.length) {
-      if (this.charts.donut) {
-        this.charts.donut.destroy();
-        this.charts.donut = null;
-      }
       this.charts.donut = new Chart(canvas, {
         type: 'doughnut',
         data: {
@@ -927,7 +1210,7 @@ const Dash = {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          cutout: '68%',
+          cutout: '72%',
           plugins: {
             legend: { display: false },
             tooltip: { enabled: false }
@@ -937,47 +1220,46 @@ const Dash = {
       return;
     }
 
-    const datasets = [];
-    const ringsCount = Math.min(4, labels.length);
-    for (let i = 0; i < ringsCount; i++) {
-      datasets.push({
-        label: labels[i],
-        data: [values[i], total - values[i]],
-        backgroundColor: [colors[i % colors.length], 'rgba(15, 23, 42, 0.04)'],
-        borderWidth: 2,
-        borderColor: '#ffffff',
-        hoverBorderColor: '#ffffff',
-        borderRadius: 4,
-        weight: 0.8
-      });
-    }
-
-    if (this.charts.donut) {
-      this.charts.donut.data.labels = labels.slice(0, ringsCount);
-      this.charts.donut.data.datasets = datasets;
-      this.charts.donut.update();
-      return;
-    }
-
     this.charts.donut = new Chart(canvas, {
       type: 'doughnut',
       data: {
-        labels: labels.slice(0, ringsCount),
-        datasets: datasets
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: labels.map((_, i) => colors[i % colors.length]),
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverBorderColor: '#ffffff',
+          borderRadius: 5,
+          spacing: 3,
+          hoverOffset: 6
+        }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '50%',
+        cutout: '72%',
+        animation: {
+          animateRotate: true,
+          animateScale: true,
+          duration: 500,
+          easing: 'easeOutQuart'
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            titleColor: '#ffffff',
+            bodyColor: '#cbd5e1',
+            padding: 12,
+            cornerRadius: 12,
+            titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+            bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
             callbacks: {
               label: function (ctx) {
-                const datasetLabel = ctx.dataset.label || '';
-                const val = ctx.raw;
-                if (ctx.dataIndex === 1) return null;
-                return ' ' + datasetLabel + ': ' + inr(val);
+                const val = ctx.raw || 0;
+                const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                return ` ${ctx.label}: ${inr(val)} (${pct}%)`;
               }
             }
           }
@@ -986,19 +1268,61 @@ const Dash = {
     });
   },
 
+  highlightDonutSegment: function (index) {
+    if (this.charts && this.charts.donut) {
+      this.charts.donut.setActiveElements([{ datasetIndex: 0, index: index }]);
+      this.charts.donut.tooltip.setActiveElements([{ datasetIndex: 0, index: index }]);
+      this.charts.donut.update('none');
+    }
+  },
+
+  unhighlightDonutSegment: function () {
+    if (this.charts && this.charts.donut) {
+      this.charts.donut.setActiveElements([]);
+      this.charts.donut.tooltip.setActiveElements([]);
+      this.charts.donut.update('none');
+    }
+  },
+
+  highlightPayModeSegment: function (index) {
+    if (this.charts && this.charts.payMode && this.charts.payMode.data.datasets.length) {
+      this.charts.payMode.setActiveElements([{ datasetIndex: 0, index: index }]);
+      this.charts.payMode.tooltip.setActiveElements([{ datasetIndex: 0, index: index }], { x: 0, y: 0 });
+      this.charts.payMode.update('none');
+    }
+  },
+
+  unhighlightPayModeSegment: function () {
+    if (this.charts && this.charts.payMode) {
+      this.charts.payMode.setActiveElements([]);
+      this.charts.payMode.tooltip.setActiveElements([]);
+      this.charts.payMode.update('none');
+    }
+  },
+
   buildPayModeChart: function (all) {
     const canvas = document.getElementById('payModeChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
+    if (!Array.isArray(all) || all.length === 0) {
+      all = getTxns();
+    }
+
+    const periodSel = document.getElementById('payModePeriod');
+    const period = this.payModePeriod || (periodSel ? periodSel.value : 'month');
+    const filtered = (period === 'all') ? all : filterByPeriod(all, period);
+
     const grouped = {};
-    for (let i = 0; i < all.length; i++) {
-      const t = all[i];
+    for (let i = 0; i < filtered.length; i++) {
+      const t = filtered[i];
       const mode = t.mode || 'Cash';
       grouped[mode] = (grouped[mode] || 0) + parseFloat(t.amount || 0);
     }
 
-    const labels = Object.keys(grouped);
-    const values = Object.values(grouped);
+    const sortedEntries = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+    const labels = sortedEntries.map(e => e[0]);
+    const values = sortedEntries.map(e => e[1]);
+    const total = values.reduce((a, b) => a + b, 0);
 
     if (!labels.length) {
       if (this.charts.payMode) {
@@ -1007,8 +1331,13 @@ const Dash = {
       }
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      this.setText('payModeCenterVal', '₹ 0');
+      this.setText('payModeCenterLbl', '0 Txns');
       return;
     }
+
+    this.setText('payModeCenterVal', inrShort(total));
+    this.setText('payModeCenterLbl', total > 0 ? (sortedEntries.length + ' Modes') : 'Total Flow');
 
     const modeColorMap = {
       'upi': '#10b981',
@@ -1054,6 +1383,18 @@ const Dash = {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '72%',
+        onHover: (event, elements) => {
+          if (elements && elements.length > 0) {
+            const idx = elements[0].index;
+            const val = values[idx];
+            const lbl = labels[idx];
+            this.setText('payModeCenterVal', inrShort(val));
+            this.setText('payModeCenterLbl', lbl);
+          } else {
+            this.setText('payModeCenterVal', inrShort(total));
+            this.setText('payModeCenterLbl', sortedEntries.length + ' Modes');
+          }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -1155,7 +1496,11 @@ const Dash = {
       });
 
     } else {
-      const days = 7;
+      const daysSel = document.getElementById('cashflowDaysSel');
+      const days = parseInt(this.cashflowDays || (daysSel ? daysSel.value : 7), 10) || 7;
+      if (daysSel && parseInt(daysSel.value, 10) !== days) {
+        daysSel.value = String(days);
+      }
       const labels = [];
       const income = [];
       const expense = [];
@@ -1170,7 +1515,6 @@ const Dash = {
         else if (t.type === 'expense') dateMap[t.date].expense += amt;
       }
 
-      let runningNet = 0;
       let totalIncome = 0, totalExpense = 0;
       for (let i = days - 1; i >= 0; i--) {
         const d = new Date(new Date().getTime() - i * 24 * 60 * 60 * 1000);
@@ -1182,8 +1526,9 @@ const Dash = {
         income.push(dayData.income);
         expense.push(dayData.expense);
 
-        runningNet += (dayData.income - dayData.expense);
-        net.push(runningNet);
+        // Daily Net = Day's Income minus Day's Expense (exact daily net, matching tooltip)
+        const dailyNet = dayData.income - dayData.expense;
+        net.push(dailyNet);
 
         totalIncome += dayData.income;
         totalExpense += dayData.expense;
@@ -1193,7 +1538,10 @@ const Dash = {
       this.setText('lineExpenseTotal', inr(totalExpense));
       this.setText('lineNetTotal', inr(totalIncome - totalExpense));
       const subtextEl = document.getElementById('lineChartSubtext');
-      if (subtextEl) subtextEl.textContent = 'Last 7 days';
+      if (subtextEl) subtextEl.textContent = `Last ${days} days`;
+
+      const tabTitleEl = document.querySelector('#chartTabLine span');
+      if (tabTitleEl) tabTitleEl.textContent = `${days}-Day Cash Flow`;
 
       const gradIncome = ctx.createLinearGradient(0, 0, 0, 260);
       gradIncome.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
@@ -1283,34 +1631,58 @@ const Dash = {
     const textMutedVal = themeColors.getTextMuted();
     const borderVal = themeColors.getBorder();
 
+    const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const curParts = (typeof getISTDateParts === 'function') ? getISTDateParts() : { month: new Date().getMonth() + 1 };
+    const curMIdx = (curParts.month || 1) - 1;
+    const lastMIdx = (curMIdx + 11) % 12;
+    const curMonthName = monthNamesShort[curMIdx];
+    const lastMonthName = monthNamesShort[lastMIdx];
+
     this.charts.compare = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: ['Income', 'Expense', 'Profit'],
         datasets: [
           {
-            label: 'Last Month',
+            label: `Last (${lastMonthName})`,
             data: [lastM.income, lastM.expense, lastM.profit],
-            backgroundColor: 'rgba(148, 163, 184, 0.38)',
-            borderColor: '#94a3b8',
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.28)', // Income Last Month
+              'rgba(244, 63, 94, 0.28)',  // Expense Last Month
+              'rgba(139, 92, 246, 0.28)'  // Profit Last Month
+            ],
+            borderColor: [
+              '#10b981',
+              '#f43f5e',
+              '#8b5cf6'
+            ],
             borderWidth: 1.5,
-            borderRadius: 8,
-            maxBarThickness: 26
+            borderRadius: 7,
+            maxBarThickness: 24
           },
           {
-            label: 'This Month',
+            label: `This (${curMonthName})`,
             data: [thisM.income, thisM.expense, thisM.profit],
-            backgroundColor: 'rgba(99, 102, 241, 0.78)',
-            borderColor: '#6366f1',
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.88)', // Income This Month
+              'rgba(244, 63, 94, 0.88)',  // Expense This Month
+              'rgba(139, 92, 246, 0.88)'  // Profit This Month
+            ],
+            borderColor: [
+              '#059669',
+              '#e11d48',
+              '#7c3aed'
+            ],
             borderWidth: 1.5,
-            borderRadius: 8,
-            maxBarThickness: 26
+            borderRadius: 7,
+            maxBarThickness: 24
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 550, easing: 'easeOutQuart' },
         plugins: {
           legend: {
             display: true,
@@ -1330,13 +1702,25 @@ const Dash = {
             backgroundColor: 'rgba(15, 23, 42, 0.94)',
             titleColor: '#ffffff',
             bodyColor: '#cbd5e1',
-            padding: 10,
+            padding: 11,
             cornerRadius: 10,
             borderColor: borderVal + '33',
             borderWidth: 1,
             titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
             bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
-            callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y) }
+            callbacks: {
+              label: ctx => ' ' + ctx.dataset.label + ': ' + inr(ctx.parsed.y),
+              afterBody: function (items) {
+                if (!items || !items.length) return '';
+                const idx = items[0].dataIndex;
+                const lastVal = idx === 0 ? lastM.income : (idx === 1 ? lastM.expense : lastM.profit);
+                const thisVal = idx === 0 ? thisM.income : (idx === 1 ? thisM.expense : thisM.profit);
+                const diff = thisVal - lastVal;
+                const pct = lastVal > 0 ? Math.round((diff / Math.abs(lastVal)) * 100) : (thisVal > 0 ? 100 : 0);
+                const sign = diff >= 0 ? '+' : '';
+                return `Change: ${sign}${pct}% (${sign}${inrShort(diff)})`;
+              }
+            }
           }
         },
         scales: {
@@ -3540,6 +3924,25 @@ Please acknowledge this statement. Thank you!`;
     this.barChartMode = mode;
     const all = getTxns();
     this.buildBarChart(all);
+  },
+
+  switchCashflowDays: function (days) {
+    this.cashflowDays = parseInt(days, 10) || 7;
+    const all = getTxns();
+    this.buildLineChart(all);
+  },
+
+  switchTopExpPeriod: function (period) {
+    this.topExpPeriod = period;
+    const all = getTxns();
+    this.loadTopCategories(all);
+  },
+
+  switchPayModePeriod: function (period) {
+    this.payModePeriod = period;
+    const all = getTxns();
+    this.buildPayModeChart(all);
+    this.loadPaymentModes(all);
   }
 };
 
@@ -3565,7 +3968,30 @@ function switchLineChartTab(tab, btn) {
     pulse.style.display = (tab === 'live' && typeof PizzaCafeSimulator !== 'undefined' && PizzaCafeSimulator.active) ? 'inline-block' : 'none';
   }
 
+  const daysSel = document.getElementById('cashflowDaysSel');
+  const subtextEl = document.getElementById('lineChartSubtext');
+  if (daysSel) daysSel.style.display = (tab === 'live') ? 'none' : 'inline-block';
+  if (subtextEl) subtextEl.style.display = (tab === 'live') ? 'inline-block' : 'none';
+
   Dash.buildLineChart(getTxns());
+}
+
+function switchCashflowDays(days) {
+  if (typeof Dash !== 'undefined' && Dash.switchCashflowDays) {
+    Dash.switchCashflowDays(days);
+  }
+}
+
+function switchTopExpPeriod(period) {
+  if (typeof Dash !== 'undefined' && Dash.switchTopExpPeriod) {
+    Dash.switchTopExpPeriod(period);
+  }
+}
+
+function switchPayModePeriod(period) {
+  if (typeof Dash !== 'undefined' && Dash.switchPayModePeriod) {
+    Dash.switchPayModePeriod(period);
+  }
 }
 
 function switchPeriod(p, btn) {
