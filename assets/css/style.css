@@ -2032,18 +2032,8 @@ select option {
   color: #ffffff;
 }
 
-.chart-sel-wrapper .custom-select-trigger {
-  min-height: 36px;
-  padding: 8px 12px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--brand);
-  background-color: #f1f5f9;
-  border: 1.5px solid var(--border);
-}
-
 .chart-sel-wrapper {
-  max-width: 150px;
+  display: none !important;
 }
 
 .an-filters-wrapper .custom-select-trigger {

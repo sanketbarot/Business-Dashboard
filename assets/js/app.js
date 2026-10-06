@@ -1902,20 +1902,37 @@ window.getFormattedOptionHtml = function (text, size = 14) {
 };
 
 function initializeCustomDropdowns() {
+  // Clean up any stray custom-select wrappers accidentally attached to chart/filter selects
+  document.querySelectorAll('select.chart-sel, select.bgt-sort-select, select.an-filter-select').forEach(sel => {
+    sel.removeAttribute('data-custom-select');
+    sel.style.opacity = '';
+    sel.style.position = '';
+    sel.style.pointerEvents = '';
+    sel.style.zIndex = '';
+    sel.style.width = '';
+    sel.style.height = '';
+    sel.style.overflow = '';
+    sel.style.margin = '';
+    sel.style.padding = '';
+    sel.style.border = '';
+    const next = sel.nextElementSibling;
+    if (next && next.classList.contains('custom-select')) {
+      next.remove();
+    }
+  });
+
   const selects = document.querySelectorAll('select');
   selects.forEach(select => {
+    // Only wrap form modal inputs, never chart/header filter selects
+    if (select.classList.contains('chart-sel') || select.classList.contains('bgt-sort-select') || select.classList.contains('an-filter-select')) {
+      return;
+    }
     if (select.getAttribute('data-custom-select') === 'true') return;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'custom-select';
 
-    if (select.classList.contains('chart-sel')) {
-      wrapper.classList.add('chart-sel-wrapper');
-    } else if (select.classList.contains('an-filter-select')) {
-      wrapper.classList.add('an-filters-wrapper');
-    }
-
-    select.style.cssText = 'opacity:0; position:absolute; pointer-events:none; z-index:-1; width:0; height:0; overflow:hidden; margin:0; padding:0; border:none;';
+    select.style.cssText = 'display:none !important; opacity:0; position:absolute; pointer-events:none; z-index:-1; width:0; height:0; overflow:hidden; margin:0; padding:0; border:none;';
 
     const trigger = document.createElement('div');
     trigger.className = 'custom-select-trigger';
