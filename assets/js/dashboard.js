@@ -1942,18 +1942,52 @@ const Dash = {
     let totalSpentInBudgets = 0;
     let anyOverBudget = false;
     let anyWarning = false;
+    let countOver = 0;
+    let countWarn = 0;
+    let countSafe = 0;
 
-    // Calculate overall totals first regardless of search or filter
+    // Monthly calendar intelligence for pacing & run-rate
+    const now = new Date();
+    const curYear = parts.year || now.getFullYear();
+    const curMonth = parts.month || (now.getMonth() + 1);
+    const daysInMonth = new Date(curYear, curMonth, 0).getDate();
+    const currentDay = Math.min(daysInMonth, Math.max(1, parts.day || now.getDate()));
+    const daysRemaining = Math.max(1, daysInMonth - currentDay);
+    const monthElapsedPct = Math.min(100, Math.max(1, Math.round((currentDay / daysInMonth) * 100)));
+
+    // Calculate overall totals & status tallies first regardless of search or filter
     budgets.forEach(bgt => {
       const cat = bgt.category;
       const limit = parseFloat(bgt.amount) || 0;
       const clean = stripEmoji(cat);
       const spent = mtdCatSpend[cat] !== undefined ? mtdCatSpend[cat] : (mtdCatSpendClean[clean] || 0);
+      const pct = limit > 0 ? (spent / limit) * 100 : 0;
+      const isOver = spent > limit;
+      const isWarn = !isOver && pct >= 75;
+
       totalAllocated += limit;
       totalSpentInBudgets += spent;
-      if (spent > limit) anyOverBudget = true;
-      else if (limit > 0 && (spent / limit) >= 0.75) anyWarning = true;
+
+      if (isOver) {
+        anyOverBudget = true;
+        countOver++;
+      } else if (isWarn) {
+        anyWarning = true;
+        countWarn++;
+      } else {
+        countSafe++;
+      }
     });
+
+    // Update dynamic counter badges on filter chips
+    const cAll = document.getElementById('bgtCountAll');
+    const cWarn = document.getElementById('bgtCountWarn');
+    const cOver = document.getElementById('bgtCountOver');
+    const cSafe = document.getElementById('bgtCountSafe');
+    if (cAll) cAll.textContent = budgets.length;
+    if (cWarn) cWarn.textContent = countWarn;
+    if (cOver) cOver.textContent = countOver;
+    if (cSafe) cSafe.textContent = countSafe;
 
     // Filter by tab and search
     let displayBudgets = budgets.slice();
@@ -1978,13 +2012,43 @@ const Dash = {
       displayBudgets = displayBudgets.filter(bgt => (bgt.category || '').toLowerCase().includes(q));
     }
 
+    // Sort categories based on selected sort option
+    const sortMode = this.activeBudgetSort || 'default';
+    if (sortMode === 'limit_desc') {
+      displayBudgets.sort((a, b) => (parseFloat(b.amount) || 0) - (parseFloat(a.amount) || 0));
+    } else if (sortMode === 'spent_desc') {
+      displayBudgets.sort((a, b) => {
+        const sA = mtdCatSpend[a.category] !== undefined ? mtdCatSpend[a.category] : (mtdCatSpendClean[stripEmoji(a.category)] || 0);
+        const sB = mtdCatSpend[b.category] !== undefined ? mtdCatSpend[b.category] : (mtdCatSpendClean[stripEmoji(b.category)] || 0);
+        return sB - sA;
+      });
+    } else if (sortMode === 'pct_desc') {
+      displayBudgets.sort((a, b) => {
+        const lA = parseFloat(a.amount) || 1;
+        const lB = parseFloat(b.amount) || 1;
+        const sA = mtdCatSpend[a.category] !== undefined ? mtdCatSpend[a.category] : (mtdCatSpendClean[stripEmoji(a.category)] || 0);
+        const sB = mtdCatSpend[b.category] !== undefined ? mtdCatSpend[b.category] : (mtdCatSpendClean[stripEmoji(b.category)] || 0);
+        return (sB / lB) - (sA / lA);
+      });
+    } else if (sortMode === 'remaining_asc') {
+      displayBudgets.sort((a, b) => {
+        const lA = parseFloat(a.amount) || 0;
+        const lB = parseFloat(b.amount) || 0;
+        const sA = mtdCatSpend[a.category] !== undefined ? mtdCatSpend[a.category] : (mtdCatSpendClean[stripEmoji(a.category)] || 0);
+        const sB = mtdCatSpend[b.category] !== undefined ? mtdCatSpend[b.category] : (mtdCatSpendClean[stripEmoji(b.category)] || 0);
+        return Math.max(0, lA - sA) - Math.max(0, lB - sB);
+      });
+    } else if (sortMode === 'name_asc') {
+      displayBudgets.sort((a, b) => stripEmoji(a.category).localeCompare(stripEmoji(b.category)));
+    }
+
     if (displayBudgets.length === 0) {
       grid.innerHTML = `
-        <div style="grid-column: 1 / -1; padding: 28px 16px; text-align: center; background: var(--bg-app); border: 1.5px dashed var(--border); border-radius: var(--r-lg);">
-          <div style="font-size:1.6rem; margin-bottom:6px;">🔍</div>
-          <div style="font-size:0.88rem; font-weight:700; color:var(--text-head); margin-bottom:4px;">No matching category budgets</div>
-          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Try adjusting your search query or reset filter to "All".</div>
-          <button class="btn btn-outline btn-xs" onclick="Dash.filterBudgets('all', document.querySelector('.filter-chip-btn[data-budget-filter=\\'all\\']')); const si = document.getElementById('budgetSearchInput'); if (si) { si.value = ''; Dash.searchBudgets(''); }">Reset Filter</button>
+        <div style="grid-column: 1 / -1; padding: 32px 18px; text-align: center; background: var(--bg-app); border: 1.5px dashed var(--border); border-radius: var(--r-xl);">
+          <div style="font-size:1.8rem; margin-bottom:8px;">🔍</div>
+          <div style="font-size:0.92rem; font-weight:800; color:var(--text-head); margin-bottom:4px;">No matching category budgets</div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">Try adjusting your search query or reset filter to "All".</div>
+          <button class="btn btn-outline btn-xs" onclick="Dash.filterBudgets('all', document.querySelector('.filter-chip-btn[data-bgt-filter=\\'all\\']')); const si = document.getElementById('budgetSearchInput'); if (si) { si.value = ''; Dash.searchBudgets(''); }">Reset Filter</button>
         </div>
       `;
     } else {
@@ -2000,6 +2064,28 @@ const Dash = {
         const isWarn = !isOver && pct >= 75;
         const remaining = Math.max(0, limit - spent);
         const overspentAmt = isOver ? (spent - limit) : 0;
+
+        // Daily Burn & Allowance Intelligence
+        const dailyAllowance = Math.round(remaining / daysRemaining);
+        const currentDailyBurn = currentDay > 0 ? Math.round(spent / currentDay) : 0;
+
+        // Pacing Velocity Benchmark vs Calendar Days
+        let pacingText = '';
+        let pacingClass = 'pacing-ok';
+        if (isOver) {
+          pacingText = `Exceeded Cap`;
+          pacingClass = 'pacing-over';
+        } else if (spent === 0) {
+          pacingText = `0% Spent • ${monthElapsedPct}% Month Passed`;
+          pacingClass = 'pacing-zero';
+        } else if (pct > monthElapsedPct + 15) {
+          const lead = Math.round(pct - monthElapsedPct);
+          pacingText = `⚠️ Faster Pace (+${lead}% vs Day ${currentDay})`;
+          pacingClass = 'pacing-fast';
+        } else {
+          pacingText = `✅ Pacing Safely (Day ${currentDay} of ${daysInMonth})`;
+          pacingClass = 'pacing-ok';
+        }
 
         // Status Badge & Classes
         let statusHtml = '';
@@ -2025,7 +2111,7 @@ const Dash = {
 
         return `
           <div class="category-budget-card ${statusClass}">
-            <div>
+            <div class="bgt-card-top-content">
               <!-- Top Header: Category Info & Status -->
               <div class="bgt-card-header">
                 <div class="bgt-header-info">
@@ -2034,7 +2120,7 @@ const Dash = {
                   </div>
                   <div class="bgt-title-meta">
                     <div class="bgt-category-name" title="${escapeHtml(cleanName)}">${escapeHtml(cleanName)}</div>
-                    <div class="bgt-target-tag">Monthly Target</div>
+                    <div class="bgt-target-tag">Monthly Allowance</div>
                   </div>
                 </div>
                 <div>${statusHtml}</div>
@@ -2043,37 +2129,44 @@ const Dash = {
               <!-- Figures Box -->
               <div class="bgt-figures-box">
                 <div>
-                  <div class="bgt-fig-label">MTD Spent</div>
+                  <div class="bgt-fig-label">MTD Spent (${roundedPct}%)</div>
                   <div class="bgt-fig-spent ${isOver ? 'over' : (isWarn ? 'warn' : '')}">${inr(spent)}</div>
                 </div>
                 <div class="bgt-fig-meta">
-                  <div class="bgt-fig-label">Limit</div>
+                  <div class="bgt-fig-label">Monthly Limit</div>
                   <div class="bgt-fig-limit">${inr(limit)}</div>
                 </div>
               </div>
 
-              <!-- Progress Track -->
-              <div class="bgt-progress-track">
-                <div class="bgt-progress-bar" style="width:${Math.min(100, Math.max(0, pct))}%; background:${barColor};"></div>
+              <!-- Dual-Layer Progress Track with Month Benchmark Notch -->
+              <div class="bgt-progress-wrapper" title="Day ${currentDay} of ${daysInMonth} (${monthElapsedPct}% of month elapsed)">
+                <div class="bgt-progress-track">
+                  <!-- Today's Month Progress Milestone Line -->
+                  <div class="bgt-day-marker" style="left:${monthElapsedPct}%;" title="Day ${currentDay} pace marker (${monthElapsedPct}%)"></div>
+                  <!-- Spent Progress Fill -->
+                  <div class="bgt-progress-bar" style="width:${Math.min(100, Math.max(0, pct))}%; background:${barColor};"></div>
+                </div>
+                <div class="bgt-pacing-meta ${pacingClass}">
+                  <span>${pacingText}</span>
+                  <span class="bgt-daily-rate">${isOver ? 'No Headroom' : `₹ ${dailyAllowance}/day left`}</span>
+                </div>
               </div>
             </div>
 
-            <!-- Bottom Footer Toolbar -->
+            <!-- Bottom Footer Action Toolbar: + Spend, Adjust, View -->
             <div class="bgt-card-footer">
-              <div class="bgt-footer-status">
-                ${isOver ? `
-                  <span style="display:inline-flex; align-items:center; gap:4px; color:var(--expense); font-weight:700;">
-                    <i data-lucide="alert-triangle" style="width:12px; height:12px;"></i> Exceeded by ${inr(overspentAmt)}
-                  </span>
-                ` : `
-                  <span style="display:inline-flex; align-items:center; gap:4px; color:var(--text-light); font-weight:600;">
-                    <i data-lucide="sparkles" style="width:12px; height:12px; color:#10b981;"></i> ${inr(remaining)} remaining
-                  </span>
-                `}
+              <div class="bgt-footer-actions-left">
+                <button class="bgt-spend-btn" onclick="openExpenseModalWithCategory(decodeURIComponent('${safeCat}'))" title="Quick Log Spend in ${escapeHtml(cleanName)}">
+                  <i data-lucide="plus" style="width:13px; height:13px;"></i>
+                  <span>+ Spend</span>
+                </button>
+                <button class="bgt-edit-btn" onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${limit})" title="Adjust Limit for ${escapeHtml(cleanName)}">
+                  <i data-lucide="sliders-horizontal" style="width:12px; height:12px;"></i>
+                  <span>Adjust</span>
+                </button>
               </div>
-              <button class="bgt-edit-btn" onclick="editCategoryBudget(decodeURIComponent('${safeCat}'), ${limit})" title="Adjust Limit for ${escapeHtml(cleanName)}">
-                <i data-lucide="sliders-horizontal" style="width:12px; height:12px;"></i>
-                <span>Adjust</span>
+              <button class="bgt-focus-btn" onclick="Dash.jumpToCategoryExpenses(decodeURIComponent('${safeCat}'))" title="View Recent Transactions for ${escapeHtml(cleanName)}">
+                <i data-lucide="receipt" style="width:13px; height:13px;"></i>
               </button>
             </div>
           </div>
@@ -2092,11 +2185,11 @@ const Dash = {
     const healthEl = document.getElementById('budgetHealthStatus');
     if (healthEl) {
       if (anyOverBudget) {
-        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:var(--expense);"><i data-lucide="alert-octagon" style="width:16px;height:16px;"></i> Attention Needed</span>`;
+        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:var(--expense); font-weight:800;"><i data-lucide="alert-octagon" style="width:16px;height:16px;"></i> ${countOver} Over Limit</span>`;
       } else if (anyWarning) {
-        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:#f59e0b;"><i data-lucide="alert-triangle" style="width:16px;height:16px;"></i> Approaching Limits</span>`;
+        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:#f59e0b; font-weight:800;"><i data-lucide="alert-triangle" style="width:16px;height:16px;"></i> ${countWarn} Near Cap (≥75%)</span>`;
       } else {
-        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:var(--income);"><i data-lucide="shield-check" style="width:16px;height:16px;"></i> All on Track</span>`;
+        healthEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:5px; color:var(--income); font-weight:800;"><i data-lucide="shield-check" style="width:16px;height:16px;"></i> All ${budgets.length} on Track</span>`;
       }
     }
 
@@ -3013,6 +3106,28 @@ const Dash = {
     this.loadCategoryBudgets(all);
   },
 
+  sortBudgets: function (sortVal) {
+    this.activeBudgetSort = sortVal;
+    const all = getTxns();
+    this.loadCategoryBudgets(all);
+  },
+
+  jumpToCategoryExpenses: function (cat) {
+    const clean = (cat || '').replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim();
+    const recentSec = document.getElementById('sectionRecent') || document.querySelector('.table-responsive');
+    if (recentSec) {
+      recentSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const searchInput = document.getElementById('recentSearchInput') || document.getElementById('txSearch');
+    if (searchInput) {
+      searchInput.value = clean;
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (typeof toast === 'function') {
+      toast(`Focused recent activity for "${clean}" 🔎`, 'info');
+    }
+  },
+
   applyBudgetPreset: function (category, amount) {
     const sel = document.getElementById('bCategory');
     const amt = document.getElementById('bAmount');
@@ -3649,6 +3764,29 @@ function openExpenseModal() {
   }, 50);
   openModal('expenseModal');
 }
+
+function openExpenseModalWithCategory(cat) {
+  openExpenseModal();
+  if (!cat) return;
+  const select = document.getElementById('eCat');
+  if (select) {
+    const cleanCat = cat.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim().toLowerCase();
+    for (let i = 0; i < select.options.length; i++) {
+      const opt = select.options[i];
+      const optClean = opt.value.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '').trim().toLowerCase();
+      if (opt.value === cat || optClean === cleanCat || opt.text.toLowerCase().includes(cleanCat) || cleanCat.includes(optClean)) {
+        select.selectedIndex = i;
+        break;
+      }
+    }
+    setTimeout(() => {
+      if (typeof syncCustomDropdowns === 'function') {
+        syncCustomDropdowns('expenseModal');
+      }
+    }, 80);
+  }
+}
+window.openExpenseModalWithCategory = openExpenseModalWithCategory;
 
 // NEW: Smooth close animation
 function closeModalWithAnimation(id) {

@@ -22,9 +22,9 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="assets/css/style.css?v=14.6" />
-  <link rel="stylesheet" href="assets/css/animations.css?v=14.6" />
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=14.6" />
+  <link rel="stylesheet" href="assets/css/style.css?v=15.3" />
+  <link rel="stylesheet" href="assets/css/animations.css?v=15.3" />
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=15.3" />
 
 
   <!-- Firebase SDKs - MUST BE BEFORE app.js -->
@@ -118,7 +118,7 @@
             <p id="headerDate">Loading...</p>
           </div>
         </div>
-        <div class="hd-right" style="display:flex; align-items:center; gap:16px;">
+        <div class="hd-right">
           <!-- Privacy Mode Toggle Button -->
           <button class="privacy-toggle-btn" id="privacyToggleBtn" onclick="Dash.togglePrivacyMode()"
             style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center; color:var(--text-head); transition:var(--tr); border-radius:var(--r-md);"
@@ -677,16 +677,34 @@
             </div>
 
             <!-- Budget Filter & Search Toolbar -->
-            <div class="filter-chips-toolbar" style="justify-content:space-between;">
+            <div class="filter-chips-toolbar" style="justify-content:space-between; gap:10px; flex-wrap:wrap;">
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <button class="filter-chip-btn active" data-bgt-filter="all" onclick="Dash.filterBudgets('all', this)">All Budgets</button>
-                <button class="filter-chip-btn" data-bgt-filter="warn" onclick="Dash.filterBudgets('warn', this)">⚠️ Warning (≥75%)</button>
-                <button class="filter-chip-btn" data-bgt-filter="over" onclick="Dash.filterBudgets('over', this)">🚨 Exceeded</button>
-                <button class="filter-chip-btn" data-bgt-filter="safe" onclick="Dash.filterBudgets('safe', this)">✅ Safe</button>
+                <button class="filter-chip-btn active" data-bgt-filter="all" onclick="Dash.filterBudgets('all', this)">
+                  All Budgets <span id="bgtCountAll" style="font-size:0.68rem; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.3); margin-left:3px;"></span>
+                </button>
+                <button class="filter-chip-btn" data-bgt-filter="warn" onclick="Dash.filterBudgets('warn', this)">
+                  ⚠️ Warning <span id="bgtCountWarn" style="font-size:0.68rem; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(245,158,11,0.18); margin-left:3px;"></span>
+                </button>
+                <button class="filter-chip-btn" data-bgt-filter="over" onclick="Dash.filterBudgets('over', this)">
+                  🚨 Exceeded <span id="bgtCountOver" style="font-size:0.68rem; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(244,63,94,0.18); margin-left:3px;"></span>
+                </button>
+                <button class="filter-chip-btn" data-bgt-filter="safe" onclick="Dash.filterBudgets('safe', this)">
+                  ✅ Safe <span id="bgtCountSafe" style="font-size:0.68rem; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(16,185,129,0.18); margin-left:3px;"></span>
+                </button>
               </div>
-              <div class="card-search-box">
-                <i data-lucide="search"></i>
-                <input type="text" id="budgetSearchInput" placeholder="Search category..." class="fc" oninput="Dash.searchBudgets(this.value)" />
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div class="card-search-box">
+                  <i data-lucide="search"></i>
+                  <input type="text" id="budgetSearchInput" placeholder="Search category..." class="fc" oninput="Dash.searchBudgets(this.value)" />
+                </div>
+                <select id="budgetSortSelect" class="fc bgt-sort-select" onchange="Dash.sortBudgets(this.value)" style="height:38px; padding:6px 14px; font-size:0.75rem; border-radius:99px; background:var(--bg-card); cursor:pointer; font-weight:750; border:1px solid var(--border); color:var(--text-head);" title="Sort Categories">
+                  <option value="default">↕ Sort: Default</option>
+                  <option value="limit_desc">Highest Limit (₹)</option>
+                  <option value="spent_desc">Highest Spent (₹)</option>
+                  <option value="pct_desc">Highest % Used</option>
+                  <option value="remaining_asc">Urgent (Lowest Left)</option>
+                  <option value="name_asc">Name (A-Z)</option>
+                </select>
               </div>
             </div>
 
