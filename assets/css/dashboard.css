@@ -6288,29 +6288,110 @@ body[data-density="compact"] .co-card {
   box-shadow: 0 3px 10px rgba(139, 92, 246, 0.3);
 }
 
-/* Card Search Input */
+/* Card Toolbar Actions (Search & Sort Side-by-Side) */
+.toolbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
 .card-search-box {
-  position: relative;
-  min-width: 220px;
-  flex: 1;
-  max-width: 340px;
+  position: relative !important;
+  width: 200px !important;
+  min-width: 160px !important;
+  max-width: 240px !important;
+  flex: none !important;
+  display: inline-block !important;
 }
-.card-search-box input {
-  padding-left: 32px !important;
+
+.card-search-box input,
+.toolbar-search-input {
+  width: 100% !important;
+  height: 36px !important;
   min-height: 36px !important;
+  padding: 0 14px 0 32px !important;
   font-size: 0.78rem !important;
-  border-radius: var(--r-full) !important;
+  font-weight: 600 !important;
+  border-radius: 99px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--bg-card) !important;
+  color: var(--text-head) !important;
+  outline: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
 }
+
+.card-search-box input:focus,
+.toolbar-search-input:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  background: var(--bg-card) !important;
+}
+
 .card-search-box i,
 .card-search-box svg {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  color: var(--text-light);
-  pointer-events: none;
+  position: absolute !important;
+  left: 11px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 14px !important;
+  height: 14px !important;
+  color: var(--text-muted) !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+/* Modern Pill Sort Select */
+.bgt-sort-select {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 165px !important;
+  max-width: 230px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 32px 0 14px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  border-radius: 99px !important;
+  border: 1px solid var(--border) !important;
+  background-color: var(--bg-card) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 11px center !important;
+  background-size: 13px !important;
+  color: var(--text-head) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  flex: none !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  box-sizing: border-box !important;
+}
+
+.bgt-sort-select:hover {
+  background-color: var(--bg-card) !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.08) !important;
+}
+
+.bgt-sort-select:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+}
+
+.bgt-sort-select option {
+  background: var(--bg-card) !important;
+  color: var(--text-head) !important;
 }
 
 /* WhatsApp Reminder Button on Vendors */
@@ -7407,13 +7488,26 @@ body[data-density="compact"] .co-card {
     gap: 10px !important;
   }
 
-  .card-search-box {
+  .toolbar-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
     width: 100% !important;
-    max-width: 100% !important;
   }
 
-  .bgt-sort-select {
-    width: 100% !important;
+  .toolbar-actions .card-search-box {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .toolbar-actions .bgt-sort-select {
+    flex: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
   }
 
   /* Targets & Vision Roadmap on Mobile */
