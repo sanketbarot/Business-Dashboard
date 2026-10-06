@@ -2270,6 +2270,14 @@ const Dash = {
       badgeEl.style.color = pendingCount > 0 ? 'var(--expense)' : 'var(--income)';
     }
 
+    const settledCount = Math.max(0, vendors.length - pendingCount);
+    const vndCountAllEl = document.getElementById('vndCountAll');
+    if (vndCountAllEl) vndCountAllEl.textContent = vendors.length;
+    const vndCountPendingEl = document.getElementById('vndCountPending');
+    if (vndCountPendingEl) vndCountPendingEl.textContent = pendingCount;
+    const vndCountSettledEl = document.getElementById('vndCountSettled');
+    if (vndCountSettledEl) vndCountSettledEl.textContent = settledCount;
+
     const stockItems = (typeof getExpiryItems === 'function' ? getExpiryItems() : []);
     const totalStockValue = stockItems.reduce((sum, i) => sum + ((parseFloat(i.cost) || 0) * (parseFloat(i.quantity) || 0)), 0);
 
@@ -2319,6 +2327,8 @@ const Dash = {
 
     // Sort displayVendors
     const sortMode = this.vendorSortMode || 'pending-desc';
+    const todayIso = typeof today === 'function' ? today() : new Date().toISOString().substring(0, 10);
+
     displayVendors.sort((a, b) => {
       const aBilled = parseFloat(a.totalAmount) || 0;
       const aPaid = parseFloat(a.paidAmount) || 0;
@@ -2330,10 +2340,28 @@ const Dash = {
 
       if (sortMode === 'pending-desc') {
         return bPending - aPending;
+      } else if (sortMode === 'urgency-asc') {
+        const aIsSettled = aPending <= 0;
+        const bIsSettled = bPending <= 0;
+        if (aIsSettled !== bIsSettled) return aIsSettled ? 1 : -1;
+
+        const aHasDue = !!a.dueDate;
+        const bHasDue = !!b.dueDate;
+
+        if (aHasDue && bHasDue) {
+          const aDueTs = new Date(a.dueDate + 'T00:00:00').getTime();
+          const bDueTs = new Date(b.dueDate + 'T00:00:00').getTime();
+          if (aDueTs !== bDueTs) return aDueTs - bDueTs; // Soonest / most overdue first
+        } else if (aHasDue !== bHasDue) {
+          return aHasDue ? -1 : 1;
+        }
+        return bPending - aPending;
       } else if (sortMode === 'name-asc') {
         return (a.name || '').localeCompare(b.name || '');
       } else if (sortMode === 'billed-desc') {
         return bBilled - aBilled;
+      } else if (sortMode === 'paid-desc') {
+        return bPaid - aPaid;
       }
       return 0;
     });
@@ -2344,7 +2372,7 @@ const Dash = {
           <div style="font-size:1.6rem; margin-bottom:6px;">🔍</div>
           <div style="font-size:0.88rem; font-weight:700; color:var(--text-head); margin-bottom:4px;">No matching suppliers found</div>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Try adjusting your search query or reset filter to "All".</div>
-          <button class="btn btn-outline btn-xs" onclick="Dash.filterVendorsTab('all', document.querySelector('.filter-chip-btn[data-vendor-filter=\\'all\\']')); const vi = document.getElementById('vendorSearchInput'); if (vi) { vi.value = ''; Dash.searchVendors(''); }">Reset Filter</button>
+          <button class="btn btn-outline btn-xs" onclick="Dash.filterVendorsTab('all', document.querySelector('.filter-chip-btn[data-vnd-filter=\\'all\\']')); const vi = document.getElementById('vendorSearchInput'); if (vi) { vi.value = ''; Dash.searchVendors(''); }">Reset Filter</button>
         </div>
       `;
       if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -2374,17 +2402,90 @@ const Dash = {
         })
         .reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * (parseFloat(item.quantity) || 0)), 0);
 
+      // Aging & Overdue computation
+      let isOverdue = false;
+      let isDueToday = false;
+      let diffDays = null;
+      if (v.dueDate && !isSettled) {
+        const dDate = new Date(v.dueDate + 'T00:00:00');
+        const tDate = new Date(todayIso + 'T00:00:00');
+        diffDays = Math.round((dDate - tDate) / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) {
+          isOverdue = true;
+        } else if (diffDays === 0) {
+          isDueToday = true;
+        }
+      }
+
       let statusBadge = '';
       let statusClass = 'status-settled';
+      let duePillHtml = '';
+
       if (isSettled) {
         statusBadge = `<span class="v-status-badge settled"><i data-lucide="check-circle" style="width:11px; height:11px;"></i> Settled</span>`;
         statusClass = 'status-settled';
+        duePillHtml = `
+          <div class="v-due-pill settled">
+            <i data-lucide="check" style="width:12px; height:12px;"></i>
+            <span>All cleared • 100% paid</span>
+          </div>
+        `;
+      } else if (isOverdue) {
+        const absDays = Math.abs(diffDays);
+        statusBadge = `<span class="v-status-badge overdue"><i data-lucide="alert-triangle" style="width:11px; height:11px;"></i> Overdue</span>`;
+        statusClass = 'status-overdue';
+        duePillHtml = `
+          <div class="v-due-pill overdue" title="Agreed due date was ${fmtDate(v.dueDate)}">
+            <i data-lucide="alert-octagon" style="width:12px; height:12px;"></i>
+            <span>🚨 Overdue by ${absDays} day${absDays > 1 ? 's' : ''} (${fmtDate(v.dueDate)})</span>
+          </div>
+        `;
+      } else if (isDueToday) {
+        statusBadge = `<span class="v-status-badge due-today"><i data-lucide="bell" style="width:11px; height:11px;"></i> Due Today</span>`;
+        statusClass = 'status-unpaid';
+        duePillHtml = `
+          <div class="v-due-pill due-today">
+            <i data-lucide="bell-ring" style="width:12px; height:12px;"></i>
+            <span>⏰ Payment Due Today!</span>
+          </div>
+        `;
       } else if (isPartial) {
-        statusBadge = `<span class="v-status-badge partial"><i data-lucide="clock" style="width:11px; height:11px;"></i> ${pctPaid}% Paid</span>`;
+        statusBadge = `<span class="v-status-badge partial"><i data-lucide="pie-chart" style="width:11px; height:11px;"></i> ${pctPaid}% Paid</span>`;
         statusClass = 'status-partial';
+        if (v.dueDate) {
+          duePillHtml = `
+            <div class="v-due-pill ${diffDays <= 7 ? 'upcoming' : ''}">
+              <i data-lucide="calendar" style="width:12px; height:12px;"></i>
+              <span>Due in ${diffDays} day${diffDays > 1 ? 's' : ''} (${fmtDate(v.dueDate)})</span>
+            </div>
+          `;
+        } else {
+          duePillHtml = `
+            <div class="v-due-pill">
+              <i data-lucide="pie-chart" style="width:12px; height:12px;"></i>
+              <span>${pctPaid}% settled (${inr(paid)} paid)</span>
+            </div>
+          `;
+        }
       } else {
+        // Unpaid
         statusBadge = `<span class="v-status-badge unpaid"><i data-lucide="alert-circle" style="width:11px; height:11px;"></i> Unpaid</span>`;
         statusClass = 'status-unpaid';
+        if (v.dueDate) {
+          duePillHtml = `
+            <div class="v-due-pill ${diffDays <= 7 ? 'upcoming' : ''}">
+              <i data-lucide="calendar" style="width:12px; height:12px;"></i>
+              <span>Due in ${diffDays} day${diffDays > 1 ? 's' : ''} (${fmtDate(v.dueDate)})</span>
+            </div>
+          `;
+        } else {
+          duePillHtml = `
+            <div class="v-due-pill" style="opacity:0.8;">
+              <i data-lucide="calendar-x" style="width:12px; height:12px;"></i>
+              <span>No due date specified</span>
+            </div>
+          `;
+        }
       }
 
       const iconName = window.getLucideIconName(v.category) || 'package';
@@ -2403,7 +2504,7 @@ const Dash = {
                   <div class="v-supplier-name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</div>
                   <div class="v-tags-row">
                     <span class="v-pill-tag">${escapeHtml(v.category)}</span>
-                    ${v.phone ? `<a href="tel:${escapeHtml(v.phone)}" class="v-pill-tag phone" title="Call Supplier"><i data-lucide="phone" style="width:10px; height:10px;"></i> ${escapeHtml(v.phone)}</a>` : ''}
+                    ${v.phone ? `<a href="tel:${escapeHtml(v.phone)}" class="v-pill-tag phone" title="Call Supplier ${escapeHtml(v.name)}"><i data-lucide="phone" style="width:10px; height:10px;"></i> ${escapeHtml(v.phone)}</a>` : ''}
                     ${vendorStockVal > 0 ? `<span class="v-pill-tag stock" title="Current In-Stock Inventory Value"><i data-lucide="package" style="width:10px; height:10px;"></i> ${inr(vendorStockVal)}</span>` : ''}
                   </div>
                 </div>
@@ -2436,21 +2537,11 @@ const Dash = {
 
             <!-- Progress Bar -->
             <div class="v-progress-track">
-              <div class="v-progress-bar" style="width:${pctPaid}%; background:${isSettled ? 'var(--income)' : (isPartial ? '#f59e0b' : 'var(--expense)')};"></div>
+              <div class="v-progress-bar" style="width:${pctPaid}%; background:${isSettled ? 'var(--income)' : (isOverdue ? '#ef4444' : (isPartial ? '#f59e0b' : 'var(--expense)'))};"></div>
             </div>
 
-            <!-- Due Date or Status Note -->
-            ${v.dueDate ? `
-              <div class="v-due-pill">
-                <i data-lucide="calendar" style="width:12px; height:12px; color:var(--text-light);"></i>
-                <span>Due: <strong style="color:var(--text-head);">${fmtDate(v.dueDate)}</strong></span>
-              </div>
-            ` : `
-              <div class="v-due-pill" style="opacity:0.75;">
-                <i data-lucide="check" style="width:12px; height:12px; color:var(--text-light);"></i>
-                <span>${pctPaid}% settled</span>
-              </div>
-            `}
+            <!-- Intelligent Aging / Due Date Pill -->
+            ${duePillHtml}
           </div>
 
           <!-- Bottom Action Toolbar: Standardized 2-Row Layout -->
@@ -2470,17 +2561,13 @@ const Dash = {
             `}
 
             <div class="v-actions-grid">
-              <button class="v-sub-btn bill" onclick="openVendorBillModal(decodeURIComponent('${safeId}'))" title="Add New Goods / Bill">
-                <i data-lucide="plus-circle" style="width:12px; height:12px;"></i>
-                <span>+ Bill</span>
+              <button class="v-sub-btn bill" onclick="openVendorBillModal(decodeURIComponent('${safeId}'))" title="Add Inward Bill / Goods from ${escapeHtml(v.name)}">
+                <i data-lucide="plus-circle" style="width:13px; height:13px;"></i>
+                <span>+ Add Bill</span>
               </button>
-              <button class="v-sub-btn ledger" onclick="openVendorHistoryModal(decodeURIComponent('${safeId}'))" title="View Full Ledger History">
-                <i data-lucide="file-text" style="width:12px; height:12px;"></i>
-                <span>Ledger</span>
-              </button>
-              <button class="v-sub-btn whatsapp" onclick="Dash.sendVendorWhatsApp(decodeURIComponent('${safeId}'))" title="Share Ledger via WhatsApp">
-                <i data-lucide="message-circle" style="width:12px; height:12px;"></i>
-                <span>WhatsApp</span>
+              <button class="v-sub-btn ledger" onclick="openVendorHistoryModal(decodeURIComponent('${safeId}'))" title="View Detailed Khata Ledger History">
+                <i data-lucide="file-text" style="width:13px; height:13px;"></i>
+                <span>Khata Ledger</span>
               </button>
             </div>
           </div>
@@ -3284,7 +3371,7 @@ Please acknowledge this statement. Thank you!`;
         <div style="font-size:0.82rem; line-height:1.6; background:var(--bg-card); padding:10px 14px; border-radius:var(--r-md); border:1px solid var(--border);">
           ${totMonth.profit >= totalPendingVendors ?
             '✅ <strong>Strong Liquidity:</strong> Your operating surplus comfortably covers all supplier liabilities. Maintain at least 40% in liquid bank/UPI balance for seamless vendor settlements.' :
-            '⚠️ <strong>Working Capital Watch:</strong> Supplier dues are near or exceeding monthly profit. Use the <em>WhatsApp Closing</em> button above to balance physical register cash daily and prioritize clearing high-priority supplier dues.'}
+            '⚠️ <strong>Working Capital Watch:</strong> Supplier dues are near or exceeding monthly profit. Use the <em>Day Close Register</em> report above to balance physical register cash daily and prioritize clearing high-priority supplier dues.'}
         </div>
       `;
     } else if (topic === 'pace' || topic === 'peak_days') {

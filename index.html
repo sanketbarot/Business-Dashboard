@@ -805,21 +805,29 @@
             </div>
 
             <!-- Vendor Filter & Search Toolbar -->
-            <div class="filter-chips-toolbar" style="justify-content:space-between;">
+            <div class="filter-chips-toolbar" style="justify-content:space-between; gap:10px; flex-wrap:wrap;">
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <button class="filter-chip-btn active" data-vnd-filter="all" onclick="Dash.filterVendorsTab('all', this)">All Suppliers</button>
-                <button class="filter-chip-btn" data-vnd-filter="pending" onclick="Dash.filterVendorsTab('pending', this)">⚠️ Due Pending</button>
-                <button class="filter-chip-btn" data-vnd-filter="settled" onclick="Dash.filterVendorsTab('settled', this)">✅ Settled</button>
+                <button class="filter-chip-btn active" data-vnd-filter="all" onclick="Dash.filterVendorsTab('all', this)">
+                  All Suppliers <span id="vndCountAll" style="font-size:0.68rem; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.3); margin-left:3px;"></span>
+                </button>
+                <button class="filter-chip-btn" data-vnd-filter="pending" onclick="Dash.filterVendorsTab('pending', this)">
+                  ⚠️ Due Pending <span id="vndCountPending" style="font-size:0.68rem; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(244,63,94,0.18); margin-left:3px;"></span>
+                </button>
+                <button class="filter-chip-btn" data-vnd-filter="settled" onclick="Dash.filterVendorsTab('settled', this)">
+                  ✅ Settled <span id="vndCountSettled" style="font-size:0.68rem; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(16,185,129,0.18); margin-left:3px;"></span>
+                </button>
               </div>
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <div class="card-search-box">
                   <i data-lucide="search"></i>
                   <input type="text" id="vendorSearchInput" placeholder="Search supplier or phone..." class="fc" oninput="Dash.searchVendors(this.value)" />
                 </div>
-                <select class="chart-sel" id="vendorSortSel" onchange="Dash.sortVendors(this.value)" style="height:36px; padding:4px 10px; font-size:0.74rem;">
+                <select class="fc bgt-sort-select" id="vendorSortSel" onchange="Dash.sortVendors(this.value)" style="height:38px; padding:6px 14px; font-size:0.75rem; border-radius:99px; background:var(--bg-card); cursor:pointer; font-weight:750; border:1px solid var(--border); color:var(--text-head);" title="Sort Suppliers">
                   <option value="pending-desc">Pending Due (High to Low)</option>
-                  <option value="name-asc">Name (A-Z)</option>
+                  <option value="urgency-asc">⚡ Due Urgency (Soonest / Overdue)</option>
+                  <option value="name-asc">Supplier Name (A-Z)</option>
                   <option value="billed-desc">Total Purchases (High)</option>
+                  <option value="paid-desc">Amount Paid (High)</option>
                 </select>
               </div>
             </div>
@@ -1825,7 +1833,7 @@
             <div class="customizer-row-info">
               <div>
                 <div class="customizer-row-title">Vendor Outstandings & Supplier Khata</div>
-                <div class="customizer-row-desc">Payable dues, bills, stock link & WhatsApp reminder</div>
+                <div class="customizer-row-desc">Payable dues, bills, stock link & ledger statement</div>
               </div>
             </div>
             <label class="ios-switch">

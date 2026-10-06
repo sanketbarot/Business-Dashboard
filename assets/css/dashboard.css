@@ -4792,6 +4792,16 @@ canvas:hover {
   border-color: rgba(244, 63, 94, 0.3);
 }
 
+.vendor-card.status-overdue {
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2), 0 4px 14px rgba(239, 68, 68, 0.08);
+}
+
+.vendor-card.status-overdue .v-avatar-icon {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+}
+
 .vendor-card.status-partial {
   border-color: rgba(245, 158, 11, 0.35);
 }
@@ -4936,6 +4946,24 @@ canvas:hover {
   border: 1px solid rgba(244, 63, 94, 0.25);
 }
 
+.v-status-badge.overdue {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  animation: pulseBadge 2.5s infinite;
+}
+
+.v-status-badge.due-today {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+@keyframes pulseBadge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
 .v-icon-actions {
   display: flex;
   align-items: center;
@@ -5040,15 +5068,49 @@ canvas:hover {
   transition: width 0.4s ease;
 }
 
-/* Due Date Pill */
+/* Due Date & Aging Pill */
 .v-due-pill {
-  font-size: 0.7rem;
+  font-size: 0.71rem;
   color: var(--text-muted);
   margin-bottom: 12px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 18px;
+  min-height: 22px;
+  padding: 3px 8px;
+  border-radius: var(--r-md);
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  max-width: 100%;
+}
+
+.v-due-pill.overdue {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  font-weight: 750;
+}
+
+.v-due-pill.due-today {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #b45309;
+  font-weight: 750;
+}
+
+.v-due-pill.upcoming {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: #2563eb;
+  font-weight: 650;
+}
+
+.v-due-pill.settled {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: var(--income);
+  font-weight: 650;
 }
 
 /* Footer Action Toolbar - Clean 2-Row Design */
@@ -5108,38 +5170,40 @@ canvas:hover {
   gap: 6px;
 }
 
-/* Secondary 3-Column Actions Grid */
+/* Secondary 2-Column Actions Grid */
 .v-actions-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .v-sub-btn {
-  height: 31px;
+  height: 33px;
   border-radius: var(--r-md);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.74rem;
+  font-weight: 750;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   transition: all 0.2s ease;
   font-family: inherit;
   border: none;
-  padding: 0 4px;
+  padding: 0 10px;
   white-space: nowrap;
 }
 
 .v-sub-btn.bill {
   background: var(--brand-soft);
   color: var(--brand);
+  border: 1px solid rgba(139, 92, 246, 0.25);
 }
 
 .v-sub-btn.bill:hover {
   background: var(--brand);
   color: #ffffff;
+  border-color: var(--brand);
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(139, 92, 246, 0.25);
 }
@@ -5154,20 +5218,6 @@ canvas:hover {
   background: var(--card);
   border-color: var(--text-muted);
   transform: translateY(-1px);
-}
-
-.v-sub-btn.whatsapp {
-  background: rgba(37, 211, 102, 0.1);
-  color: #15803d;
-  border: 1px solid rgba(37, 211, 102, 0.2);
-}
-
-.v-sub-btn.whatsapp:hover {
-  background: #25d366;
-  color: #ffffff;
-  border-color: #25d366;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(37, 211, 102, 0.35);
 }
 
 /* Backward compatibility for legacy vendor buttons */
