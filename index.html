@@ -148,11 +148,7 @@
                   style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                   <i data-lucide="sun-moon" style="width: 14px; height: 14px;"></i> Interface Theme
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;">
-                  <button onclick="APP_THEME.setTheme('glass')" class="theme-mode-btn" id="theme-btn-glass"
-                    title="Liquid Glass Theme">
-                    <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i> Glass
-                  </button>
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
                   <button onclick="APP_THEME.setTheme('light')" class="theme-mode-btn" id="theme-btn-light"
                     title="Light Theme">
                     <i data-lucide="sun" style="width: 13px; height: 13px;"></i> Light
@@ -282,6 +278,70 @@
           </div>
         </div>
 
+        <!-- Executive Section Navigator (Quick Jump) -->
+        <nav class="dash-quick-nav-bar" id="dashQuickNav" aria-label="Dashboard Sections">
+          <div class="dash-nav-scroll-wrap">
+            <button class="dash-nav-chip active" onclick="Dash.scrollToSection('sectionOverview', this)">
+              <i data-lucide="layout-dashboard"></i> Overview
+            </button>
+            <button class="dash-nav-chip" onclick="Dash.scrollToSection('sectionVisionGoals', this)">
+              <i data-lucide="target"></i> Targets & Pace
+            </button>
+            <button class="dash-nav-chip" onclick="Dash.scrollToSection('sectionBudgets', this)">
+              <i data-lucide="pie-chart"></i> Budgets
+            </button>
+            <button class="dash-nav-chip" onclick="Dash.scrollToSection('sectionVendors', this)">
+              <i data-lucide="truck"></i> Supplier Khata
+            </button>
+            <button class="dash-nav-chip" onclick="Dash.scrollToSection('sectionCharts', this)">
+              <i data-lucide="bar-chart-2"></i> Trends & Cash Flow
+            </button>
+            <button class="dash-nav-chip" onclick="Dash.scrollToSection('sectionRecent', this)">
+              <i data-lucide="history"></i> Recent Activity
+            </button>
+          </div>
+        </nav>
+
+        <!-- Executive Business Pulse Strip -->
+        <div class="dash-pulse-strip" id="dashPulseStrip">
+          <div class="pulse-metric-chip" title="Net profit retention rate for selected period">
+            <span class="pmc-icon" style="background:rgba(16,185,129,0.15); color:var(--income);"><i data-lucide="percent"></i></span>
+            <div class="pmc-info">
+              <span class="pmc-lbl">Net Margin</span>
+              <span class="pmc-val" id="pulseMarginVal">0%</span>
+            </div>
+          </div>
+          <div class="pulse-metric-chip" title="Digital payment collection share">
+            <span class="pmc-icon" style="background:rgba(59,130,246,0.15); color:#3b82f6;"><i data-lucide="smartphone"></i></span>
+            <div class="pmc-info">
+              <span class="pmc-lbl">Digital / UPI</span>
+              <span class="pmc-val" id="pulseDigitalVal">0%</span>
+            </div>
+          </div>
+          <div class="pulse-metric-chip" title="Daily Run-Rate Pace">
+            <span class="pmc-icon" style="background:rgba(245,158,11,0.15); color:#d97706;"><i data-lucide="gauge"></i></span>
+            <div class="pmc-info">
+              <span class="pmc-lbl">Run-Rate Pace</span>
+              <span class="pmc-val" id="pulsePaceVal">₹ 0 / day</span>
+            </div>
+          </div>
+          <div class="pulse-metric-chip" title="Total dues owed across suppliers">
+            <span class="pmc-icon" style="background:rgba(244,63,94,0.15); color:var(--expense);"><i data-lucide="truck"></i></span>
+            <div class="pmc-info">
+              <span class="pmc-lbl">Supplier Dues</span>
+              <span class="pmc-val" id="pulseVendorDueVal">₹ 0.00</span>
+            </div>
+          </div>
+          <div class="pulse-metric-chip" title="Active Category Budgets Health">
+            <span class="pmc-icon" style="background:rgba(139,92,246,0.15); color:#8b5cf6;"><i data-lucide="shield-check"></i></span>
+            <div class="pmc-info">
+              <span class="pmc-lbl">Budget Health</span>
+              <span class="pmc-val" id="pulseBudgetVal">On Track</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="sectionOverview">
         <section class="sum-grid">
           <div class="sum-card income-card" id="cardIncome" onclick="Dash.drilldownSummary('income')" title="Click to filter Recent Activity by Income">
             <div class="sc-top">
@@ -451,6 +511,7 @@
           </div>
           <span id="cashRatioText" style="display:none;"></span>
         </div>
+        </div> <!-- /#sectionOverview -->
 
         <!-- BUSINESS VISION & KPI TARGETS -->
         <section class="card" id="sectionVisionGoals" style="margin-bottom:26px;">
@@ -604,6 +665,15 @@
                     style="height:100%; width:0%; background:linear-gradient(90deg, #10b981 0%, #3b82f6 100%); border-radius:var(--r-full); transition:width 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
                   </div>
                 </div>
+              </div>
+
+              <!-- Actionable Run-Rate Forecast Advice -->
+              <div class="pace-advice-callout" id="paceAdviceCallout"
+                style="margin-top:14px; background:rgba(99, 102, 241, 0.06); border:1px solid rgba(99, 102, 241, 0.2); border-radius:var(--r-md); padding:10px 14px; display:flex; align-items:center; gap:10px;">
+                <div style="width:28px; height:28px; border-radius:50%; background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <i data-lucide="sparkles" style="width:14px; height:14px;"></i>
+                </div>
+                <div style="font-size:0.78rem; color:var(--text-head);" id="paceAdviceText">Calculating target trajectory...</div>
               </div>
             </div>
           </div>
@@ -1205,6 +1275,15 @@
                     <span style="color:#ffffff !important;">View All</span><i data-lucide="arrow-right" style="width: 13px; height: 13px; color:#ffffff !important;"></i>
                   </a>
                 </div>
+              </div>
+              <!-- Quick Filter Chips & Row count -->
+              <div class="recent-quick-chips">
+                <button class="recent-filter-chip active" data-chip="all" onclick="Dash.setRecentQuickChip('all', this)">All Activity</button>
+                <button class="recent-filter-chip" data-chip="income" onclick="Dash.setRecentQuickChip('income', this)">In (+)</button>
+                <button class="recent-filter-chip" data-chip="expense" onclick="Dash.setRecentQuickChip('expense', this)">Out (-)</button>
+                <button class="recent-filter-chip" data-chip="cash" onclick="Dash.setRecentQuickChip('cash', this)">💵 Cash</button>
+                <button class="recent-filter-chip" data-chip="online" onclick="Dash.setRecentQuickChip('online', this)">📱 UPI / Online</button>
+                <button class="recent-filter-chip" data-chip="high" onclick="Dash.setRecentQuickChip('high', this)">⭐ ₹1,000+</button>
               </div>
               <div class="table-wrap">
                 <table class="dtable">

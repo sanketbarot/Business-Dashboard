@@ -57,6 +57,7 @@ const Dash = {
       this.setupSearch();
       this.animateNumbers();
       this.loadNotifications();
+      this.setupSectionScrollTracker();
 
       // Trigger automatic chart load immediately & after short delay
       setTimeout(() => {
@@ -193,6 +194,7 @@ const Dash = {
     this.setText('pExpenseCount', eC + ' expense');
     const margin = t.income > 0 ? Math.round((t.profit / t.income) * 100) : 0;
     this.setText('pMargin', margin + '% profit margin');
+    this.setText('pulseMarginVal', margin + '%');
     this.updateTrends(all, this.period);
 
     // Update subtext based on period
@@ -275,6 +277,7 @@ const Dash = {
     if (ratioOnlineValEl) {
       ratioOnlineValEl.innerHTML = `${onlinePct}% <small>(${inr(onlineIn)})</small>`;
     }
+    this.setText('pulseDigitalVal', onlinePct + '%');
   },
 
   // UPDATED: Better trend logic for Yesterday
@@ -858,6 +861,14 @@ const Dash = {
     if (typeFilter && typeFilter !== 'all') {
       filtered = filtered.filter(t => t.type === typeFilter);
     }
+    const chip = this._recentChip || 'all';
+    if (chip !== 'all') {
+      if (chip === 'income') filtered = filtered.filter(t => t.type === 'income');
+      else if (chip === 'expense') filtered = filtered.filter(t => t.type === 'expense');
+      else if (chip === 'cash') filtered = filtered.filter(t => (t.mode || '').toLowerCase().includes('cash'));
+      else if (chip === 'online') filtered = filtered.filter(t => !(t.mode || '').toLowerCase().includes('cash'));
+      else if (chip === 'high') filtered = filtered.filter(t => (parseFloat(t.amount) || 0) >= 1000);
+    }
     const searchQuery = this._recentSearchQuery || this.recentSearchQuery;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -873,7 +884,7 @@ const Dash = {
 
     const badge = document.getElementById('recentFilterBadge');
     if (badge) {
-      const hasFilter = (typeFilter && typeFilter !== 'all') || Boolean(searchQuery);
+      const hasFilter = (typeFilter && typeFilter !== 'all') || (chip !== 'all') || Boolean(searchQuery);
       badge.style.display = hasFilter ? 'inline-block' : 'none';
       if (hasFilter) badge.textContent = `${filtered.length} found`;
     }
@@ -937,14 +948,98 @@ const Dash = {
         </td>
         <td class="tx-amt" style="text-align:right;"><span class="tx-amt-pill ${isI ? 'amt-in' : 'amt-out'}">${isI ? '+' : '-'}${inr(t.amount)}</span></td>
         <td class="tx-mode"><span class="tx-mode-pill ${modeCls}"><i data-lucide="${modeIcon}" style="width:11px; height:11px;"></i><span>${modeClean}</span></span></td>
-        <td class="tx-action" style="text-align:center;">
+        <td class="tx-action" style="text-align:center; white-space:nowrap;">
           <button class="tx-view-btn" onclick="event.stopPropagation(); Dash.viewTxnDetails(decodeURIComponent('${safeId}'))" title="View Receipt & Details">
             <i data-lucide="eye" style="width:13px; height:13px;"></i>
+          </button>
+          <button class="tx-repeat-btn" onclick="event.stopPropagation(); Dash.repeatTransaction(decodeURIComponent('${safeId}'))" title="Quick Repeat / Clone Transaction">
+            <i data-lucide="copy" style="width:12px; height:12px;"></i>
           </button>
         </td>
       </tr>`;
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  setRecentQuickChip: function (chip, btn) {
+    this._recentChip = chip;
+    document.querySelectorAll('.recent-filter-chip').forEach(c => c.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    this.loadRecent(this._recentAll || getTxns());
+  },
+
+  repeatTransaction: function (txnId) {
+    const all = getTxns();
+    const t = all.find(item => String(item.id) === String(txnId));
+    if (!t) return;
+    if (t.type === 'income') {
+      if (typeof openIncomeModal === 'function') openIncomeModal();
+      setTimeout(() => {
+        const amtInput = document.getElementById('iAmt');
+        const catInput = document.getElementById('iCat');
+        const modeInput = document.getElementById('iMode');
+        const fromInput = document.getElementById('iFrom');
+        const noteInput = document.getElementById('iNote');
+        if (amtInput) amtInput.value = t.amount || '';
+        if (catInput && t.category) catInput.value = t.category;
+        if (modeInput && t.mode) modeInput.value = t.mode;
+        if (fromInput) fromInput.value = t.from || '';
+        if (noteInput) noteInput.value = t.notes || '';
+        if (typeof previewAmt === 'function') previewAmt('income');
+      }, 50);
+    } else {
+      if (typeof openExpenseModal === 'function') openExpenseModal();
+      setTimeout(() => {
+        const amtInput = document.getElementById('eAmt');
+        const catInput = document.getElementById('eCat');
+        const modeInput = document.getElementById('eMode');
+        const vendorInput = document.getElementById('eVendor');
+        const noteInput = document.getElementById('eNote');
+        if (amtInput) amtInput.value = t.amount || '';
+        if (catInput && t.category) catInput.value = t.category;
+        if (modeInput && t.mode) modeInput.value = t.mode;
+        if (vendorInput) vendorInput.value = t.vendor || '';
+        if (noteInput) noteInput.value = t.notes || '';
+      }, 50);
+    }
+    if (typeof toast === 'function') toast('📋 Pre-filled form with repeated transaction details', 'info');
+  },
+
+  scrollToSection: function (id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const offset = 85;
+    const bodyRect = document.body.getBoundingClientRect().top;
+    const elementRect = el.getBoundingClientRect().top;
+    const elementPosition = elementRect - bodyRect;
+    const offsetPosition = elementPosition - offset;
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    });
+    if (btn) {
+      document.querySelectorAll('.dash-nav-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  },
+
+  setupSectionScrollTracker: function () {
+    if (this._scrollTrackerInit) return;
+    this._scrollTrackerInit = true;
+    const sections = ['sectionOverview', 'sectionVisionGoals', 'sectionBudgets', 'sectionVendors', 'sectionCharts', 'sectionRecent'];
+    window.addEventListener('scroll', () => {
+      const scrollPos = window.pageYOffset + 120;
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const sec = document.getElementById(sections[i]);
+        if (sec && sec.offsetTop <= scrollPos) {
+          document.querySelectorAll('.dash-nav-chip').forEach(c => {
+            const onclickAttr = c.getAttribute('onclick') || '';
+            c.classList.toggle('active', onclickAttr.includes(sections[i]));
+          });
+          break;
+        }
+      }
+    }, { passive: true });
   },
 
   setupYearSelector: function () {
@@ -2273,6 +2368,21 @@ const Dash = {
       }
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
+
+    const adviceEl = document.getElementById('paceAdviceText');
+    if (adviceEl) {
+      if (mtdIncome >= revTarget) {
+        adviceEl.innerHTML = `<strong>🎉 Target Milestone Completed:</strong> Current MTD revenue (${inr(mtdIncome)}) has exceeded the monthly target of ${inr(revTarget)}! Outstanding performance!`;
+      } else if (currentDailyPace >= requiredDailyPace) {
+        const surplus = Math.round(projectedMonthEnd - revTarget);
+        adviceEl.innerHTML = `<strong>🚀 Ahead of Schedule:</strong> At your current velocity (${inr(currentDailyPace)}/day), you are projected to hit <strong>${inr(projectedMonthEnd)}</strong> (+${inr(surplus)} over target). Keep the momentum!`;
+      } else {
+        const dailyGap = Math.round(requiredDailyPace - currentDailyPace);
+        adviceEl.innerHTML = `<strong>⚡ Pace Catch-up Action:</strong> You need an extra <strong>${inr(dailyGap)}/day</strong> over the next ${Math.max(1, daysInMonth - currentDay)} days to reach your ${inr(revTarget)} monthly milestone.`;
+      }
+    }
+    const pulsePaceEl = document.getElementById('pulsePaceVal');
+    if (pulsePaceEl) pulsePaceEl.textContent = `${inr(todayIncome)} Today`;
   },
 
   loadCategoryBudgets: function (all) {
@@ -2372,6 +2482,8 @@ const Dash = {
     if (cWarn) cWarn.textContent = countWarn;
     if (cOver) cOver.textContent = countOver;
     if (cSafe) cSafe.textContent = countSafe;
+    const pulseBgtEl = document.getElementById('pulseBudgetVal');
+    if (pulseBgtEl) pulseBgtEl.textContent = countOver > 0 ? `${countOver} Over Limit` : (countWarn > 0 ? `${countWarn} Warning` : 'All Safe');
 
     // Filter by tab and search
     let displayBudgets = budgets.slice();
@@ -2666,6 +2778,7 @@ const Dash = {
     const totalStockValue = stockItems.reduce((sum, i) => sum + ((parseFloat(i.cost) || 0) * (parseFloat(i.quantity) || 0)), 0);
 
     this.setText('totalVendorPending', inr(totalPending));
+    this.setText('pulseVendorDueVal', inr(totalPending));
     this.setText('monthlyVendorBilled', inr(monthlyBilled));
     this.setText('monthlyVendorPaid', inr(monthlyPaid));
     this.setText('totalVendorBilled', inr(totalBilled));

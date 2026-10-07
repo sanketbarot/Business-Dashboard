@@ -2040,17 +2040,22 @@ const themeColors = {
   getProfit: () => getComputedStyle(document.documentElement).getPropertyValue('--profit').trim() || '#F59E0B',
   getPurple: () => getComputedStyle(document.documentElement).getPropertyValue('--purple').trim() || '#8b5cf6',
   getGridColor: () => {
-    const t = document.documentElement.getAttribute('data-theme') || 'glass';
-    return (t === 'dark' || t === 'glass') ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.04)';
+    const t = document.documentElement.getAttribute('data-theme') || 'dark';
+    return (t === 'dark') ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.04)';
   }
 };
 
 const APP_THEME = {
-  theme: 'glass',
+  theme: 'dark',
   accent: 'indigo',
 
   init: function () {
-    this.theme = localStorage.getItem('bd_theme') || 'glass';
+    let savedTheme = localStorage.getItem('bd_theme') || 'dark';
+    if (savedTheme === 'glass') {
+      savedTheme = 'dark';
+      localStorage.setItem('bd_theme', 'dark');
+    }
+    this.theme = savedTheme;
     this.accent = localStorage.getItem('bd_accent') || 'indigo';
 
     document.documentElement.setAttribute('data-theme', this.theme);
@@ -2082,6 +2087,7 @@ const APP_THEME = {
   },
 
   setTheme: function (theme) {
+    if (theme === 'glass') theme = 'dark';
     this.theme = theme;
     localStorage.setItem('bd_theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
@@ -2099,12 +2105,10 @@ const APP_THEME = {
 
   updateUI: function () {
     // Mode Buttons Highlight
-    const btnGlass = document.getElementById('theme-btn-glass');
     const btnLight = document.getElementById('theme-btn-light');
     const btnDark = document.getElementById('theme-btn-dark');
 
     [
-      { btn: btnGlass, key: 'glass' },
       { btn: btnLight, key: 'light' },
       { btn: btnDark, key: 'dark' }
     ].forEach(item => {
