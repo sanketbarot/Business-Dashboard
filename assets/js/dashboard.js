@@ -4311,26 +4311,39 @@ function resetForm(type) {
     if (p) p.style.display = 'none';
     const v = document.getElementById('iPreviewVal');
     if (v) v.textContent = '₹ 0.00';
+    const w = document.getElementById('iPreviewWords');
+    if (w) w.textContent = 'Zero Rupees';
   } else {
     setVal('eVendor', '');
     const p = document.getElementById('ePreview');
     if (p) p.style.display = 'none';
     const v = document.getElementById('ePreviewVal');
     if (v) v.textContent = '₹ 0.00';
+    const w = document.getElementById('ePreviewWords');
+    if (w) w.textContent = 'Zero Rupees';
+  }
+
+  // Reset visual category chips and mode pills
+  const modalEl = document.getElementById(isI ? 'incomeModal' : 'expenseModal');
+  if (modalEl) {
+    modalEl.querySelectorAll('.qcat-chip').forEach(c => c.classList.remove('active'));
+    modalEl.querySelectorAll('.mode-pill').forEach(p => {
+      p.classList.toggle('active', p.getAttribute('data-mode') === 'Cash');
+    });
+    const todayPill = modalEl.querySelector('.qdate-pill:first-child');
+    if (todayPill) {
+      modalEl.querySelectorAll('.qdate-pill').forEach(p => p.classList.remove('active'));
+      todayPill.classList.add('active');
+    }
   }
 
   // Reset modal title back to "Add"
   const titleEl = document.getElementById(isI ? 'incomeTitle' : 'expenseTitle');
   if (titleEl) {
-    titleEl.innerHTML = isI
-      ? '<i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i><span>Add Income</span>'
-      : '<i data-lucide="minus-circle" style="width: 20px; height: 20px;"></i><span>Add Expense</span>';
-    if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
-    }
+    titleEl.textContent = isI ? 'Add Income' : 'Add Expense';
   }
 
-  // Sync custom dropdowns (very important!)
+  // Sync custom dropdowns
   syncCustomDropdowns(isI ? 'incomeModal' : 'expenseModal');
 }
 
@@ -4339,7 +4352,7 @@ function syncCustomDropdowns(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
 
-  const selects = modal.querySelectorAll('select[data-custom-select="true"]');
+  const selects = modal.querySelectorAll('select');
   selects.forEach(sel => {
     const wrapper = sel.nextElementSibling;
     if (!wrapper || !wrapper.classList.contains('custom-select')) return;
@@ -4347,36 +4360,131 @@ function syncCustomDropdowns(modalId) {
     const trigger = wrapper.querySelector('.custom-select-trigger');
     const options = wrapper.querySelectorAll('.custom-option');
 
-    // Find matching option and update
-    let matchedText = '';
+    let matchedHtml = '';
     options.forEach(opt => {
-      opt.classList.remove('selected');
-      if (opt.getAttribute('data-value') === sel.value) {
-        opt.classList.add('selected');
-        matchedText = opt.textContent;
+      const isSel = opt.getAttribute('data-value') === sel.value;
+      opt.classList.toggle('selected', isSel);
+      if (isSel) {
+        matchedHtml = opt.innerHTML;
       }
     });
 
-    // Fallback to first option
-    if (!matchedText && options[0]) {
-      matchedText = options[0].textContent;
+    if (!matchedHtml && sel.value) {
+      matchedHtml = (typeof getFormattedOptionHtml === 'function')
+        ? getFormattedOptionHtml(sel.value)
+        : sel.value;
     }
 
-    if (trigger) trigger.textContent = matchedText;
+    if (!matchedHtml && options[0]) {
+      matchedHtml = options[0].innerHTML;
+    }
 
-    // Close if open
+    if (trigger && matchedHtml) trigger.innerHTML = matchedHtml;
     wrapper.classList.remove('open');
   });
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
+
+window.setQuickCategory = function (type, cat, btnEl) {
+  const isI = type === 'income';
+  const catEl = document.getElementById(isI ? 'iCat' : 'eCat');
+  const modal = document.getElementById(isI ? 'incomeModal' : 'expenseModal');
+  if (!catEl) return;
+
+  // 1. Find matching option in select
+  let matchedIndex = -1;
+  let matchedVal = cat;
+  let matchedText = cat;
+
+  for (let i = 0; i < catEl.options.length; i++) {
+    const opt = catEl.options[i];
+    const ov = opt.value || '';
+    const ot = opt.textContent || '';
+    if (ov === cat || ot.trim() === cat.trim() || ov.includes(cat) || cat.includes(ov)) {
+      matchedIndex = i;
+      matchedVal = ov;
+      matchedText = ot;
+      break;
+    }
+  }
+
+  if (matchedIndex >= 0) {
+    catEl.selectedIndex = matchedIndex;
+    catEl.value = matchedVal;
+  } else {
+    catEl.value = cat;
+  }
+
+  // 2. Dispatch change event to notify any listeners
+  catEl.dispatchEvent(new Event('change', { bubbles: true }));
+
+  // 3. Update custom-select trigger & selected option if wrapper exists
+  const next = catEl.nextElementSibling;
+  const wrapper = (next && next.classList.contains('custom-select'))
+    ? next
+    : (catEl.closest('.custom-select') || (modal ? modal.querySelector(`#${catEl.id} ~ .custom-select`) : null));
+
+  if (wrapper) {
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    const options = wrapper.querySelectorAll('.custom-option');
+    let triggerUpdated = false;
+
+    options.forEach(opt => {
+      const optVal = opt.getAttribute('data-value') || '';
+      const isSel = (optVal === catEl.value) || (optVal && catEl.value && (optVal.includes(catEl.value) || catEl.value.includes(optVal)));
+      opt.classList.toggle('selected', isSel);
+      if (isSel && !triggerUpdated) {
+        if (trigger) trigger.innerHTML = opt.innerHTML;
+        triggerUpdated = true;
+      }
+    });
+
+    if (!triggerUpdated && trigger) {
+      const activeOpt = catEl.options[catEl.selectedIndex];
+      if (activeOpt) {
+        trigger.innerHTML = (typeof getFormattedOptionHtml === 'function')
+          ? getFormattedOptionHtml(activeOpt.textContent)
+          : activeOpt.textContent;
+      }
+    }
+  }
+
+  // 4. Update chip active state
+  if (modal) {
+    const chipsList = modal.querySelector('.qcat-chips-list');
+    if (chipsList) {
+      chipsList.querySelectorAll('.qcat-chip').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+    }
+  }
+
+  if (typeof syncCatChips === 'function') {
+    syncCatChips(type);
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+};
 
 function openIncomeModal() {
   resetForm('income');
   const d = document.getElementById('iDate');
   if (d) d.value = today();
-  // Re-sync after setting date
+  if (typeof setQuickDate === 'function') setQuickDate('income', 'today');
+  if (typeof setQuickMode === 'function') setQuickMode('income', 'Cash');
+
+  const mSelect = document.getElementById('iMode');
+  if (mSelect) {
+    mSelect.style.display = 'none';
+    const next = mSelect.nextElementSibling;
+    if (next && next.classList.contains('custom-select')) next.remove();
+  }
+
   setTimeout(() => {
     syncCustomDropdowns('incomeModal');
-  }, 50);
+    const amtEl = document.getElementById('iAmt');
+    if (amtEl) amtEl.focus();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }, 80);
   openModal('incomeModal');
 }
 
@@ -4384,12 +4492,39 @@ function openExpenseModal() {
   resetForm('expense');
   const d = document.getElementById('eDate');
   if (d) d.value = today();
-  // Re-sync after setting date
+  if (typeof setQuickDate === 'function') setQuickDate('expense', 'today');
+  if (typeof setQuickMode === 'function') setQuickMode('expense', 'Cash');
+
+  const mSelect = document.getElementById('eMode');
+  if (mSelect) {
+    mSelect.style.display = 'none';
+    const next = mSelect.nextElementSibling;
+    if (next && next.classList.contains('custom-select')) next.remove();
+  }
+
   setTimeout(() => {
     syncCustomDropdowns('expenseModal');
-  }, 50);
+    const amtEl = document.getElementById('eAmt');
+    if (amtEl) amtEl.focus();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }, 80);
   openModal('expenseModal');
 }
+
+// Global Ctrl + Enter listener for instantly saving open modal
+document.addEventListener('keydown', function (e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    const inc = document.getElementById('incomeModal');
+    const exp = document.getElementById('expenseModal');
+    if (inc && inc.classList.contains('open')) {
+      e.preventDefault();
+      saveTransaction('income');
+    } else if (exp && exp.classList.contains('open')) {
+      e.preventDefault();
+      saveTransaction('expense');
+    }
+  }
+});
 
 function openExpenseModalWithCategory(cat) {
   openExpenseModal();

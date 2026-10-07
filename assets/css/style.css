@@ -1218,24 +1218,7 @@ textarea.fc {
 #incomeModal #incomeTitle {
   color: #059669 !important;
   font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-#incomeModal #incomeTitle i,
-#incomeModal #incomeTitle [data-lucide] {
-  color: #059669;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  border-radius: 9px;
-  padding: 5px;
-  width: 30px !important;
-  height: 30px !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  margin: 0;
 }
 
 #incomeModal .modal-x {
@@ -1258,9 +1241,7 @@ textarea.fc {
 }
 
 #incomeModal #iAmt {
-  padding-left: 32px !important;
   font-weight: 700;
-  font-size: 1.05rem;
   letter-spacing: 0.01em;
 }
 
@@ -1289,24 +1270,7 @@ textarea.fc {
 #expenseModal #expenseTitle {
   color: #e11d48 !important;
   font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-#expenseModal #expenseTitle i,
-#expenseModal #expenseTitle [data-lucide] {
-  color: #e11d48;
-  background: rgba(244, 63, 94, 0.15);
-  border: 1px solid rgba(244, 63, 94, 0.25);
-  border-radius: 9px;
-  padding: 5px;
-  width: 30px !important;
-  height: 30px !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  margin: 0;
 }
 
 #expenseModal .modal-x {
@@ -1329,9 +1293,7 @@ textarea.fc {
 }
 
 #expenseModal #eAmt {
-  padding-left: 32px !important;
   font-weight: 700;
-  font-size: 1.05rem;
   letter-spacing: 0.01em;
 }
 

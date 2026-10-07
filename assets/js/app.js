@@ -1619,20 +1619,244 @@ function toast(msg, type) {
   }, 3000);
 }
 
+function amountToIndianWords(num) {
+  if (!num || isNaN(num) || num <= 0) return 'Zero Rupees';
+  const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  function inWords(n) {
+    if (n === 0) return '';
+    if (n < 20) return a[n] + ' ';
+    if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + a[n % 10] : '') + ' ';
+    if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred ' + inWords(n % 100);
+    if (n < 100000) return inWords(Math.floor(n / 1000)) + 'Thousand ' + inWords(n % 1000);
+    if (n < 10000000) return inWords(Math.floor(n / 100000)) + 'Lakh ' + inWords(n % 100000);
+    return inWords(Math.floor(n / 10000000)) + 'Crore ' + inWords(n % 10000000);
+  }
+
+  const intPart = Math.floor(num);
+  const paisa = Math.round((num - intPart) * 100);
+  let str = inWords(intPart).trim() + ' Rupees';
+  if (paisa > 0) {
+    str += ' and ' + inWords(paisa).trim() + ' Paise';
+  }
+  return str;
+}
+window.amountToIndianWords = amountToIndianWords;
+
 function previewAmt(type) {
   const isI = type === 'income';
   const amtEl = document.getElementById(isI ? 'iAmt' : 'eAmt');
   const previewEl = document.getElementById(isI ? 'iPreview' : 'ePreview');
   const valEl = document.getElementById(isI ? 'iPreviewVal' : 'ePreviewVal');
+  const wordsEl = document.getElementById(isI ? 'iPreviewWords' : 'ePreviewWords');
   if (!amtEl || !previewEl || !valEl) return;
   const amt = parseFloat(amtEl.value);
   if (!isNaN(amt) && amt > 0) {
     previewEl.style.display = 'flex';
     valEl.textContent = inr(amt);
+    if (wordsEl) {
+      wordsEl.textContent = amountToIndianWords(amt);
+    }
   } else {
     previewEl.style.display = 'none';
   }
 }
+window.previewAmt = previewAmt;
+
+function addQuickAmount(type, val) {
+  const isI = type === 'income';
+  const amtEl = document.getElementById(isI ? 'iAmt' : 'eAmt');
+  if (!amtEl) return;
+  const current = parseFloat(amtEl.value) || 0;
+  const next = Math.round((current + val) * 100) / 100;
+  amtEl.value = next;
+  previewAmt(type);
+  amtEl.focus();
+}
+window.addQuickAmount = addQuickAmount;
+
+function clearAmount(type) {
+  const isI = type === 'income';
+  const amtEl = document.getElementById(isI ? 'iAmt' : 'eAmt');
+  if (!amtEl) return;
+  amtEl.value = '';
+  previewAmt(type);
+  amtEl.focus();
+}
+window.clearAmount = clearAmount;
+
+function setQuickDate(type, which, btnEl) {
+  const isI = type === 'income';
+  const dateEl = document.getElementById(isI ? 'iDate' : 'eDate');
+  if (!dateEl) return;
+
+  if (which === 'today') {
+    dateEl.value = (typeof today === 'function') ? today() : new Date().toISOString().split('T')[0];
+  } else if (which === 'yesterday') {
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    const yr = y.getFullYear();
+    const mo = String(y.getMonth() + 1).padStart(2, '0');
+    const da = String(y.getDate()).padStart(2, '0');
+    dateEl.value = `${yr}-${mo}-${da}`;
+  }
+
+  const modal = document.getElementById(isI ? 'incomeModal' : 'expenseModal');
+  if (modal) {
+    const pills = modal.querySelectorAll('.qdate-pill');
+    pills.forEach(p => p.classList.remove('active'));
+    if (btnEl) {
+      btnEl.classList.add('active');
+    } else if (which === 'today' && pills[0]) {
+      pills[0].classList.add('active');
+    } else if (which === 'yesterday' && pills[1]) {
+      pills[1].classList.add('active');
+    }
+  }
+}
+window.setQuickDate = setQuickDate;
+
+function syncDatePills(type) {
+  const isI = type === 'income';
+  const dateEl = document.getElementById(isI ? 'iDate' : 'eDate');
+  const modal = document.getElementById(isI ? 'incomeModal' : 'expenseModal');
+  if (!dateEl || !modal) return;
+  const curVal = dateEl.value;
+  const todayVal = (typeof today === 'function') ? today() : '';
+  const todayPill = modal.querySelector('.qdate-pill:nth-child(1)');
+  const yestPill = modal.querySelector('.qdate-pill:nth-child(2)');
+  if (todayPill) todayPill.classList.toggle('active', curVal === todayVal);
+  if (yestPill) yestPill.classList.remove('active');
+}
+window.syncDatePills = syncDatePills;
+
+function setQuickCategory(type, cat, btnEl) {
+  const isI = type === 'income';
+  const catEl = document.getElementById(isI ? 'iCat' : 'eCat');
+  const modal = document.getElementById(isI ? 'incomeModal' : 'expenseModal');
+  if (!catEl) return;
+
+  // 1. Find matching option in select
+  let matchedIndex = -1;
+  let matchedVal = cat;
+
+  for (let i = 0; i < catEl.options.length; i++) {
+    const opt = catEl.options[i];
+    const ov = opt.value || '';
+    const ot = opt.textContent || '';
+    if (ov === cat || ot.trim() === cat.trim() || ov.includes(cat) || cat.includes(ov)) {
+      matchedIndex = i;
+      matchedVal = ov;
+      break;
+    }
+  }
+
+  if (matchedIndex >= 0) {
+    catEl.selectedIndex = matchedIndex;
+    catEl.value = matchedVal;
+  } else {
+    catEl.value = cat;
+  }
+
+  // 2. Dispatch change event to notify any listeners
+  catEl.dispatchEvent(new Event('change', { bubbles: true }));
+
+  // 3. Update custom-select trigger & selected option if wrapper exists
+  const next = catEl.nextElementSibling;
+  const wrapper = (next && next.classList.contains('custom-select'))
+    ? next
+    : (catEl.closest('.custom-select') || (modal ? modal.querySelector(`#${catEl.id} ~ .custom-select`) : null));
+
+  if (wrapper) {
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    const options = wrapper.querySelectorAll('.custom-option');
+    let triggerUpdated = false;
+
+    options.forEach(opt => {
+      const optVal = opt.getAttribute('data-value') || '';
+      const isSel = (optVal === catEl.value) || (optVal && catEl.value && (optVal.includes(catEl.value) || catEl.value.includes(optVal)));
+      opt.classList.toggle('selected', isSel);
+      if (isSel && !triggerUpdated) {
+        if (trigger) trigger.innerHTML = opt.innerHTML;
+        triggerUpdated = true;
+      }
+    });
+
+    if (!triggerUpdated && trigger) {
+      const activeOpt = catEl.options[catEl.selectedIndex];
+      if (activeOpt) {
+        trigger.innerHTML = (typeof getFormattedOptionHtml === 'function')
+          ? getFormattedOptionHtml(activeOpt.textContent)
+          : activeOpt.textContent;
+      }
+    }
+  }
+
+  // 4. Update chip active state
+  if (modal) {
+    const chipsList = modal.querySelector('.qcat-chips-list');
+    if (chipsList) {
+      chipsList.querySelectorAll('.qcat-chip').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+    }
+  }
+
+  if (typeof syncCatChips === 'function') {
+    syncCatChips(type);
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+window.setQuickCategory = setQuickCategory;
+
+function syncCatChips(type) {
+  const isI = type === 'income';
+  const catEl = document.getElementById(isI ? 'iCat' : 'eCat');
+  const modal = document.getElementById(isI ? 'incomeModal' : 'expenseModal');
+  if (!catEl || !modal) return;
+  const val = (catEl.value || '').trim();
+  const chipsList = modal.querySelector('.qcat-chips-list');
+  if (chipsList) {
+    chipsList.querySelectorAll('.qcat-chip').forEach(chip => {
+      const onclickAttr = chip.getAttribute('onclick') || '';
+      const text = chip.textContent.trim();
+      const isMatch = val && (onclickAttr.includes(`'${val}'`) || onclickAttr.includes(`"${val}"`) || (text && val.includes(text)) || (text && text.includes(val)));
+      chip.classList.toggle('active', !!isMatch);
+    });
+  }
+}
+window.syncCatChips = syncCatChips;
+
+function setQuickMode(type, mode, btnEl) {
+  const isI = type === 'income';
+  const modeSelect = document.getElementById(isI ? 'iMode' : 'eMode');
+  const modal = document.getElementById(isI ? 'incomeModal' : 'expenseModal');
+  if (modeSelect) modeSelect.value = mode;
+
+  if (modal) {
+    const pills = modal.querySelectorAll('.mode-pill');
+    pills.forEach(p => {
+      p.classList.toggle('active', p.getAttribute('data-mode') === mode);
+    });
+  }
+}
+window.setQuickMode = setQuickMode;
+
+function switchModalType(targetType) {
+  if (targetType === 'income') {
+    closeModal('expenseModal');
+    setTimeout(() => {
+      if (typeof openIncomeModal === 'function') openIncomeModal();
+    }, 150);
+  } else {
+    closeModal('incomeModal');
+    setTimeout(() => {
+      if (typeof openExpenseModal === 'function') openExpenseModal();
+    }, 150);
+  }
+}
+window.switchModalType = switchModalType;
 
 function updateHeaderDateTime() {
   const now = new Date();
@@ -1921,10 +2145,20 @@ function initializeCustomDropdowns() {
     }
   });
 
+  // Ensure iMode and eMode are never wrapped in custom-select dropdowns
+  ['iMode', 'eMode'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = 'none';
+      const n = el.nextElementSibling;
+      if (n && n.classList.contains('custom-select')) n.remove();
+    }
+  });
+
   const selects = document.querySelectorAll('select');
   selects.forEach(select => {
-    // Only wrap form modal inputs, never chart/header filter selects
-    if (select.classList.contains('chart-sel') || select.classList.contains('bgt-sort-select') || select.classList.contains('an-filter-select')) {
+    // Only wrap form modal inputs, never chart/header filter selects, nor iMode/eMode
+    if (select.classList.contains('chart-sel') || select.classList.contains('bgt-sort-select') || select.classList.contains('an-filter-select') || select.id === 'iMode' || select.id === 'eMode' || select.hasAttribute('data-no-custom-select') || select.style.display === 'none') {
       return;
     }
     if (select.getAttribute('data-custom-select') === 'true') return;
@@ -1989,6 +2223,25 @@ function initializeCustomDropdowns() {
       rebuildOptions();
     });
     observer.observe(select, { childList: true });
+
+    // Sync trigger when select.value changes programmatically
+    select.addEventListener('change', () => {
+      const curVal = select.value;
+      let matched = false;
+      optionsList.querySelectorAll('.custom-option').forEach(co => {
+        const isSel = co.getAttribute('data-value') === curVal;
+        co.classList.toggle('selected', isSel);
+        if (isSel && !matched) {
+          trigger.innerHTML = co.innerHTML;
+          matched = true;
+        }
+      });
+      if (!matched) {
+        const selOpt = select.options[select.selectedIndex];
+        if (selOpt) trigger.innerHTML = getFormattedOptionHtml(selOpt.textContent);
+      }
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
 
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
