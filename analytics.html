@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="assets/css/style.css?v=15.3" />
   <link rel="stylesheet" href="assets/css/animations.css?v=15.3" />
   <link rel="stylesheet" href="assets/css/dashboard.css?v=15.3" />
-  <link rel="stylesheet" href="assets/css/analytics.css?v=15.3" />
+  <link rel="stylesheet" href="assets/css/analytics.css?v=16.0" />
 
   <!-- Firebase SDKs - MUST BE BEFORE app.js -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -187,14 +187,127 @@
                 style="width: 22px; height: 22px; vertical-align: middle; color: var(--brand);"></i></h2>
             <p>Real-time visual insights, health scorecard, and dynamic forecasting models</p>
           </div>
-          <div class="an-filters">
-            <span style="padding-left:12px; font-size:0.78rem; font-weight:700; color:var(--text-light);">FILTER:</span>
-            <select class="an-filter-select" id="analyticsPeriod" onchange="AnalyticsPage.onPeriodChange()">
-              <option value="week">Weekly</option>
-              <option value="month" selected>Monthly</option>
-              <option value="year">Yearly</option>
-              <option value="all">All Time</option>
-            </select>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="an-range-info" id="anActiveRangeBadge">
+              <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+              <span id="anRangeText">Showing: This Month</span>
+            </div>
+
+            <div class="an-filters">
+              <span style="padding-left:8px; font-size:0.75rem; font-weight:800; color:var(--text-light); text-transform:uppercase;">PERIOD:</span>
+              <select class="an-filter-select" id="analyticsPeriod" onchange="AnalyticsPage.onPeriodChange()">
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="week">This Week</option>
+                <option value="lastweek">Last Week</option>
+                <option value="month" selected>This Month</option>
+                <option value="lastmonth">Last Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+                <option value="custom">📅 Custom Range</option>
+                <option value="all">All Time</option>
+              </select>
+            </div>
+
+            <!-- Custom Date Range Inputs (Shown when custom is selected) -->
+            <div class="an-custom-date-wrap" id="anCustomRangeWrap" style="display: none;">
+              <input type="date" class="an-date-input" id="anStartDate" />
+              <span style="color:var(--text-muted); font-size:0.78rem; font-weight:700;">to</span>
+              <input type="date" class="an-date-input" id="anEndDate" />
+              <button class="btn btn-primary btn-sm" onclick="AnalyticsPage.applyCustomRange()" style="padding:4px 10px; font-size:0.75rem;">Apply</button>
+            </div>
+
+            <button class="btn btn-outline btn-sm" onclick="AnalyticsPage.exportAnalyticsReport()" style="display:inline-flex; align-items:center; gap:6px; font-size:0.78rem;" title="Download complete analytics executive summary">
+              <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+              <span>Export Report</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Executive Financial Summary Cards (Period Core Financials) -->
+        <section class="an-summary-grid">
+          <!-- Total Revenue -->
+          <div class="an-summary-card rev">
+            <div class="an-sc-hd">
+              <div class="an-sc-title">
+                <span class="an-sc-dot" style="background:#10b981;"></span>
+                Total Revenue
+              </div>
+              <span class="an-growth-badge neutral" id="scRevGrowthBadge">--</span>
+            </div>
+            <div class="an-sc-val" id="scTotalRevenue" style="color:var(--income);">₹ 0.00</div>
+            <div class="an-sc-footer">
+              <span id="scRevOrders">0 orders</span>
+              <span class="an-sc-sep">·</span>
+              <span id="scRevDailyAvg">Avg ₹ 0 / day</span>
+            </div>
+          </div>
+
+          <!-- Total Expenses -->
+          <div class="an-summary-card exp">
+            <div class="an-sc-hd">
+              <div class="an-sc-title">
+                <span class="an-sc-dot" style="background:#f43f5e;"></span>
+                Total Expenses
+              </div>
+              <span class="an-growth-badge neutral" id="scExpGrowthBadge">--</span>
+            </div>
+            <div class="an-sc-val" id="scTotalExpense" style="color:var(--expense);">₹ 0.00</div>
+            <div class="an-sc-footer">
+              <span id="scExpCount">0 records</span>
+              <span class="an-sc-sep">·</span>
+              <span id="scExpRatio">0% of income</span>
+            </div>
+          </div>
+
+          <!-- Net Profit & Margin -->
+          <div class="an-summary-card prf">
+            <div class="an-sc-hd">
+              <div class="an-sc-title">
+                <span class="an-sc-dot" style="background:#8b5cf6;"></span>
+                Net Operating Profit
+              </div>
+              <span class="an-growth-badge neutral" id="scPrfGrowthBadge">--</span>
+            </div>
+            <div class="an-sc-val" id="scNetProfit">₹ 0.00</div>
+            <div class="an-sc-footer">
+              <span id="scProfitMargin" style="font-weight:700; color:var(--income);">Margin: 0%</span>
+              <span class="an-sc-sep">·</span>
+              <span id="scProfitStatus">Analyzing...</span>
+            </div>
+          </div>
+
+          <!-- Daily Revenue Velocity & Run Rate -->
+          <div class="an-summary-card run">
+            <div class="an-sc-hd">
+              <div class="an-sc-title">
+                <span class="an-sc-dot" style="background:#f59e0b;"></span>
+                Revenue Velocity
+              </div>
+              <span class="an-tag-badge">Pacing</span>
+            </div>
+            <div class="an-sc-val" id="scDailyRunRate">₹ 0 / day</div>
+            <div class="an-sc-footer">
+              <span id="scMonthPace">Month Pace: ₹ 0</span>
+              <span class="an-sc-sep">·</span>
+              <span id="scActiveDays">0 active days</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Smart Business Health & Operational Insights Banner -->
+        <section class="an-smart-insights-panel">
+          <div class="as-hd">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <i data-lucide="sparkles" style="width: 18px; height: 18px; color: var(--brand);"></i>
+              <span style="font-weight:800; font-size:0.86rem; color:var(--text-head); text-transform:uppercase; letter-spacing:0.04em;">
+                Smart Business Health & Diagnostic Intelligence
+              </span>
+            </div>
+            <span class="as-live-badge">Automated Diagnostic</span>
+          </div>
+          <div class="as-cards-grid" id="smartInsightsGrid">
+            <!-- Dynamic Diagnostic Pills inserted by AnalyticsPage.loadSmartInsights() -->
           </div>
         </section>
 
@@ -356,6 +469,10 @@
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.73rem; color:var(--text-muted); flex-wrap:wrap; gap:6px;">
                 <span id="bePacingNote">₹ 0 more needed to break even</span>
                 <span id="beMonthCoverageNote">Month coverage: 0%</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); font-size:0.72rem; color:var(--text-muted); flex-wrap:wrap; gap:6px;">
+                <span id="beEstimatedMilestone" style="color:var(--brand); font-weight:700;">📅 Projected Break-Even: Calculating...</span>
+                <span id="beRunwayCushion" style="font-weight:700;">🛡️ Profit Runway: Calculating...</span>
               </div>
             </div>
           </div>
@@ -565,6 +682,146 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CATEGORY IN-DEPTH BREAKDOWN & DRILL-DOWN MATRIX -->
+        <section class="card cat-breakdown-panel" style="margin-bottom: 26px;">
+          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h4 style="display:flex; align-items:center; gap:8px;">
+                <i data-lucide="layers" style="width: 18px; height: 18px; color: var(--brand);"></i>
+                In-Depth Category Breakdown & Expense Drill-Down
+                <span class="badge" id="catCountBadge" style="font-size:0.72rem; background:rgba(99,102,241,0.12); color:var(--brand); padding:3px 9px; border-radius:var(--r-sm); font-weight:700;">0 Categories</span>
+              </h4>
+              <span style="font-size:0.75rem; color:var(--text-muted);">
+                Granular view of revenues and expenses by category with contribution share and ticket sizing (Top 10 visible · scroll for more)
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div class="cat-filter-tabs">
+                <button class="cat-tab-btn active" id="catTabAll" onclick="AnalyticsPage.setCategoryTab('all')">All</button>
+                <button class="cat-tab-btn" id="catTabExpense" onclick="AnalyticsPage.setCategoryTab('expense')">Expenses</button>
+                <button class="cat-tab-btn" id="catTabIncome" onclick="AnalyticsPage.setCategoryTab('income')">Income</button>
+              </div>
+              <input type="text" class="daily-search-input" id="catSearchInput" placeholder="Filter category..." oninput="AnalyticsPage.onCategorySearch(this.value)" />
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="table-wrap cat-table-scroll">
+              <table class="dtable" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Flow Type</th>
+                    <th>Total Amount (₹)</th>
+                    <th>Share of Flow</th>
+                    <th>Count</th>
+                    <th>Average Ticket</th>
+                    <th>Single Highest</th>
+                    <th>Contribution Bar</th>
+                  </tr>
+                </thead>
+                <tbody id="categoryMatrixBody">
+                  <tr>
+                    <td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted);">Loading categories...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- COMMERCIAL COUNTERPARTIES & KHATA INTELLIGENCE -->
+        <section class="card commercial-partners-panel" style="margin-bottom: 26px;">
+          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h4 style="display:flex; align-items:center; gap:8px;">
+                <i data-lucide="users" style="width: 18px; height: 18px; color: var(--brand);"></i>
+                Key Commercial Counterparties & Concentration
+              </h4>
+              <span style="font-size:0.75rem; color:var(--text-muted);">
+                Top paying customers / revenue channels & top supplier payees / vendor concentration
+              </span>
+            </div>
+            <span class="badge" style="font-size:0.72rem; background:rgba(99,102,241,0.12); color:var(--brand); padding:4px 10px; border-radius:var(--r-sm); font-weight:700;">
+              Partner Intel
+            </span>
+          </div>
+          <div class="card-bd">
+            <div class="party-grid">
+              <!-- Top Customers / Inflow Sources -->
+              <div class="party-col">
+                <div class="party-col-hd">
+                  <div class="party-col-title">
+                    <i data-lucide="arrow-down-left" style="width:16px; height:16px; color:var(--income);"></i>
+                    Top Revenue Sources / Clients
+                  </div>
+                  <span style="font-size:0.72rem; font-weight:700; color:var(--income);" id="topCustomerTotal">₹ 0.00</span>
+                </div>
+                <div class="party-list" id="topCustomersList">
+                  <div style="font-size:0.78rem; color:var(--text-muted); text-align:center; padding:20px;">Analyzing customer data...</div>
+                </div>
+              </div>
+
+              <!-- Top Vendors / Outflow Payees -->
+              <div class="party-col">
+                <div class="party-col-hd">
+                  <div class="party-col-title">
+                    <i data-lucide="arrow-up-right" style="width:16px; height:16px; color:var(--expense);"></i>
+                    Top Suppliers / Expense Payees
+                  </div>
+                  <span style="font-size:0.72rem; font-weight:700; color:var(--expense);" id="topVendorTotal">₹ 0.00</span>
+                </div>
+                <div class="party-list" id="topVendorsList">
+                  <div style="font-size:0.78rem; color:var(--text-muted); text-align:center; padding:20px;">Analyzing vendor data...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DAILY CASHFLOW VELOCITY & AUDIT LEDGER -->
+        <section class="card daily-ledger-panel" style="margin-bottom: 26px;">
+          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h4 style="display:flex; align-items:center; gap:8px;">
+                <i data-lucide="calendar-days" style="width: 18px; height: 18px; color: var(--brand);"></i>
+                Daily Cashflow Velocity & Activity Ledger
+              </h4>
+              <span style="font-size:0.75rem; color:var(--text-muted);">
+                Chronological day-by-day cashflow movements, volume and net daily surplus/deficit
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <input type="text" class="daily-search-input" id="dailyLedgerSearch" placeholder="Search date / day..." oninput="AnalyticsPage.onDailyLedgerSearch(this.value)" />
+              <button class="btn btn-outline btn-sm" onclick="AnalyticsPage.exportDailyLedgerCSV()" style="display:inline-flex; align-items:center; gap:5px; font-size:0.75rem;">
+                <i data-lucide="file-spreadsheet" style="width:13px; height:13px;"></i> CSV
+              </button>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="table-wrap" style="max-height: 420px; overflow-y: auto; overflow-x: auto;">
+              <table class="dtable" style="width: 100%; border-collapse: collapse;">
+                <thead style="position: sticky; top: 0; background: var(--bg-card); z-index: 2;">
+                  <tr>
+                    <th>Date & Weekday</th>
+                    <th>Inflow Revenue (₹)</th>
+                    <th>Outflow Expense (₹)</th>
+                    <th>Net Cashflow (₹)</th>
+                    <th>Records</th>
+                    <th>Daily Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dailyLedgerBody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                      Analyzing day-by-day activity...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -826,7 +1083,7 @@
   <div class="toast-box" id="toastBox"></div>
 
   <script src="assets/js/app.js?v=14.4"></script>
-  <script src="assets/js/analytics-page.js?v=14.4"></script>
+  <script src="assets/js/analytics-page.js?v=16.0"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

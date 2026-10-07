@@ -1,7 +1,7 @@
 /* ============================================
-   ANALYTICS-PAGE.JS v1.0.0 (Expanded)
+   ANALYTICS-PAGE.JS v2.0.0 (Advanced Intelligence Suite)
    Crust & Chilly Business Dashboard
-   Real-time Synced Analytics, Five Interactive Charts & Detailed Capital Channel reports
+   Executive KPIs, MoM Growth, Category Drill-Down, Counterparties & Daily Ledger
    ============================================ */
 
 'use strict';
@@ -15,7 +15,14 @@ const AnalyticsPage = {
     paymentMode: null,
     platformChannel: null
   },
-  period: 'month', // Default period selection
+  period: 'month',
+  customStart: '',
+  customEnd: '',
+  categoryTab: 'all',
+  categorySearch: '',
+  dailySearch: '',
+  cachedFilteredTxns: [],
+  cachedDailySummary: [],
 
   init: function() {
     try {
@@ -23,8 +30,9 @@ const AnalyticsPage = {
         Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
       }
       this.setupWelcomeDate();
-      this.loadAll();
+      this.setupCustomRangeDefaults();
       this.setupModalDates();
+      this.loadAll();
     } catch (err) {
       console.error('AnalyticsPage init error:', err);
     }
@@ -37,6 +45,22 @@ const AnalyticsPage = {
     }
   },
 
+  setupCustomRangeDefaults: function() {
+    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const firstDay = `${y}-${m}-01`;
+    const curDay = (typeof today === 'function') ? today() : new Date().toISOString().substring(0, 10);
+
+    const sEl = document.getElementById('anStartDate');
+    const eEl = document.getElementById('anEndDate');
+    if (sEl && !sEl.value) sEl.value = firstDay;
+    if (eEl && !eEl.value) eEl.value = curDay;
+
+    this.customStart = sEl ? sEl.value : firstDay;
+    this.customEnd = eEl ? eEl.value : curDay;
+  },
+
   setupModalDates: function() {
     const iDate = document.getElementById('iDate');
     const eDate = document.getElementById('eDate');
@@ -46,37 +70,245 @@ const AnalyticsPage = {
 
   onPeriodChange: function() {
     const select = document.getElementById('analyticsPeriod');
-    if (select) {
-      this.period = select.value;
+    const customWrap = document.getElementById('anCustomRangeWrap');
+    if (!select) return;
+
+    this.period = select.value;
+    if (this.period === 'custom') {
+      if (customWrap) customWrap.style.display = 'inline-flex';
+    } else {
+      if (customWrap) customWrap.style.display = 'none';
       this.loadAll();
     }
   },
 
-  loadAll: function() {
-    const allTxns = getTxns();
-    
-    // 1. Filter by selected period (month, year, all)
-    const filteredTxns = this.filterTxns(allTxns, this.period);
+  applyCustomRange: function() {
+    const sEl = document.getElementById('anStartDate');
+    const eEl = document.getElementById('anEndDate');
+    if (!sEl || !eEl) return;
+    if (!sEl.value || !eEl.value) {
+      if (typeof toast === 'function') toast('Please pick both start and end date', 'warning');
+      return;
+    }
+    if (sEl.value > eEl.value) {
+      if (typeof toast === 'function') toast('Start date must be before end date', 'error');
+      return;
+    }
+    this.customStart = sEl.value;
+    this.customEnd = eEl.value;
+    this.loadAll();
+    if (typeof toast === 'function') toast('Custom date range applied', 'info');
+  },
 
-    // 2. Load KPIs
+  /* Calculates exact start/end and prior comparison window */
+  getPeriodBounds: function(period) {
+    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
+    const todayStr = (typeof today === 'function') ? today() : new Date().toISOString().substring(0, 10);
+    const toYMD = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    if (period === 'today') {
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      const yestStr = toYMD(yest);
+      return {
+        start: todayStr, end: todayStr, label: `Today (${fmtDate(todayStr)})`,
+        prevStart: yestStr, prevEnd: yestStr, prevLabel: 'Yesterday'
+      };
+    }
+
+    if (period === 'yesterday') {
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      const yestStr = toYMD(yest);
+      const dayBefore = new Date(now);
+      dayBefore.setDate(dayBefore.getDate() - 2);
+      const dayBeforeStr = toYMD(dayBefore);
+      return {
+        start: yestStr, end: yestStr, label: `Yesterday (${fmtDate(yestStr)})`,
+        prevStart: dayBeforeStr, prevEnd: dayBeforeStr, prevLabel: 'Day Before'
+      };
+    }
+
+    if (period === 'week') {
+      const cur = new Date(now);
+      const day = cur.getDay() || 7; // Mon is 1
+      const start = new Date(cur);
+      start.setDate(cur.getDate() - day + 1);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+
+      const prevStart = new Date(start);
+      prevStart.setDate(prevStart.getDate() - 7);
+      const prevEnd = new Date(end);
+      prevEnd.setDate(prevEnd.getDate() - 7);
+
+      return {
+        start: toYMD(start), end: toYMD(end), label: `This Week (${fmtDate(toYMD(start))} - ${fmtDate(toYMD(end))})`,
+        prevStart: toYMD(prevStart), prevEnd: toYMD(prevEnd), prevLabel: 'Last Week'
+      };
+    }
+
+    if (period === 'lastweek') {
+      const cur = new Date(now);
+      const day = cur.getDay() || 7;
+      const start = new Date(cur);
+      start.setDate(cur.getDate() - day - 6);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+
+      const prevStart = new Date(start);
+      prevStart.setDate(prevStart.getDate() - 7);
+      const prevEnd = new Date(end);
+      prevEnd.setDate(prevEnd.getDate() - 7);
+
+      return {
+        start: toYMD(start), end: toYMD(end), label: `Last Week (${fmtDate(toYMD(start))} - ${fmtDate(toYMD(end))})`,
+        prevStart: toYMD(prevStart), prevEnd: toYMD(prevEnd), prevLabel: '2 Weeks Ago'
+      };
+    }
+
+    if (period === 'month') {
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const start = new Date(y, m, 1);
+      const end = new Date(y, m + 1, 0);
+
+      const prevStart = new Date(y, m - 1, 1);
+      const prevEnd = new Date(y, m, 0);
+
+      const monthName = start.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+      return {
+        start: toYMD(start), end: toYMD(end), label: `This Month (${monthName})`,
+        prevStart: toYMD(prevStart), prevEnd: toYMD(prevEnd), prevLabel: 'Last Month'
+      };
+    }
+
+    if (period === 'lastmonth') {
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const start = new Date(y, m - 1, 1);
+      const end = new Date(y, m, 0);
+
+      const prevStart = new Date(y, m - 2, 1);
+      const prevEnd = new Date(y, m - 1, 0);
+
+      const monthName = start.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+      return {
+        start: toYMD(start), end: toYMD(end), label: `Last Month (${monthName})`,
+        prevStart: toYMD(prevStart), prevEnd: toYMD(prevEnd), prevLabel: '2 Months Ago'
+      };
+    }
+
+    if (period === 'quarter') {
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const q = Math.floor(m / 3);
+      const start = new Date(y, q * 3, 1);
+      const end = new Date(y, (q + 1) * 3, 0);
+
+      const prevStart = new Date(y, (q - 1) * 3, 1);
+      const prevEnd = new Date(y, q * 3, 0);
+
+      return {
+        start: toYMD(start), end: toYMD(end), label: `This Quarter (Q${q + 1} ${y})`,
+        prevStart: toYMD(prevStart), prevEnd: toYMD(prevEnd), prevLabel: `Q${q || 4} Prior`
+      };
+    }
+
+    if (period === 'year') {
+      const y = now.getFullYear();
+      const start = `${y}-01-01`;
+      const end = `${y}-12-31`;
+      const prevStart = `${y - 1}-01-01`;
+      const prevEnd = `${y - 1}-12-31`;
+      return {
+        start, end, label: `This Year (${y})`,
+        prevStart, prevEnd, prevLabel: `Last Year (${y - 1})`
+      };
+    }
+
+    if (period === 'custom') {
+      const start = this.customStart || todayStr;
+      const end = this.customEnd || todayStr;
+      const sDate = new Date(start);
+      const eDate = new Date(end);
+      const diffMs = eDate.getTime() - sDate.getTime();
+      const diffDays = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1);
+
+      const pEnd = new Date(sDate);
+      pEnd.setDate(pEnd.getDate() - 1);
+      const pStart = new Date(pEnd);
+      pStart.setDate(pStart.getDate() - diffDays + 1);
+
+      return {
+        start, end, label: `Custom (${fmtDate(start)} - ${fmtDate(end)})`,
+        prevStart: toYMD(pStart), prevEnd: toYMD(pEnd), prevLabel: 'Prior Window'
+      };
+    }
+
+    // Default: 'all'
+    return {
+      start: '1970-01-01', end: '2099-12-31', label: 'All Time History',
+      prevStart: null, prevEnd: null, prevLabel: 'None'
+    };
+  },
+
+  filterTxnsByRange: function(txns, start, end) {
+    if (!Array.isArray(txns)) return [];
+    if (!start || !end) return txns;
+    return txns.filter(t => t.date && t.date >= start && t.date <= end);
+  },
+
+  loadAll: function() {
+    const allTxns = (typeof getTxns === 'function') ? getTxns() : (window.currentTxns || []);
+    const bounds = this.getPeriodBounds(this.period);
+
+    // Update active range badge
+    const rangeText = document.getElementById('anRangeText');
+    if (rangeText) rangeText.textContent = bounds.label;
+
+    // Filter txns for active period & prior comparison period
+    const filteredTxns = this.filterTxnsByRange(allTxns, bounds.start, bounds.end);
+    const prevTxns = (bounds.prevStart && bounds.prevEnd)
+      ? this.filterTxnsByRange(allTxns, bounds.prevStart, bounds.prevEnd)
+      : [];
+
+    this.cachedFilteredTxns = filteredTxns;
+
+    // 1. Executive Financial Summary Cards & Growth %
+    this.loadExecutiveSummary(filteredTxns, prevTxns, bounds);
+
+    // 2. Smart Business Health & Operational Insights
+    this.loadSmartInsights(filteredTxns, prevTxns, allTxns);
+
+    // 3. Core KPI Gauges
     this.loadKPIs(filteredTxns, allTxns);
 
-    // 3. Load Forecast/Projections
+    // 4. Forecast & Projection
     this.loadProjections(allTxns);
 
-    // 4. Load Break-Even & Profit Runway Tracker
+    // 5. Daily Break-Even & Profit Runway Tracker
     this.loadBreakEvenTracker(allTxns);
 
-    // 5. Load Platform Channel Analysis
+    // 6. Platform Ordering Channel Breakdown & Commission
     this.loadPlatformAnalysis(filteredTxns);
 
-    // 6. Build five Charts
+    // 7. Visual Charts Grid
     this.buildCharts(filteredTxns);
 
-    // 7. Load Detailed Capital Report & Ratios
+    // 8. In-Depth Category Breakdown Matrix
+    this.loadCategoryMatrix(filteredTxns);
+
+    // 9. Commercial Counterparties & Khata Intelligence
+    this.loadCommercialCounterparties(filteredTxns);
+
+    // 10. Daily Cashflow Velocity Ledger
+    this.loadDailyLedger(filteredTxns);
+
+    // 11. Detailed Capital Channels Report
     this.loadCapitalChannelsReport(filteredTxns, allTxns);
 
-    // 8. Animate Numbers
+    // 12. Number Animations
     this.animateMetrics();
 
     if (typeof lucide !== 'undefined') {
@@ -84,20 +316,235 @@ const AnalyticsPage = {
     }
   },
 
-  filterTxns: function(txns, period) {
-    if (!Array.isArray(txns)) return [];
-    if (period === 'all') return txns;
-    return txns.filter(t => {
-      if (!t.date) return false;
-      if (period === 'week') return isThisWeek(t.date);
-      if (period === 'month') return isThisMonth(t.date);
-      if (period === 'year') return isThisYear(t.date);
-      return true;
+  /* ==========================================================================
+     1. EXECUTIVE FINANCIAL SUMMARY & GROWTH %
+     ========================================================================== */
+  loadExecutiveSummary: function(filtered, prev, bounds) {
+    const curTot = calcTotals(filtered);
+    const prevTot = calcTotals(prev);
+
+    let incCount = 0, expCount = 0;
+    const activeDates = new Set();
+    filtered.forEach(t => {
+      if (t.type === 'income') incCount++;
+      else if (t.type === 'expense') expCount++;
+      if (t.date) activeDates.add(t.date);
     });
+
+    const activeDaysCount = activeDates.size;
+    const dailyAvgRev = activeDaysCount > 0 ? Math.round(curTot.income / activeDaysCount) : 0;
+
+    // Calculate Growth vs previous period
+    const calcGrowth = (cur, prev) => {
+      if (prev === 0) return cur > 0 ? 100 : 0;
+      return Math.round(((cur - prev) / Math.abs(prev)) * 100);
+    };
+
+    const revGrowth = calcGrowth(curTot.income, prevTot.income);
+    const expGrowth = calcGrowth(curTot.expense, prevTot.expense);
+    const prfGrowth = calcGrowth(curTot.profit, prevTot.profit);
+
+    const formatBadge = (elId, pct, inverse) => {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (!bounds.prevStart) {
+        el.className = 'an-growth-badge neutral';
+        el.textContent = 'All Time';
+        return;
+      }
+      const isPositive = pct > 0;
+      const isGood = inverse ? pct <= 0 : pct >= 0;
+      el.className = `an-growth-badge ${isGood ? 'up' : 'down'}`;
+      el.innerHTML = `${isPositive ? '↗ +' : '↘ '}${pct}% vs ${bounds.prevLabel}`;
+    };
+
+    // Revenue updates
+    const revEl = document.getElementById('scTotalRevenue');
+    if (revEl) revEl.textContent = inr(curTot.income);
+    formatBadge('scRevGrowthBadge', revGrowth, false);
+    const revOrdersEl = document.getElementById('scRevOrders');
+    if (revOrdersEl) revOrdersEl.textContent = `${incCount} order${incCount === 1 ? '' : 's'}`;
+    const revDailyAvgEl = document.getElementById('scRevDailyAvg');
+    if (revDailyAvgEl) revDailyAvgEl.textContent = `Avg ${inr(dailyAvgRev)} / day`;
+
+    // Expense updates
+    const expEl = document.getElementById('scTotalExpense');
+    if (expEl) expEl.textContent = inr(curTot.expense);
+    formatBadge('scExpGrowthBadge', expGrowth, true); // Lower expense is good
+    const expCountEl = document.getElementById('scExpCount');
+    if (expCountEl) expCountEl.textContent = `${expCount} record${expCount === 1 ? '' : 's'}`;
+    const expRatioEl = document.getElementById('scExpRatio');
+    const expRatioVal = curTot.income > 0 ? Math.round((curTot.expense / curTot.income) * 100) : (curTot.expense > 0 ? 100 : 0);
+    if (expRatioEl) expRatioEl.textContent = `${expRatioVal}% of revenue`;
+
+    // Net Profit updates
+    const prfEl = document.getElementById('scNetProfit');
+    if (prfEl) {
+      prfEl.textContent = inr(curTot.profit);
+      prfEl.style.color = curTot.profit >= 0 ? 'var(--income)' : 'var(--expense)';
+    }
+    formatBadge('scPrfGrowthBadge', prfGrowth, false);
+    const marginPct = curTot.income > 0 ? Math.round((curTot.profit / curTot.income) * 100) : 0;
+    const marginEl = document.getElementById('scProfitMargin');
+    if (marginEl) {
+      marginEl.textContent = `Margin: ${marginPct}%`;
+      marginEl.style.color = marginPct >= 20 ? 'var(--income)' : (marginPct >= 0 ? '#d97706' : 'var(--expense)');
+    }
+    const statusEl = document.getElementById('scProfitStatus');
+    if (statusEl) {
+      if (marginPct >= 35) statusEl.textContent = 'High Margin 📈';
+      else if (marginPct >= 15) statusEl.textContent = 'Healthy 👍';
+      else if (marginPct > 0) statusEl.textContent = 'Low Margin ⚠️';
+      else if (curTot.income === 0 && curTot.expense === 0) statusEl.textContent = 'No Activity';
+      else statusEl.textContent = 'Operating Deficit 🚨';
+    }
+
+    // Velocity & Run-rate
+    const runEl = document.getElementById('scDailyRunRate');
+    if (runEl) runEl.textContent = `${inr(dailyAvgRev)} / day`;
+    const paceEl = document.getElementById('scMonthPace');
+    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const monthPace = Math.round(dailyAvgRev * daysInMonth);
+    if (paceEl) paceEl.textContent = `Pacing ~ ${inrShort(monthPace)} / mo`;
+    const activeDaysEl = document.getElementById('scActiveDays');
+    if (activeDaysEl) activeDaysEl.textContent = `${activeDaysCount} active days`;
   },
 
+  /* ==========================================================================
+     2. SMART BUSINESS HEALTH & OPERATIONAL INSIGHTS
+     ========================================================================== */
+  loadSmartInsights: function(filtered, prev, all) {
+    const container = document.getElementById('smartInsightsGrid');
+    if (!container) return;
+
+    const curTot = calcTotals(filtered);
+    const margin = curTot.income > 0 ? Math.round((curTot.profit / curTot.income) * 100) : 0;
+
+    // 1. Find single largest expense category
+    const catMap = {};
+    filtered.forEach(t => {
+      if (t.type === 'expense' && t.category) {
+        catMap[t.category] = (catMap[t.category] || 0) + (parseFloat(t.amount) || 0);
+      }
+    });
+    let topExpenseCat = 'None';
+    let topExpenseAmt = 0;
+    for (const c in catMap) {
+      if (catMap[c] > topExpenseAmt) {
+        topExpenseAmt = catMap[c];
+        topExpenseCat = c;
+      }
+    }
+    const topExpShare = curTot.expense > 0 ? Math.round((topExpenseAmt / curTot.expense) * 100) : 0;
+
+    // 2. Platform Swiggy/Zomato commission leakage
+    let aggRevenue = 0;
+    let directRevenue = 0;
+    filtered.forEach(t => {
+      if (t.type !== 'income') return;
+      const amt = parseFloat(t.amount) || 0;
+      const text = `${t.category || ''} ${t.notes || ''} ${t.from || ''}`.toLowerCase();
+      if (text.includes('swiggy') || text.includes('zomato')) aggRevenue += amt;
+      else directRevenue += amt;
+    });
+    const estCommission = Math.round(aggRevenue * 0.22); // ~22% average Swiggy/Zomato fee
+
+    // 3. Peak activity day
+    const weekdaySums = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    filtered.forEach(t => {
+      if (t.type === 'income' && t.date) {
+        const parts = t.date.split('-');
+        if (parts.length === 3) {
+          const d = new Date(parts[0], parts[1] - 1, parts[2]);
+          weekdaySums[d.getDay()] += parseFloat(t.amount) || 0;
+        }
+      }
+    });
+    let peakDayIdx = 0, peakDaySum = 0;
+    for (let i = 0; i < 7; i++) {
+      if (weekdaySums[i] > peakDaySum) {
+        peakDaySum = weekdaySums[i];
+        peakDayIdx = i;
+      }
+    }
+    const peakDayShare = curTot.income > 0 ? Math.round((peakDaySum / curTot.income) * 100) : 0;
+
+    // Render cards
+    container.innerHTML = `
+      <!-- Card 1: Profit Margin Diagnostic -->
+      <div class="as-card">
+        <div class="as-card-hd">
+          <div class="as-card-icon" style="background:rgba(16,185,129,0.12); color:#10b981;">💎</div>
+          <span class="as-card-title">Margin Efficiency</span>
+        </div>
+        <div class="as-card-val" style="color:${margin >= 25 ? 'var(--income)' : (margin >= 0 ? '#d97706' : 'var(--expense)')};">
+          ${margin}% Net Margin
+        </div>
+        <div class="as-card-sub">
+          ${margin >= 30 
+            ? `Excellent profitability. For every ₹100 earned, ₹${margin} is retained as net business capital.` 
+            : (margin > 0 
+                ? `Moderate profitability. Retaining ₹${margin} per ₹100 revenue. Review operational costs.` 
+                : 'Expenses exceeded revenue in this period. Review overheads and vendor spend.')}
+        </div>
+      </div>
+
+      <!-- Card 2: Highest Cost Driver -->
+      <div class="as-card">
+        <div class="as-card-hd">
+          <div class="as-card-icon" style="background:rgba(244,63,94,0.12); color:#f43f5e;">⚡</div>
+          <span class="as-card-title">Top Expense Driver</span>
+        </div>
+        <div class="as-card-val" style="color:var(--expense);">
+          ${topExpenseCat !== 'None' ? topExpenseCat.replace(/^[^\s]+\s+/, '') : 'No Outflows'}
+        </div>
+        <div class="as-card-sub">
+          ${topExpenseAmt > 0 
+            ? `${inr(topExpenseAmt)} consumed (${topExpShare}% of all period expenses). Monitoring this single category gives maximum cost savings.`
+            : 'No expense records found in this selection.'}
+        </div>
+      </div>
+
+      <!-- Card 3: Platform Commission Intelligence -->
+      <div class="as-card">
+        <div class="as-card-hd">
+          <div class="as-card-icon" style="background:rgba(252,128,25,0.12); color:#fc8019;">🛵</div>
+          <span class="as-card-title">Aggregator Commission</span>
+        </div>
+        <div class="as-card-val" style="color:#fc8019;">
+          ~ ${inr(estCommission)}
+        </div>
+        <div class="as-card-sub">
+          ${aggRevenue > 0 
+            ? `Estimated 22% platform cut on Swiggy & Zomato (${inr(aggRevenue)} total). Counter sales keep 100% margin.` 
+            : 'All income recorded was direct Counter or UPI with 0% platform commission deductions.'}
+        </div>
+      </div>
+
+      <!-- Card 4: Revenue Velocity & Peak Day -->
+      <div class="as-card">
+        <div class="as-card-hd">
+          <div class="as-card-icon" style="background:rgba(139,92,246,0.12); color:#8b5cf6;">🚀</div>
+          <span class="as-card-title">Peak Revenue Day</span>
+        </div>
+        <div class="as-card-val" style="color:var(--brand);">
+          ${peakDaySum > 0 ? dayNames[peakDayIdx] : 'Even Pace'}
+        </div>
+        <div class="as-card-sub">
+          ${peakDaySum > 0 
+            ? `${dayNames[peakDayIdx]} brings in ${inr(peakDaySum)} (${peakDayShare}% of total income). Ensure optimal staffing on this day.` 
+            : 'Add transaction records to detect weekly revenue surges.'}
+        </div>
+      </div>
+    `;
+  },
+
+  /* ==========================================================================
+     3. HEALTH SCORE, BURN RATE & TRANSACTION METRICS
+     ========================================================================== */
   loadKPIs: function(filtered, all) {
-    // 1. Health Score Calculator
     this.calculateHealthScore(filtered);
 
     // 2. Burn Rate
@@ -142,8 +589,7 @@ const AnalyticsPage = {
         const parts = t.date.split('-');
         if (parts.length === 3) {
           const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-          const day = dateObj.getDay();
-          weekdayCounts[day]++;
+          weekdayCounts[dateObj.getDay()]++;
         }
       }
     });
@@ -175,20 +621,12 @@ const AnalyticsPage = {
     const savingRate = totals.income > 0 ? (totals.profit / totals.income) * 100 : 0;
     const profitMargin = totals.income > 0 ? (totals.profit / totals.income) * 100 : 0;
 
-    // Components of score:
-    // 1. Savings rate (up to 30 pts)
     let savingScore = 0;
-    if (savingRate > 0) {
-      savingScore = Math.min(30, Math.round(savingRate * 0.75));
-    }
+    if (savingRate > 0) savingScore = Math.min(30, Math.round(savingRate * 0.75));
 
-    // 2. Profit margin (up to 40 pts)
     let marginScore = 0;
-    if (profitMargin > 0) {
-      marginScore = Math.min(40, Math.round(profitMargin * 0.8));
-    }
+    if (profitMargin > 0) marginScore = Math.min(40, Math.round(profitMargin * 0.8));
 
-    // 3. Expense control (up to 20 pts)
     let expenseControlScore = 0;
     if (totals.income > 0) {
       const expenseRatio = totals.expense / totals.income;
@@ -200,7 +638,6 @@ const AnalyticsPage = {
       expenseControlScore = 20;
     }
 
-    // 4. Activity consistency (up to 10 pts)
     const activeDays = new Set();
     txns.forEach(t => { if (t.date) activeDays.add(t.date); });
     let consistencyScore = Math.min(10, activeDays.size * 2);
@@ -241,6 +678,9 @@ const AnalyticsPage = {
     }
   },
 
+  /* ==========================================================================
+     4. NEXT MONTH PROJECTIONS & PREDICTIVE MODEL
+     ========================================================================== */
   loadProjections: function(allTxns) {
     if (!Array.isArray(allTxns) || !allTxns.length) {
       this.updateForecastUI(0, 0, 0);
@@ -255,11 +695,8 @@ const AnalyticsPage = {
           monthlyData[monthKey] = { income: 0, expense: 0 };
         }
         const amt = parseFloat(t.amount) || 0;
-        if (t.type === 'income') {
-          monthlyData[monthKey].income += amt;
-        } else if (t.type === 'expense') {
-          monthlyData[monthKey].expense += amt;
-        }
+        if (t.type === 'income') monthlyData[monthKey].income += amt;
+        else if (t.type === 'expense') monthlyData[monthKey].expense += amt;
       }
     });
 
@@ -303,6 +740,526 @@ const AnalyticsPage = {
     if (prfBar) prfBar.style.width = Math.min(100, (Math.max(0, prf) / maxVal) * 100) + '%';
   },
 
+  /* ==========================================================================
+     5. BREAK-EVEN & PROFIT RUNWAY TRACKER
+     ========================================================================== */
+  loadBreakEvenTracker: function(allTxns) {
+    const rent = parseFloat(localStorage.getItem('bd_be_rent') || '20000');
+    const staff = parseFloat(localStorage.getItem('bd_be_staff') || '15000');
+    const utilities = parseFloat(localStorage.getItem('bd_be_utilities') || '5000');
+    const other = parseFloat(localStorage.getItem('bd_be_other') || '2000');
+    const totalMonthlyOverhead = rent + staff + utilities + other;
+
+    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const curDayNum = now.getDate();
+    const dailyTarget = Math.round(totalMonthlyOverhead / daysInMonth);
+
+    // Today's revenue
+    const todayStr = (typeof today === 'function') ? today() : new Date().toISOString().substring(0, 10);
+    const todayTxns = allTxns.filter(t => t.type === 'income' && t.date === todayStr);
+    const todayRevenue = todayTxns.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const todaySurplus = todayRevenue - dailyTarget;
+
+    // Current month revenue & expenses
+    const curMonthTxns = allTxns.filter(t => t.date && (typeof isThisMonth === 'function' ? isThisMonth(t.date) : true));
+    const curMonthTotals = calcTotals(curMonthTxns);
+    const curMonthRevenue = curMonthTotals.income;
+    const curMonthProfit = curMonthTotals.profit;
+    const monthCoveragePct = totalMonthlyOverhead > 0 ? Math.round((curMonthRevenue / totalMonthlyOverhead) * 100) : 100;
+
+    // DOM updates
+    const dtEl = document.getElementById('beDailyTarget');
+    if (dtEl) dtEl.textContent = inr(dailyTarget);
+
+    const trEl = document.getElementById('beTodayRevenue');
+    if (trEl) trEl.textContent = inr(todayRevenue);
+
+    const tcEl = document.getElementById('beTodayCount');
+    if (tcEl) tcEl.textContent = `${todayTxns.length} transactions today`;
+
+    const tsEl = document.getElementById('beTodaySurplus');
+    if (tsEl) {
+      if (todaySurplus >= 0) {
+        tsEl.textContent = `+${inr(todaySurplus)}`;
+        tsEl.style.color = 'var(--income)';
+      } else {
+        tsEl.textContent = `-${inr(Math.abs(todaySurplus))}`;
+        tsEl.style.color = 'var(--expense)';
+      }
+    }
+
+    const tssEl = document.getElementById('beTodaySurplusSub');
+    if (tssEl) {
+      tssEl.textContent = todaySurplus >= 0 ? 'Surplus beyond break-even 🎉' : `₹ ${inrShort(Math.abs(todaySurplus))} needed to break even`;
+    }
+
+    const moEl = document.getElementById('beMonthlyOverhead');
+    if (moEl) moEl.textContent = inr(totalMonthlyOverhead);
+
+    const obEl = document.getElementById('beOverheadBreakdown');
+    if (obEl) obEl.textContent = `Rent: ${inrShort(rent)} · Staff: ${inrShort(staff)} · Util: ${inrShort(utilities)}`;
+
+    // Pacing progress
+    const pacingPct = dailyTarget > 0 ? Math.round((todayRevenue / dailyTarget) * 100) : 100;
+    const bpEl = document.getElementById('bePacingPercent');
+    if (bpEl) bpEl.textContent = `${pacingPct}%`;
+
+    const bfEl = document.getElementById('bePacingFill');
+    if (bfEl) {
+      bfEl.style.width = `${Math.min(pacingPct, 100)}%`;
+      if (pacingPct >= 100) {
+        bfEl.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+      } else if (pacingPct >= 50) {
+        bfEl.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+      } else {
+        bfEl.style.background = 'linear-gradient(90deg, #f43f5e, #e11d48)';
+      }
+    }
+
+    const badgeEl = document.getElementById('beStatusBadge');
+    if (badgeEl) {
+      if (todaySurplus >= 0) {
+        badgeEl.className = 'be-status-badge achieved';
+        badgeEl.textContent = `🎉 Break-Even Achieved (+${inrShort(todaySurplus)})`;
+      } else {
+        badgeEl.className = 'be-status-badge pending';
+        badgeEl.textContent = `⏳ ₹ ${inrShort(Math.abs(todaySurplus))} Needed Today`;
+      }
+    }
+
+    const pnEl = document.getElementById('bePacingNote');
+    if (pnEl) {
+      pnEl.textContent = todaySurplus >= 0 ? `Daily target of ₹ ${inrShort(dailyTarget)} reached today!` : `₹ ${inr(Math.abs(todaySurplus))} remaining to cover today's fixed cost`;
+    }
+
+    const mcEl = document.getElementById('beMonthCoverageNote');
+    if (mcEl) {
+      mcEl.textContent = `Month Overhead Covered: ${monthCoveragePct}% (${inrShort(curMonthRevenue)} / ${inrShort(totalMonthlyOverhead)})`;
+    }
+
+    // Break-Even Milestone & Runway Cushion
+    const msEl = document.getElementById('beEstimatedMilestone');
+    if (msEl) {
+      if (curMonthRevenue >= totalMonthlyOverhead) {
+        msEl.textContent = `🎉 Break-Even reached for the month!`;
+        msEl.style.color = 'var(--income)';
+      } else {
+        const dailyRunRate = curDayNum > 0 ? curMonthRevenue / curDayNum : 0;
+        if (dailyRunRate > 0) {
+          const estDay = Math.min(daysInMonth, Math.ceil(totalMonthlyOverhead / dailyRunRate));
+          msEl.textContent = `📅 Projected Break-Even: Day ${estDay} of ${daysInMonth}`;
+        } else {
+          msEl.textContent = `📅 Projected Break-Even: Pending transactions`;
+        }
+      }
+    }
+
+    const rwEl = document.getElementById('beRunwayCushion');
+    if (rwEl) {
+      if (curMonthProfit > 0 && dailyTarget > 0) {
+        const cushionDays = Math.round(curMonthProfit / dailyTarget);
+        rwEl.textContent = `🛡️ Profit Runway: ${cushionDays} days overhead covered`;
+        rwEl.style.color = 'var(--income)';
+      } else {
+        rwEl.textContent = `🛡️ Profit Runway: 0 days cushion`;
+        rwEl.style.color = 'var(--text-muted)';
+      }
+    }
+  },
+
+  /* ==========================================================================
+     6. IN-DEPTH CATEGORY BREAKDOWN & EXPENSE DRILLDOWN MATRIX
+     ========================================================================== */
+  setCategoryTab: function(tab) {
+    this.categoryTab = tab;
+    ['catTabAll', 'catTabExpense', 'catTabIncome'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.remove('active');
+    });
+    const activeBtn = document.getElementById(tab === 'all' ? 'catTabAll' : (tab === 'expense' ? 'catTabExpense' : 'catTabIncome'));
+    if (activeBtn) activeBtn.classList.add('active');
+    this.renderCategoryMatrixTable();
+  },
+
+  onCategorySearch: function(val) {
+    this.categorySearch = (val || '').toLowerCase().trim();
+    this.renderCategoryMatrixTable();
+  },
+
+  loadCategoryMatrix: function(filtered) {
+    this.categoryMatrixData = [];
+    const catMap = {};
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    filtered.forEach(t => {
+      const amt = parseFloat(t.amount) || 0;
+      const type = t.type === 'income' ? 'income' : 'expense';
+      const cat = t.category || (type === 'income' ? 'Other Income' : 'Other Expense');
+
+      if (type === 'income') totalIncome += amt;
+      else totalExpense += amt;
+
+      const key = `${type}___${cat}`;
+      if (!catMap[key]) {
+        catMap[key] = {
+          name: cat,
+          type: type,
+          total: 0,
+          count: 0,
+          max: 0
+        };
+      }
+      catMap[key].total += amt;
+      catMap[key].count++;
+      if (amt > catMap[key].max) catMap[key].max = amt;
+    });
+
+    const list = Object.values(catMap);
+    list.forEach(item => {
+      const baseTotal = item.type === 'income' ? totalIncome : totalExpense;
+      item.share = baseTotal > 0 ? Math.round((item.total / baseTotal) * 100) : 0;
+      item.avg = item.count > 0 ? Math.round(item.total / item.count) : 0;
+    });
+
+    // Sort by total descending
+    list.sort((a, b) => b.total - a.total);
+    this.categoryMatrixData = list;
+    this.renderCategoryMatrixTable();
+  },
+
+  renderCategoryMatrixTable: function() {
+    const tbody = document.getElementById('categoryMatrixBody');
+    if (!tbody) return;
+
+    let items = this.categoryMatrixData || [];
+
+    // Filter by tab
+    if (this.categoryTab !== 'all') {
+      items = items.filter(i => i.type === this.categoryTab);
+    }
+
+    // Filter by search
+    if (this.categorySearch) {
+      items = items.filter(i => i.name.toLowerCase().includes(this.categorySearch));
+    }
+
+    const countBadge = document.getElementById('catCountBadge');
+    if (countBadge) {
+      countBadge.textContent = `${items.length} Categories${items.length > 10 ? ' (Scroll ↓)' : ''}`;
+    }
+
+    if (!items.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">
+            No category transactions match the current filter.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = items.map(item => {
+      const isInc = item.type === 'income';
+      const color = isInc ? '#10b981' : '#f43f5e';
+      return `
+        <tr>
+          <td style="font-weight:700; color:var(--text-head);">${item.name}</td>
+          <td><span class="cat-type-badge ${isInc ? 'inc' : 'exp'}">${item.type}</span></td>
+          <td style="font-weight:800; color:${color};">${inr(item.total)}</td>
+          <td style="font-weight:700;">${item.share}%</td>
+          <td>${item.count}</td>
+          <td>${inr(item.avg)}</td>
+          <td>${inr(item.max)}</td>
+          <td>
+            <div class="cat-bar-wrap">
+              <div class="cat-progress-bar">
+                <div class="cat-progress-fill" style="width:${Math.min(item.share, 100)}%; background:${color};"></div>
+              </div>
+              <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); width:32px;">${item.share}%</span>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  /* ==========================================================================
+     7. COMMERCIAL COUNTERPARTIES & KHATA INTELLIGENCE
+     ========================================================================== */
+  loadCommercialCounterparties: function(filtered) {
+    const custMap = {};
+    const vendMap = {};
+
+    let totalCustAmt = 0;
+    let totalVendAmt = 0;
+
+    filtered.forEach(t => {
+      const amt = parseFloat(t.amount) || 0;
+      if (t.type === 'income') {
+        const name = (t.from && t.from.trim()) ? t.from.trim() : (t.category || 'Direct Sales');
+        if (!custMap[name]) custMap[name] = { name, total: 0, count: 0, lastDate: t.date };
+        custMap[name].total += amt;
+        custMap[name].count++;
+        totalCustAmt += amt;
+      } else if (t.type === 'expense') {
+        const name = (t.vendor && t.vendor.trim()) ? t.vendor.trim() : (t.category || 'Direct Expense');
+        if (!vendMap[name]) vendMap[name] = { name, total: 0, count: 0, category: t.category };
+        vendMap[name].total += amt;
+        vendMap[name].count++;
+        totalVendAmt += amt;
+      }
+    });
+
+    const topCustomers = Object.values(custMap).sort((a, b) => b.total - a.total).slice(0, 5);
+    const topVendors = Object.values(vendMap).sort((a, b) => b.total - a.total).slice(0, 5);
+
+    const tcTotalEl = document.getElementById('topCustomerTotal');
+    if (tcTotalEl) tcTotalEl.textContent = inr(totalCustAmt);
+
+    const tvTotalEl = document.getElementById('topVendorTotal');
+    if (tvTotalEl) tvTotalEl.textContent = inr(totalVendAmt);
+
+    // Render Customers
+    const custListEl = document.getElementById('topCustomersList');
+    if (custListEl) {
+      if (!topCustomers.length) {
+        custListEl.innerHTML = '<div style="font-size:0.78rem; color:var(--text-muted); text-align:center; padding:18px;">No customer records logged.</div>';
+      } else {
+        custListEl.innerHTML = topCustomers.map(c => {
+          const avg = c.count > 0 ? Math.round(c.total / c.count) : 0;
+          const letter = c.name.charAt(0).toUpperCase();
+          return `
+            <div class="party-item">
+              <div class="party-item-left">
+                <div class="party-avatar" style="background:rgba(16,185,129,0.12); color:#059669;">${letter}</div>
+                <div class="party-info">
+                  <div class="party-name">${c.name}</div>
+                  <div class="party-sub">${c.count} orders · Avg ${inrShort(avg)}</div>
+                </div>
+              </div>
+              <div class="party-item-right">
+                <div class="party-amount" style="color:var(--income);">${inr(c.total)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Render Vendors
+    const vendListEl = document.getElementById('topVendorsList');
+    if (vendListEl) {
+      if (!topVendors.length) {
+        vendListEl.innerHTML = '<div style="font-size:0.78rem; color:var(--text-muted); text-align:center; padding:18px;">No supplier records logged.</div>';
+      } else {
+        vendListEl.innerHTML = topVendors.map(v => {
+          const avg = v.count > 0 ? Math.round(v.total / v.count) : 0;
+          const letter = v.name.charAt(0).toUpperCase();
+          return `
+            <div class="party-item">
+              <div class="party-item-left">
+                <div class="party-avatar" style="background:rgba(244,63,94,0.12); color:#e11d48;">${letter}</div>
+                <div class="party-info">
+                  <div class="party-name">${v.name}</div>
+                  <div class="party-sub">${v.count} bills · ${v.category || 'Expense'}</div>
+                </div>
+              </div>
+              <div class="party-item-right">
+                <div class="party-amount" style="color:var(--expense);">${inr(v.total)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  },
+
+  /* ==========================================================================
+     8. DAILY CASHFLOW VELOCITY LEDGER
+     ========================================================================== */
+  onDailyLedgerSearch: function(val) {
+    this.dailySearch = (val || '').toLowerCase().trim();
+    this.renderDailyLedgerTable();
+  },
+
+  loadDailyLedger: function(filtered) {
+    const dayMap = {};
+
+    filtered.forEach(t => {
+      if (!t.date) return;
+      const amt = parseFloat(t.amount) || 0;
+      if (!dayMap[t.date]) {
+        dayMap[t.date] = { date: t.date, income: 0, expense: 0, count: 0 };
+      }
+      if (t.type === 'income') dayMap[t.date].income += amt;
+      else if (t.type === 'expense') dayMap[t.date].expense += amt;
+      dayMap[t.date].count++;
+    });
+
+    const sortedDates = Object.keys(dayMap).sort().reverse();
+    this.cachedDailySummary = sortedDates.map(d => {
+      const item = dayMap[d];
+      const net = item.income - item.expense;
+      const parts = d.split('-');
+      const dObj = new Date(parts[0], parts[1] - 1, parts[2]);
+      const dayName = dObj.toLocaleDateString('en-IN', { weekday: 'short' });
+      return {
+        date: d,
+        formattedDate: `${fmtDate(d)} (${dayName})`,
+        dayName: dayName,
+        income: item.income,
+        expense: item.expense,
+        net: net,
+        count: item.count
+      };
+    });
+
+    this.renderDailyLedgerTable();
+  },
+
+  renderDailyLedgerTable: function() {
+    const tbody = document.getElementById('dailyLedgerBody');
+    if (!tbody) return;
+
+    let items = this.cachedDailySummary || [];
+    if (this.dailySearch) {
+      items = items.filter(i => 
+        i.date.includes(this.dailySearch) || 
+        i.formattedDate.toLowerCase().includes(this.dailySearch)
+      );
+    }
+
+    if (!items.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">
+            No cashflow movements match the active criteria.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = items.map(d => {
+      let badgeClass = 'profitable';
+      let badgeLabel = 'Net Surplus';
+      if (d.income > 5000 && d.net > 0) {
+        badgeClass = 'high-sales';
+        badgeLabel = '🔥 High Sales';
+      } else if (d.net < 0) {
+        badgeClass = 'deficit';
+        badgeLabel = '⚠️ Deficit';
+      } else if (d.income === 0 && d.expense === 0) {
+        badgeClass = 'inactive';
+        badgeLabel = '💤 Inactive';
+      }
+
+      return `
+        <tr>
+          <td style="font-weight:700; color:var(--text-head);">${d.formattedDate}</td>
+          <td style="font-weight:700; color:var(--income);">${inr(d.income)}</td>
+          <td style="font-weight:700; color:var(--expense);">${inr(d.expense)}</td>
+          <td style="font-weight:800; color:${d.net >= 0 ? 'var(--income)' : 'var(--expense)'};">
+            ${d.net >= 0 ? '+' : ''}${inr(d.net)}
+          </td>
+          <td>${d.count} txns</td>
+          <td><span class="daily-status-pill ${badgeClass}">${badgeLabel}</span></td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  exportDailyLedgerCSV: function() {
+    const items = this.cachedDailySummary || [];
+    if (!items.length) {
+      if (typeof toast === 'function') toast('No daily activity to export', 'warning');
+      return;
+    }
+
+    let csv = 'Date,Day,Inflow Revenue (INR),Outflow Expense (INR),Net Cashflow (INR),Transactions\n';
+    items.forEach(d => {
+      csv += `"${d.date}","${d.dayName}",${d.income},${d.expense},${d.net},${d.count}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `crust_chilly_daily_cashflow_${this.period}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    if (typeof toast === 'function') toast('Daily cashflow CSV exported successfully', 'success');
+  },
+
+  /* ==========================================================================
+     9. EXPORT COMPLETE ANALYTICS EXECUTIVE REPORT
+     ========================================================================== */
+  exportAnalyticsReport: function() {
+    if (typeof XLSX === 'undefined') {
+      if (typeof toast === 'function') toast('Export library loading, please try in a moment', 'info');
+      return;
+    }
+
+    try {
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Summary & Channels
+      const curTot = calcTotals(this.cachedFilteredTxns);
+      const summaryRows = [
+        ['Crust & Chilly — Executive Analytics Report'],
+        ['Report Period', this.period.toUpperCase()],
+        ['Generated At', new Date().toLocaleString('en-IN')],
+        [],
+        ['Metric', 'Value'],
+        ['Total Period Revenue', curTot.income],
+        ['Total Period Expenses', curTot.expense],
+        ['Net Operating Profit', curTot.profit],
+        ['Profit Margin %', curTot.income > 0 ? ((curTot.profit / curTot.income) * 100).toFixed(1) + '%' : '0%'],
+        ['Total Transactions Count', this.cachedFilteredTxns.length]
+      ];
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Executive Summary');
+
+      // Sheet 2: Category Matrix
+      if (this.categoryMatrixData && this.categoryMatrixData.length) {
+        const catRows = [
+          ['Category', 'Flow Type', 'Total (INR)', 'Share %', 'Count', 'Avg Ticket (INR)', 'Max Single (INR)']
+        ];
+        this.categoryMatrixData.forEach(c => {
+          catRows.push([c.name, c.type, c.total, c.share + '%', c.count, c.avg, c.max]);
+        });
+        const wsCat = XLSX.utils.aoa_to_sheet(catRows);
+        XLSX.utils.book_append_sheet(wb, wsCat, 'Category Breakdown');
+      }
+
+      // Sheet 3: Daily Ledger
+      if (this.cachedDailySummary && this.cachedDailySummary.length) {
+        const dailyRows = [
+          ['Date', 'Day', 'Inflow (INR)', 'Outflow (INR)', 'Net (INR)', 'Count']
+        ];
+        this.cachedDailySummary.forEach(d => {
+          dailyRows.push([d.date, d.dayName, d.income, d.expense, d.net, d.count]);
+        });
+        const wsDaily = XLSX.utils.aoa_to_sheet(dailyRows);
+        XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Cashflow');
+      }
+
+      XLSX.writeFile(wb, `crust_chilly_analytics_${this.period}_${today()}.xlsx`);
+      if (typeof toast === 'function') toast('Analytics Excel Report downloaded successfully! 📊', 'success');
+    } catch (err) {
+      console.error('Analytics export error:', err);
+      if (typeof toast === 'function') toast('Failed to export report: ' + err.message, 'error');
+    }
+  },
+
+  /* ==========================================================================
+     10. VISUAL CHARTS BUILDER
+     ========================================================================== */
   buildCharts: function(txns) {
     if (typeof Chart === 'undefined') return;
 
@@ -356,7 +1313,7 @@ const AnalyticsPage = {
             label: 'Net Profit',
             data: profits.length ? profits : [0],
             borderColor: brandColor,
-            backgroundColor: brandColor + '14', // 10% opacity
+            backgroundColor: brandColor + '14',
             borderWidth: 3,
             fill: true,
             tension: 0.38,
@@ -435,7 +1392,7 @@ const AnalyticsPage = {
         legendContainer.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; grid-column:span 2;">No expenses categorized</div>';
       } else {
         const total = data.reduce((a, b) => a + b, 0);
-        sortedCats.forEach((cat, idx) => {
+        sortedCats.slice(0, 6).forEach((cat, idx) => {
           const rawAmt = categoryMap[cat];
           const pct = Math.round((rawAmt / total) * 100);
           const color = palette[idx % palette.length];
@@ -646,7 +1603,7 @@ const AnalyticsPage = {
           label: 'Cumulative Capital (₹)',
           data: balances.length ? balances : [0],
           borderColor: brandColor,
-          backgroundColor: brandColor + '14', // 10% opacity
+          backgroundColor: brandColor + '14',
           borderWidth: 3,
           fill: true,
           tension: 0.25,
@@ -700,12 +1657,12 @@ const AnalyticsPage = {
     const data = activeModes.map(m => modeVolume[m]);
 
     const palette = {
-      'Cash': '#10b981',        // Green
-      'Online': themeColors.getBrand(), // Dynamic Brand Accent
-      'UPI': '#8b5cf6',         // Purple
-      'Bank Transfer': '#38bdf8', // Light Blue
-      'Card': '#ec4899',        // Pink
-      'Cheque': '#f59e0b'       // Amber
+      'Cash': '#10b981',
+      'Online': themeColors.getBrand(),
+      'UPI': '#8b5cf6',
+      'Bank Transfer': '#38bdf8',
+      'Card': '#ec4899',
+      'Cheque': '#f59e0b'
     };
 
     const colors = activeModes.map(m => palette[m] || '#64748b');
@@ -793,220 +1750,9 @@ const AnalyticsPage = {
     });
   },
 
-  loadCapitalChannelsReport: function(filtered, all) {
-    const tbody = document.getElementById('capitalChannelsBody');
-    if (!tbody) return;
-
-    // Define core modes to build detailed breakdown
-    const modes = ['Cash', 'UPI', 'Bank Transfer', 'Card', 'Cheque', 'Online'];
-    const summary = {};
-    modes.forEach(m => {
-      summary[m] = { inward: 0, outward: 0, count: 0 };
-    });
-
-    let totalFilteredCount = filtered.length;
-    filtered.forEach(t => {
-      const m = t.mode || 'Cash';
-      const amt = parseFloat(t.amount) || 0;
-      if (summary[m]) {
-        summary[m].count++;
-        if (t.type === 'income') summary[m].inward += amt;
-        else if (t.type === 'expense') summary[m].outward += amt;
-      }
-    });
-
-    tbody.innerHTML = '';
-
-    let anyData = false;
-    modes.forEach(mode => {
-      const s = summary[mode];
-      if (s.count > 0) {
-        anyData = true;
-        const net = s.inward - s.outward;
-        const share = totalFilteredCount > 0 ? Math.round((s.count / totalFilteredCount) * 100) : 0;
-        
-        let badgeClass = 'online';
-        if (mode === 'Cash') badgeClass = 'cash';
-        else if (mode === 'UPI') badgeClass = 'upi';
-        else if (mode === 'Bank Transfer') badgeClass = 'bank';
-        else if (mode === 'Card') badgeClass = 'card';
-        else if (mode === 'Cheque') badgeClass = 'cheque';
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><span class="capital-badge ${badgeClass}">${mode.toUpperCase()}</span></td>
-          <td style="font-weight:700; color:var(--income);">${inr(s.inward)}</td>
-          <td style="font-weight:700; color:var(--expense);">${inr(s.outward)}</td>
-          <td style="font-weight:800; color:${net >= 0 ? 'var(--income)' : 'var(--expense)'};">${inr(net)}</td>
-          <td>${s.count} transactions</td>
-          <td style="font-weight:700; color:var(--brand);">${share}%</td>
-        `;
-        tbody.appendChild(row);
-      }
-    });
-
-    if (!anyData) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" style="text-align: center; color: var(--text-light); padding: 30px;">
-            💼 No capital transaction details logged in this period.
-          </td>
-        </tr>
-      `;
-    }
-
-    // 2. Load detailed calculations in Performance stats grid
-    const totals = calcTotals(filtered);
-    
-    // Operating Expense Ratio
-    const expRatioEl = document.getElementById('detExpenseRatio');
-    if (expRatioEl) {
-      const expRatio = totals.income > 0 ? Math.round((totals.expense / totals.income) * 100) : 0;
-      expRatioEl.textContent = expRatio + '%';
-    }
-
-    // Profitability Status
-    const profitStatusEl = document.getElementById('detProfitStatus');
-    if (profitStatusEl) {
-      const margin = totals.income > 0 ? (totals.profit / totals.income) * 100 : 0;
-      if (margin >= 30) profitStatusEl.textContent = 'High Profit Margin 📈';
-      else if (margin >= 10) profitStatusEl.textContent = 'Moderate Margin 👍';
-      else if (margin > 0) profitStatusEl.textContent = 'Low Margin ⚠️';
-      else if (totals.income === 0 && totals.expense === 0) profitStatusEl.textContent = 'No Operations 💤';
-      else profitStatusEl.textContent = 'Operating Deficit 🚨';
-    }
-
-    // Peak Revenue Month
-    const peakMonthEl = document.getElementById('detPeakMonth');
-    if (peakMonthEl) {
-      const monthlyIncome = {};
-      all.forEach(t => {
-        if (t.type === 'income' && t.date) {
-          const mKey = t.date.substring(0, 7); // YYYY-MM
-          const amt = parseFloat(t.amount) || 0;
-          monthlyIncome[mKey] = (monthlyIncome[mKey] || 0) + amt;
-        }
-      });
-      let peakM = 'None';
-      let peakVal = 0;
-      for (const m in monthlyIncome) {
-        if (monthlyIncome[m] > peakVal) {
-          peakVal = monthlyIncome[m];
-          peakM = m;
-        }
-      }
-      if (peakVal > 0) {
-        const dObj = new Date(peakM + '-02');
-        const formattedMonth = dObj.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-        peakMonthEl.textContent = `${formattedMonth} (${inrShort(peakVal)})`;
-      } else {
-        peakMonthEl.textContent = 'No Data Yet';
-      }
-    }
-
-    // Operating Consistency (Unique active days)
-    const consistencyEl = document.getElementById('detConsistency');
-    if (consistencyEl) {
-      const activeDays = new Set();
-      filtered.forEach(t => { if (t.date) activeDays.add(t.date); });
-      const dayLabel = activeDays.size === 1 ? 'day' : 'days';
-      consistencyEl.textContent = `${activeDays.size} active ${dayLabel}`;
-    }
-  },
-
-  loadBreakEvenTracker: function(allTxns) {
-    const rent = parseFloat(localStorage.getItem('bd_be_rent') || '20000');
-    const staff = parseFloat(localStorage.getItem('bd_be_staff') || '15000');
-    const utilities = parseFloat(localStorage.getItem('bd_be_utilities') || '5000');
-    const other = parseFloat(localStorage.getItem('bd_be_other') || '2000');
-    const totalMonthlyOverhead = rent + staff + utilities + other;
-
-    const now = (typeof getISTDateObject === 'function') ? getISTDateObject() : new Date();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const dailyTarget = Math.round(totalMonthlyOverhead / daysInMonth);
-
-    // Today's revenue
-    const todayStr = (typeof today === 'function') ? today() : new Date().toISOString().substring(0, 10);
-    const todayTxns = allTxns.filter(t => t.type === 'income' && t.date === todayStr);
-    const todayRevenue = todayTxns.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
-    const todaySurplus = todayRevenue - dailyTarget;
-
-    // Current month revenue
-    const curMonthTxns = allTxns.filter(t => t.type === 'income' && (typeof isThisMonth === 'function' ? isThisMonth(t.date) : true));
-    const curMonthRevenue = curMonthTxns.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
-    const monthCoveragePct = totalMonthlyOverhead > 0 ? Math.round((curMonthRevenue / totalMonthlyOverhead) * 100) : 100;
-
-    // DOM updates
-    const dtEl = document.getElementById('beDailyTarget');
-    if (dtEl) dtEl.textContent = inr(dailyTarget);
-
-    const trEl = document.getElementById('beTodayRevenue');
-    if (trEl) trEl.textContent = inr(todayRevenue);
-
-    const tcEl = document.getElementById('beTodayCount');
-    if (tcEl) tcEl.textContent = `${todayTxns.length} transactions today`;
-
-    const tsEl = document.getElementById('beTodaySurplus');
-    if (tsEl) {
-      if (todaySurplus >= 0) {
-        tsEl.textContent = `+${inr(todaySurplus)}`;
-        tsEl.style.color = 'var(--income)';
-      } else {
-        tsEl.textContent = `-${inr(Math.abs(todaySurplus))}`;
-        tsEl.style.color = 'var(--expense)';
-      }
-    }
-
-    const tssEl = document.getElementById('beTodaySurplusSub');
-    if (tssEl) {
-      tssEl.textContent = todaySurplus >= 0 ? 'Surplus beyond break-even 🎉' : `₹ ${inrShort(Math.abs(todaySurplus))} needed to break even`;
-    }
-
-    const moEl = document.getElementById('beMonthlyOverhead');
-    if (moEl) moEl.textContent = inr(totalMonthlyOverhead);
-
-    const obEl = document.getElementById('beOverheadBreakdown');
-    if (obEl) obEl.textContent = `Rent: ${inrShort(rent)} · Staff: ${inrShort(staff)} · Util: ${inrShort(utilities)}`;
-
-    // Pacing progress
-    const pacingPct = dailyTarget > 0 ? Math.round((todayRevenue / dailyTarget) * 100) : 100;
-    const bpEl = document.getElementById('bePacingPercent');
-    if (bpEl) bpEl.textContent = `${pacingPct}%`;
-
-    const bfEl = document.getElementById('bePacingFill');
-    if (bfEl) {
-      bfEl.style.width = `${Math.min(pacingPct, 100)}%`;
-      if (pacingPct >= 100) {
-        bfEl.style.background = 'linear-gradient(90deg, #10b981, #059669)';
-      } else if (pacingPct >= 50) {
-        bfEl.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
-      } else {
-        bfEl.style.background = 'linear-gradient(90deg, #f43f5e, #e11d48)';
-      }
-    }
-
-    const badgeEl = document.getElementById('beStatusBadge');
-    if (badgeEl) {
-      if (todaySurplus >= 0) {
-        badgeEl.className = 'be-status-badge achieved';
-        badgeEl.textContent = `🎉 Break-Even Achieved (+${inrShort(todaySurplus)})`;
-      } else {
-        badgeEl.className = 'be-status-badge pending';
-        badgeEl.textContent = `⏳ ₹ ${inrShort(Math.abs(todaySurplus))} Needed Today`;
-      }
-    }
-
-    const pnEl = document.getElementById('bePacingNote');
-    if (pnEl) {
-      pnEl.textContent = todaySurplus >= 0 ? `Daily target of ₹ ${inrShort(dailyTarget)} reached today!` : `₹ ${inr(Math.abs(todaySurplus))} remaining to cover today's fixed cost`;
-    }
-
-    const mcEl = document.getElementById('beMonthCoverageNote');
-    if (mcEl) {
-      mcEl.textContent = `Month Overhead Covered: ${monthCoveragePct}% (${inrShort(curMonthRevenue)} / ${inrShort(totalMonthlyOverhead)})`;
-    }
-  },
-
+  /* ==========================================================================
+     11. PLATFORM CHANNELS & AGGREGATOR COMMISSION
+     ========================================================================== */
   loadPlatformAnalysis: function(txns) {
     const platforms = {
       swiggy: { name: 'Swiggy', revenue: 0, count: 0, color: '#fc8019' },
@@ -1039,8 +1785,7 @@ const AnalyticsPage = {
 
     const badgeEl = document.getElementById('platformPeriodBadge');
     if (badgeEl) {
-      const labels = { week: 'This Week', month: 'This Month', year: 'This Year', all: 'All Time' };
-      badgeEl.textContent = labels[this.period] || 'Selected Period';
+      badgeEl.textContent = this.period.toUpperCase();
     }
 
     // Update each platform card
@@ -1100,7 +1845,16 @@ const AnalyticsPage = {
       }
     }
 
-    // Build or update Platform Channel Chart
+    const aggComm = Math.round((platforms.swiggy.revenue + platforms.zomato.revenue) * 0.22);
+    const marginNoteEl = document.getElementById('marginInsightNote');
+    if (marginNoteEl) {
+      if (aggComm > 0) {
+        marginNoteEl.textContent = `Direct Counter & Dine-in saves ~ ${inr(aggComm)} vs aggregator fees.`;
+      } else {
+        marginNoteEl.textContent = 'Direct Counter & Dine-in sales have 0% aggregator commission.';
+      }
+    }
+
     this.buildPlatformChart(platforms);
   },
 
@@ -1160,9 +1914,133 @@ const AnalyticsPage = {
     });
   },
 
+  /* ==========================================================================
+     12. CAPITAL CHANNELS & FINANCIAL RATIOS REPORT
+     ========================================================================== */
+  loadCapitalChannelsReport: function(filtered, all) {
+    const tbody = document.getElementById('capitalChannelsBody');
+    if (!tbody) return;
+
+    const modes = ['Cash', 'UPI', 'Bank Transfer', 'Card', 'Cheque', 'Online'];
+    const summary = {};
+    modes.forEach(m => {
+      summary[m] = { inward: 0, outward: 0, count: 0 };
+    });
+
+    let totalFilteredCount = filtered.length;
+    filtered.forEach(t => {
+      const m = t.mode || 'Cash';
+      const amt = parseFloat(t.amount) || 0;
+      if (summary[m]) {
+        summary[m].count++;
+        if (t.type === 'income') summary[m].inward += amt;
+        else if (t.type === 'expense') summary[m].outward += amt;
+      }
+    });
+
+    tbody.innerHTML = '';
+
+    let anyData = false;
+    modes.forEach(mode => {
+      const s = summary[mode];
+      if (s.count > 0) {
+        anyData = true;
+        const net = s.inward - s.outward;
+        const share = totalFilteredCount > 0 ? Math.round((s.count / totalFilteredCount) * 100) : 0;
+        
+        let badgeClass = 'online';
+        if (mode === 'Cash') badgeClass = 'cash';
+        else if (mode === 'UPI') badgeClass = 'upi';
+        else if (mode === 'Bank Transfer') badgeClass = 'bank';
+        else if (mode === 'Card') badgeClass = 'card';
+        else if (mode === 'Cheque') badgeClass = 'cheque';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><span class="capital-badge ${badgeClass}">${mode.toUpperCase()}</span></td>
+          <td style="font-weight:700; color:var(--income);">${inr(s.inward)}</td>
+          <td style="font-weight:700; color:var(--expense);">${inr(s.outward)}</td>
+          <td style="font-weight:800; color:${net >= 0 ? 'var(--income)' : 'var(--expense)'};">${inr(net)}</td>
+          <td>${s.count} transactions</td>
+          <td style="font-weight:700; color:var(--brand);">${share}%</td>
+        `;
+        tbody.appendChild(row);
+      }
+    });
+
+    if (!anyData) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-light); padding: 30px;">
+            💼 No capital transaction details logged in this period.
+          </td>
+        </tr>
+      `;
+    }
+
+    // Calculations in Performance stats grid
+    const totals = calcTotals(filtered);
+    
+    // Operating Expense Ratio
+    const expRatioEl = document.getElementById('detExpenseRatio');
+    if (expRatioEl) {
+      const expRatio = totals.income > 0 ? Math.round((totals.expense / totals.income) * 100) : 0;
+      expRatioEl.textContent = expRatio + '%';
+    }
+
+    // Profitability Status
+    const profitStatusEl = document.getElementById('detProfitStatus');
+    if (profitStatusEl) {
+      const margin = totals.income > 0 ? (totals.profit / totals.income) * 100 : 0;
+      if (margin >= 30) profitStatusEl.textContent = 'High Profit Margin 📈';
+      else if (margin >= 10) profitStatusEl.textContent = 'Moderate Margin 👍';
+      else if (margin > 0) profitStatusEl.textContent = 'Low Margin ⚠️';
+      else if (totals.income === 0 && totals.expense === 0) profitStatusEl.textContent = 'No Operations 💤';
+      else profitStatusEl.textContent = 'Operating Deficit 🚨';
+    }
+
+    // Peak Revenue Month
+    const peakMonthEl = document.getElementById('detPeakMonth');
+    if (peakMonthEl) {
+      const monthlyIncome = {};
+      all.forEach(t => {
+        if (t.type === 'income' && t.date) {
+          const mKey = t.date.substring(0, 7);
+          const amt = parseFloat(t.amount) || 0;
+          monthlyIncome[mKey] = (monthlyIncome[mKey] || 0) + amt;
+        }
+      });
+      let peakM = 'None';
+      let peakVal = 0;
+      for (const m in monthlyIncome) {
+        if (monthlyIncome[m] > peakVal) {
+          peakVal = monthlyIncome[m];
+          peakM = m;
+        }
+      }
+      if (peakVal > 0) {
+        const dObj = new Date(peakM + '-02');
+        const formattedMonth = dObj.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+        peakMonthEl.textContent = `${formattedMonth} (${inrShort(peakVal)})`;
+      } else {
+        peakMonthEl.textContent = 'No Data Yet';
+      }
+    }
+
+    // Operating Consistency (Unique active days)
+    const consistencyEl = document.getElementById('detConsistency');
+    if (consistencyEl) {
+      const activeDays = new Set();
+      filtered.forEach(t => { if (t.date) activeDays.add(t.date); });
+      const dayLabel = activeDays.size === 1 ? 'day' : 'days';
+      consistencyEl.textContent = `${activeDays.size} active ${dayLabel}`;
+    }
+  },
+
   animateMetrics: function() {
     setTimeout(() => {
       const targetIds = [
+        'scTotalRevenue', 'scTotalExpense', 'scNetProfit', 'scDailyRunRate',
         'avgTxVal', 'burnRateVal', 'healthScoreVal', 
         'projRevenue', 'projExpenses', 'projProfit', 
         'detExpenseRatio',
@@ -1173,7 +2051,7 @@ const AnalyticsPage = {
         const el = document.getElementById(id);
         if (el && el.textContent) {
           const val = el.textContent;
-          if (val !== '₹ 0.00' && val !== '0%' && val !== '--%' && val !== '₹ 0' && val !== '--') {
+          if (val !== '₹ 0.00' && val !== '0%' && val !== '--%' && val !== '₹ 0' && val !== '--' && typeof animateNumber === 'function') {
             animateNumber(el, val);
           }
         }
