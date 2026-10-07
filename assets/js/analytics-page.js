@@ -274,6 +274,7 @@ const AnalyticsPage = {
       : [];
 
     this.cachedFilteredTxns = filteredTxns;
+    const curTot = (typeof calcTotals === 'function') ? calcTotals(filteredTxns) : { income: 0, expense: 0, profit: 0 };
 
     // 1. Executive Financial Summary Cards & Growth %
     this.loadExecutiveSummary(filteredTxns, prevTxns, bounds);
@@ -290,7 +291,10 @@ const AnalyticsPage = {
     // 5. Daily Break-Even & Profit Runway Tracker
     this.loadBreakEvenTracker(allTxns);
 
-    // 6. Platform Ordering Channel Breakdown & Commission
+    // 5b. F&B Operational Cost Benchmark Scorecard
+    this.loadFnbBenchmarks(filteredTxns, curTot);
+
+    // 6. Platform Ordering Channel Breakdown, Commission & Recovery Simulator
     this.loadPlatformAnalysis(filteredTxns);
 
     // 7. Visual Charts Grid
@@ -772,6 +776,16 @@ const AnalyticsPage = {
     const dtEl = document.getElementById('beDailyTarget');
     if (dtEl) dtEl.textContent = inr(dailyTarget);
 
+    // Break-even target bills at average ticket
+    const allIncomeTxns = allTxns.filter(t => t.type === 'income');
+    const totalIncomeAll = allIncomeTxns.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    const avgTicket = allIncomeTxns.length > 0 ? (totalIncomeAll / allIncomeTxns.length) : 320;
+    const targetBills = dailyTarget > 0 ? Math.ceil(dailyTarget / Math.max(50, avgTicket)) : 0;
+    const dtoEl = document.getElementById('beDailyTargetOrders');
+    if (dtoEl) dtoEl.textContent = `${targetBills} Bills`;
+    const dtoSub = document.getElementById('beDailyOrdersSub');
+    if (dtoSub) dtoSub.textContent = `@ ~₹${Math.round(avgTicket)} avg ticket`;
+
     const trEl = document.getElementById('beTodayRevenue');
     if (trEl) trEl.textContent = inr(todayRevenue);
 
@@ -865,6 +879,106 @@ const AnalyticsPage = {
         rwEl.textContent = `🛡️ Profit Runway: 0 days cushion`;
         rwEl.style.color = 'var(--text-muted)';
       }
+    }
+  },
+
+  /* ==========================================================================
+     5b. F&B OPERATIONAL COST BENCHMARKS (COGS, STAFF, RENT & PRIME COST)
+     ========================================================================== */
+  loadFnbBenchmarks: function(filtered, curTot) {
+    let foodCost = 0;
+    let staffCost = 0;
+    let rentCost = 0;
+
+    filtered.forEach(t => {
+      if (t.type !== 'expense') return;
+      const amt = parseFloat(t.amount) || 0;
+      const cat = (t.category || '').toLowerCase();
+      const note = (t.notes || '').toLowerCase();
+      const str = `${cat} ${note}`;
+
+      if (str.includes('grocery') || str.includes('vegetable') || str.includes('bread') || str.includes('bakery') || str.includes('dairy') || str.includes('milk') || str.includes('food') || str.includes('cogs') || str.includes('raw material') || str.includes('ingredient')) {
+        foodCost += amt;
+      } else if (str.includes('salary') || str.includes('staff') || str.includes('payroll') || str.includes('wage')) {
+        staffCost += amt;
+      } else if (str.includes('rent') || str.includes('maintenance') || str.includes('electricity') || str.includes('utility')) {
+        rentCost += amt;
+      }
+    });
+
+    const rev = (curTot && curTot.income > 0) ? curTot.income : 1;
+    const foodPct = Math.round((foodCost / rev) * 100);
+    const staffPct = Math.round((staffCost / rev) * 100);
+    const rentPct = Math.round((rentCost / rev) * 100);
+    const primeCost = foodCost + staffCost;
+    const primePct = Math.round((primeCost / rev) * 100);
+
+    // Update Food Cost / COGS
+    const fcVal = document.getElementById('bmFoodVal');
+    const fcBar = document.getElementById('bmFoodBar');
+    const fcSpend = document.getElementById('bmFoodSpend');
+    const fcStat = document.getElementById('bmFoodStatus');
+    if (fcVal) fcVal.textContent = `${foodPct}%`;
+    if (fcBar) {
+      fcBar.style.width = `${Math.min(foodPct, 100)}%`;
+      fcBar.style.background = foodPct <= 35 ? '#10b981' : (foodPct <= 42 ? '#f59e0b' : '#f43f5e');
+    }
+    if (fcSpend) fcSpend.textContent = `${inr(foodCost)} spent`;
+    if (fcStat) {
+      if (foodPct <= 35) { fcStat.className = 'bm-status-pill optimal'; fcStat.textContent = 'Optimal'; }
+      else if (foodPct <= 42) { fcStat.className = 'bm-status-pill warning'; fcStat.textContent = 'Warning'; }
+      else { fcStat.className = 'bm-status-pill critical'; fcStat.textContent = 'Critical'; }
+    }
+
+    // Update Staff & Payroll Cost
+    const lcVal = document.getElementById('bmLaborVal');
+    const lcBar = document.getElementById('bmLaborBar');
+    const lcSpend = document.getElementById('bmLaborSpend');
+    const lcStat = document.getElementById('bmLaborStatus');
+    if (lcVal) lcVal.textContent = `${staffPct}%`;
+    if (lcBar) {
+      lcBar.style.width = `${Math.min(staffPct, 100)}%`;
+      lcBar.style.background = staffPct <= 22 ? '#8b5cf6' : (staffPct <= 28 ? '#f59e0b' : '#f43f5e');
+    }
+    if (lcSpend) lcSpend.textContent = `${inr(staffCost)} spent`;
+    if (lcStat) {
+      if (staffPct <= 22) { lcStat.className = 'bm-status-pill optimal'; lcStat.textContent = 'Optimal'; }
+      else if (staffPct <= 28) { lcStat.className = 'bm-status-pill warning'; lcStat.textContent = 'Warning'; }
+      else { lcStat.className = 'bm-status-pill critical'; lcStat.textContent = 'Critical'; }
+    }
+
+    // Update Rent & Occupancy Cost
+    const rcVal = document.getElementById('bmRentVal');
+    const rcBar = document.getElementById('bmRentBar');
+    const rcSpend = document.getElementById('bmRentSpend');
+    const rcStat = document.getElementById('bmRentStatus');
+    if (rcVal) rcVal.textContent = `${rentPct}%`;
+    if (rcBar) {
+      rcBar.style.width = `${Math.min(rentPct, 100)}%`;
+      rcBar.style.background = rentPct <= 15 ? '#f59e0b' : (rentPct <= 20 ? '#d97706' : '#f43f5e');
+    }
+    if (rcSpend) rcSpend.textContent = `${inr(rentCost)} spent`;
+    if (rcStat) {
+      if (rentPct <= 15) { rcStat.className = 'bm-status-pill optimal'; rcStat.textContent = 'Optimal'; }
+      else if (rentPct <= 20) { rcStat.className = 'bm-status-pill warning'; rcStat.textContent = 'Warning'; }
+      else { rcStat.className = 'bm-status-pill critical'; rcStat.textContent = 'Critical'; }
+    }
+
+    // Update Prime Cost
+    const pcVal = document.getElementById('bmPrimeVal');
+    const pcBar = document.getElementById('bmPrimeBar');
+    const pcNote = document.getElementById('bmPrimeNote');
+    const pcStat = document.getElementById('bmPrimeStatus');
+    if (pcVal) pcVal.textContent = `${primePct}%`;
+    if (pcBar) {
+      pcBar.style.width = `${Math.min(primePct, 100)}%`;
+      pcBar.style.background = primePct <= 55 ? '#6366f1' : (primePct <= 65 ? '#f59e0b' : '#f43f5e');
+    }
+    if (pcNote) pcNote.textContent = `${inr(primeCost)} total prime`;
+    if (pcStat) {
+      if (primePct <= 55) { pcStat.className = 'bm-status-pill optimal'; pcStat.textContent = 'Optimal'; }
+      else if (primePct <= 65) { pcStat.className = 'bm-status-pill warning'; pcStat.textContent = 'Warning'; }
+      else { pcStat.className = 'bm-status-pill critical'; pcStat.textContent = 'Critical'; }
     }
   },
 
@@ -965,9 +1079,13 @@ const AnalyticsPage = {
     tbody.innerHTML = items.map(item => {
       const isInc = item.type === 'income';
       const color = isInc ? '#10b981' : '#f43f5e';
+      const safeName = encodeURIComponent(item.name);
       return `
-        <tr>
-          <td style="font-weight:700; color:var(--text-head);">${item.name}</td>
+        <tr onclick="AnalyticsPage.openCategoryModal('${safeName}', '${item.type}')" title="Click to view detailed transactions for ${item.name}">
+          <td style="font-weight:700; color:var(--text-head); display:flex; align-items:center; gap:6px;">
+            <span>${item.name}</span>
+            <span style="font-size:0.7rem; color:var(--text-muted); opacity:0.6;">🔍</span>
+          </td>
           <td><span class="cat-type-badge ${isInc ? 'inc' : 'exp'}">${item.type}</span></td>
           <td style="font-weight:800; color:${color};">${inr(item.total)}</td>
           <td style="font-weight:700;">${item.share}%</td>
@@ -985,6 +1103,73 @@ const AnalyticsPage = {
         </tr>
       `;
     }).join('');
+  },
+
+  /* ==========================================================================
+     6b. CATEGORY DRILL-DOWN MODAL
+     ========================================================================== */
+  openCategoryModal: function(catNameEnc, type) {
+    const catName = decodeURIComponent(catNameEnc);
+    const filtered = this.cachedFilteredTxns || [];
+    const catTxns = filtered.filter(t => (t.category || (t.type === 'income' ? 'Other Income' : 'Other Expense')) === catName && (t.type === type));
+
+    const titleEl = document.getElementById('catModalTitle');
+    const subEl = document.getElementById('catModalSubtitle');
+    const badgeIconEl = document.getElementById('catModalBadgeIcon');
+    const totalEl = document.getElementById('catModalTotal');
+    const countEl = document.getElementById('catModalCount');
+    const avgEl = document.getElementById('catModalAvg');
+    const shareEl = document.getElementById('catModalShare');
+    const tbody = document.getElementById('catModalTxnBody');
+
+    const totalAmt = catTxns.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+    const count = catTxns.length;
+    const avg = count > 0 ? Math.round(totalAmt / count) : 0;
+
+    const catItem = (this.categoryMatrixData || []).find(i => i.name === catName && i.type === type);
+    const share = catItem ? catItem.share : 0;
+
+    if (titleEl) titleEl.textContent = catName;
+    if (subEl) subEl.textContent = `${type.toUpperCase()} · ${count} entries in selected timeframe`;
+    if (badgeIconEl) badgeIconEl.textContent = type === 'income' ? '💰' : '💳';
+    if (totalEl) {
+      totalEl.textContent = inr(totalAmt);
+      totalEl.style.color = type === 'income' ? 'var(--income)' : 'var(--expense)';
+    }
+    if (countEl) countEl.textContent = count;
+    if (avgEl) avgEl.textContent = inr(avg);
+    if (shareEl) shareEl.textContent = `${share}%`;
+
+    if (tbody) {
+      if (count === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">No transactions recorded in this period.</td></tr>`;
+      } else {
+        const sorted = [...catTxns].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        tbody.innerHTML = sorted.map(t => {
+          const party = t.type === 'income' ? (t.from || 'Direct Customer') : (t.vendor || 'Supplier / Vendor');
+          const noteStr = t.notes ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(t.notes)}</div>` : '';
+          const amtColor = t.type === 'income' ? 'var(--income)' : 'var(--expense)';
+          const amtSign = t.type === 'income' ? '+' : '-';
+          return `
+            <tr>
+              <td style="font-weight:600; font-size:0.8rem; white-space:nowrap; vertical-align:top;">${fmtDate(t.date)}</td>
+              <td style="vertical-align:top;">
+                <div style="font-weight:700; font-size:0.84rem; color:var(--text-head);">${escapeHtml(party)}</div>
+                ${noteStr}
+              </td>
+              <td style="vertical-align:top;"><span class="badge" style="font-size:0.7rem; text-transform:uppercase;">${t.mode || 'Cash'}</span></td>
+              <td style="text-align:right; font-weight:800; font-size:0.9rem; color:${amtColor}; white-space:nowrap; vertical-align:top;">
+                ${amtSign}${inr(t.amount)}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    if (typeof openModal === 'function') {
+      openModal('categoryDetailModal');
+    }
   },
 
   /* ==========================================================================
@@ -1855,7 +2040,36 @@ const AnalyticsPage = {
       }
     }
 
+    this.cachedPlatformRevenues = {
+      swiggy: platforms.swiggy.revenue,
+      zomato: platforms.zomato.revenue
+    };
+    this.updateSavingsSimulator();
+
     this.buildPlatformChart(platforms);
+  },
+
+  updateSavingsSimulator: function() {
+    const slider = document.getElementById('simShiftRate');
+    if (!slider) return;
+    const rate = parseInt(slider.value, 10) || 25;
+    const rateValEl = document.getElementById('simShiftVal');
+    if (rateValEl) rateValEl.textContent = `${rate}%`;
+
+    const platforms = this.cachedPlatformRevenues || { swiggy: 0, zomato: 0 };
+    const onlineAggRev = (platforms.swiggy || 0) + (platforms.zomato || 0);
+    // Baseline realistic aggregator revenue for calculation
+    const baseAggRev = Math.max(onlineAggRev, 45000);
+    // Aggregator average 22% cut: pure money saved by moving direct
+    const shiftedRev = baseAggRev * (rate / 100);
+    const monthlySaved = Math.round(shiftedRev * 0.22);
+    const annualSaved = monthlySaved * 12;
+
+    const msEl = document.getElementById('simMonthlySaved');
+    if (msEl) msEl.textContent = `+${inr(monthlySaved)}`;
+
+    const asEl = document.getElementById('simAnnualSaved');
+    if (asEl) asEl.textContent = `+${inr(annualSaved)} / yr`;
   },
 
   buildPlatformChart: function(platforms) {

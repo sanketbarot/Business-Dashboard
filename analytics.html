@@ -412,6 +412,91 @@
           </div>
         </section>
 
+        <!-- F&B OPERATIONAL RATIOS & COST BENCHMARK SCORECARD -->
+        <section class="card fnb-benchmarks-panel" style="margin-bottom: 26px;">
+          <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h4 style="display:flex; align-items:center; gap:8px;">
+                <i data-lucide="gauge" style="width: 18px; height: 18px; color: var(--brand);"></i>
+                Restaurant Operational Efficiency & Cost Ratios
+              </h4>
+              <span style="font-size:0.75rem; color:var(--text-muted);">
+                Real-time financial ratios benchmarked against standard F&B industry health guidelines
+              </span>
+            </div>
+            <span class="badge" style="font-size:0.72rem; background:rgba(16,185,129,0.12); color:#059669; padding:4px 10px; border-radius:var(--r-sm); font-weight:700;">
+              Industry Standards
+            </span>
+          </div>
+          <div class="card-bd">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+              <!-- 1. Food Cost / COGS Ratio -->
+              <div class="benchmark-card" id="bmFoodCard">
+                <div class="bm-top">
+                  <span class="bm-title">FOOD & INGREDIENT COST</span>
+                  <span class="bm-status-pill optimal" id="bmFoodStatus">Optimal</span>
+                </div>
+                <div class="bm-val" id="bmFoodVal">0%</div>
+                <div class="bm-bar-wrap">
+                  <div class="bm-bar" id="bmFoodBar" style="width:0%; background:#10b981;"></div>
+                </div>
+                <div class="bm-footer">
+                  <span id="bmFoodSpend">₹ 0 spent</span>
+                  <span class="bm-target">Ideal: 28% - 35%</span>
+                </div>
+              </div>
+
+              <!-- 2. Labor / Staff Ratio -->
+              <div class="benchmark-card" id="bmLaborCard">
+                <div class="bm-top">
+                  <span class="bm-title">STAFF & PAYROLL COST</span>
+                  <span class="bm-status-pill optimal" id="bmLaborStatus">Optimal</span>
+                </div>
+                <div class="bm-val" id="bmLaborVal">0%</div>
+                <div class="bm-bar-wrap">
+                  <div class="bm-bar" id="bmLaborBar" style="width:0%; background:#8b5cf6;"></div>
+                </div>
+                <div class="bm-footer">
+                  <span id="bmLaborSpend">₹ 0 spent</span>
+                  <span class="bm-target">Ideal: 15% - 22%</span>
+                </div>
+              </div>
+
+              <!-- 3. Occupancy / Rent Ratio -->
+              <div class="benchmark-card" id="bmRentCard">
+                <div class="bm-top">
+                  <span class="bm-title">RENT & OCCUPANCY COST</span>
+                  <span class="bm-status-pill optimal" id="bmRentStatus">Optimal</span>
+                </div>
+                <div class="bm-val" id="bmRentVal">0%</div>
+                <div class="bm-bar-wrap">
+                  <div class="bm-bar" id="bmRentBar" style="width:0%; background:#f59e0b;"></div>
+                </div>
+                <div class="bm-footer">
+                  <span id="bmRentSpend">₹ 0 spent</span>
+                  <span class="bm-target">Ideal: 8% - 15%</span>
+                </div>
+              </div>
+
+              <!-- 4. Prime Cost (COGS + Labor) -->
+              <div class="benchmark-card" id="bmPrimeCard">
+                <div class="bm-top">
+                  <span class="bm-title">PRIME COST RATIO</span>
+                  <span class="bm-status-pill optimal" id="bmPrimeStatus">Optimal</span>
+                </div>
+                <div class="bm-val" id="bmPrimeVal">0%</div>
+                <div class="bm-bar-wrap">
+                  <div class="bm-bar" id="bmPrimeBar" style="width:0%; background:#6366f1;"></div>
+                </div>
+                <div class="bm-footer">
+                  <span id="bmPrimeNote">Food + Labor Total</span>
+                  <span class="bm-target">Target: &lt; 55%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- DAILY BREAK-EVEN & PROFIT RUNWAY TRACKER -->
         <section class="card breakeven-panel" style="margin-bottom: 26px;">
           <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
@@ -432,11 +517,16 @@
             </div>
           </div>
           <div class="card-bd">
-            <div class="be-grid">
+            <div class="be-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;">
               <div class="be-stat-card">
                 <div class="be-stat-lbl">DAILY BREAK-EVEN TARGET</div>
                 <div class="be-stat-val" id="beDailyTarget">₹ 0</div>
                 <div class="be-stat-sub" id="beDailyTargetSub">Based on monthly overhead</div>
+              </div>
+              <div class="be-stat-card">
+                <div class="be-stat-lbl">BREAK-EVEN TARGET BILLS</div>
+                <div class="be-stat-val" id="beDailyTargetOrders" style="color:var(--brand);">0 Bills</div>
+                <div class="be-stat-sub" id="beDailyOrdersSub">At current average ticket</div>
               </div>
               <div class="be-stat-card">
                 <div class="be-stat-lbl">TODAY'S REVENUE</div>
@@ -679,6 +769,48 @@
                       <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Highest Avg Ticket Value</div>
                       <div style="font-size:0.88rem; font-weight:800; color:var(--text-head);" id="highestAovChannel">Analyzing...</div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aggregator Direct Order Profit Recovery Simulator -->
+            <div style="margin-top:20px; padding:18px 20px; background:linear-gradient(135deg, rgba(99,102,241,0.06), rgba(16,185,129,0.05)); border:1px solid rgba(99,102,241,0.18); border-radius:var(--r-lg);">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:1.1rem;">💎</span>
+                    <strong style="font-size:0.92rem; color:var(--text-head);">Aggregator Profit Recovery Simulator (Direct WhatsApp / Counter)</strong>
+                    <span class="badge" style="background:rgba(16,185,129,0.15); color:#059669; font-size:0.7rem; font-weight:700;">Zero Commission ROI</span>
+                  </div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                    Simulate how much pure bottom-line profit you retain by converting online aggregator orders (avg ~22% commission) into direct customer orders.
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted);">Conversion Target:</span>
+                  <span id="simShiftVal" style="font-size:1.05rem; font-weight:800; color:var(--brand); min-width:44px; text-align:right;">25%</span>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr auto; gap:20px; align-items:center;">
+                <div>
+                  <input type="range" id="simShiftRate" class="sim-slider" min="5" max="60" value="25" step="5" oninput="AnalyticsPage.updateSavingsSimulator()">
+                  <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:6px; font-weight:600;">
+                    <span>5% Modest Shift</span>
+                    <span>25% WhatsApp & QR Target</span>
+                    <span>50% Direct Ordering Campaign</span>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                  <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 16px; text-align:right;">
+                    <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Monthly Profit Retained</div>
+                    <div style="font-size:1.15rem; font-weight:800; color:#10b981;" id="simMonthlySaved">₹ 0</div>
+                  </div>
+                  <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 16px; text-align:right;">
+                    <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Annualized Extra Cashflow</div>
+                    <div style="font-size:1.15rem; font-weight:800; color:var(--brand);" id="simAnnualSaved">₹ 0 / yr</div>
                   </div>
                 </div>
               </div>
@@ -1076,6 +1208,65 @@
         <button class="btn btn-primary" onclick="saveBreakEvenConfig()" style="display:inline-flex; align-items:center; gap:6px;">
           <i data-lucide="check" style="width:16px; height:16px;"></i>Save Overhead
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORY DETAIL DRILL-DOWN MODAL -->
+  <div class="modal-bg" id="categoryDetailModal">
+    <div class="modal" style="max-width: 760px; width: 95%;">
+      <div class="modal-hd" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div id="catModalBadgeIcon" style="font-size:1.5rem;">📁</div>
+          <div>
+            <h3 id="catModalTitle" style="color:var(--text-head); margin:0;">Category Drill-Down</h3>
+            <span id="catModalSubtitle" style="font-size:0.75rem; color:var(--text-muted);">Filtered Transactions & Metric Breakdown</span>
+          </div>
+        </div>
+        <button class="modal-x" onclick="closeModal('categoryDetailModal')">✕</button>
+      </div>
+      <div class="modal-bd" style="max-height: 72vh; overflow-y: auto;">
+        <!-- KPI summary banner -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:16px;">
+          <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px;">
+            <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Total Amount</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--text-head);" id="catModalTotal">₹ 0</div>
+          </div>
+          <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px;">
+            <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Total Txns</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--text-head);" id="catModalCount">0</div>
+          </div>
+          <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px;">
+            <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Average Ticket</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--text-head);" id="catModalAvg">₹ 0</div>
+          </div>
+          <div style="background:var(--bg-app); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px;">
+            <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Share of Flow</div>
+            <div style="font-size:1.05rem; font-weight:800; color:var(--brand);" id="catModalShare">0%</div>
+          </div>
+        </div>
+
+        <!-- Table of transactions -->
+        <div class="table-wrap" style="max-height: 320px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--r-md);">
+          <table class="dtable" style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="position:sticky; top:0; background:var(--bg-card); z-index:2;">
+                <th style="padding:10px 12px;">Date</th>
+                <th style="padding:10px 12px;">Party / Notes</th>
+                <th style="padding:10px 12px;">Mode</th>
+                <th style="text-align:right; padding:10px 12px;">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="catModalTxnBody">
+              <tr>
+                <td colspan="4" style="text-align:center; padding:18px; color:var(--text-muted);">No records found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn btn-outline" onclick="closeModal('categoryDetailModal')">Close</button>
       </div>
     </div>
   </div>

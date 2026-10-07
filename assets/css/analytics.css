@@ -1537,9 +1537,107 @@
 [data-theme="dark"] .an-summary-card,
 [data-theme="dark"] .an-smart-insights-panel,
 [data-theme="dark"] .as-card,
+/* ==========================================================================
+   F&B OPERATIONAL RATIOS & COST BENCHMARKS
+   ========================================================================== */
+.fnb-benchmarks-panel {
+  margin-bottom: 22px;
+  width: 100% !important;
+}
+
+.benchmark-card {
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.benchmark-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.bm-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bm-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bm-status-pill {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+}
+
+.bm-status-pill.optimal {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+.bm-status-pill.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.bm-status-pill.critical {
+  background: rgba(244, 63, 94, 0.15);
+  color: #e11d48;
+}
+
+.bm-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-head);
+  letter-spacing: -0.02em;
+}
+
+.bm-bar-wrap {
+  height: 6px;
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bm-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.bm-target {
+  font-weight: 700;
+  color: var(--brand);
+}
+
 [data-theme="dark"] .party-col,
 [data-theme="dark"] .party-item,
-[data-theme="dark"] .an-custom-date-wrap {
+[data-theme="dark"] .an-custom-date-wrap,
+[data-theme="dark"] .benchmark-card {
   background: var(--bg-card) !important;
   border-color: var(--border) !important;
 }
@@ -1559,6 +1657,41 @@
   backdrop-filter: blur(24px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+}
+
+#categoryMatrixBody tr {
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+#categoryMatrixBody tr:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.sim-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(99, 102, 241, 0.2);
+  outline: none;
+  transition: opacity .2s;
+}
+
+.sim-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--brand);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+  transition: transform 0.15s ease;
+}
+
+.sim-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
 
 /* Responsive tweaks for new elements */
